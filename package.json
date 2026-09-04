@@ -1,0 +1,68 @@
+{
+  "name": "workdesktop-ai",
+  "version": "1.0.0",
+  "description": "WorkDesktop 企业级 Vue3 组件库（基于 ElementPlus，HTML 模板渲染友好、AI 编码友好）",
+  "type": "module",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.umd.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npm run build:types",
+    "build:lib": "vite build",
+    "build:types": "vue-tsc --declaration --emitDeclarationOnly --outDir dist/types",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview",
+    "docs:dev": "vite --config docs/vite.config.ts",
+    "docs:build": "vite build --config docs/vite.config.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "vue3",
+    "element-plus",
+    "component-library",
+    "workdesktop",
+    "datagrid",
+    "dataform"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@element-plus/icons-vue": "^2.0.0",
+    "element-plus": "^2.5.0",
+    "vue": "^3.3.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7"
+  },
+  "devDependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@types/node": "^22.7.0",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "@vitest/coverage-v8": "^2.1.9",
+    "@vue/test-utils": "^2.5.0",
+    "element-plus": "^2.8.4",
+    "happy-dom": "^20.14.0",
+    "typescript": "~5.6.2",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.9",
+    "vue": "^3.5.10",
+    "vue-router": "^4.6.4",
+    "vue-tsc": "^2.1.6"
+  }
+}

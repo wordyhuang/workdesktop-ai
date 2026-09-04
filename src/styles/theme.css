@@ -1,0 +1,23 @@
+/**
+ * 主题变量与 ElementPlus 变量映射（PRD 9.3）
+ * WorkDesktop 语义令牌映射到 ElementPlus CSS 变量，覆盖一处两边同步
+ */
+:root {
+  --el-color-primary: var(--wd-color-primary);
+  --el-color-success: var(--wd-color-success);
+  --el-color-warning: var(--wd-color-warning);
+  --el-color-danger: var(--wd-color-danger);
+  --el-color-error: var(--wd-color-danger);
+  --el-color-info: var(--wd-color-info);
+
+  --el-text-color-primary: var(--wd-text-color-primary);
+  --el-text-color-regular: var(--wd-text-color-regular);
+  --el-border-color: var(--wd-border-color);
+  --el-border-color-light: var(--wd-border-color-light);
+  --el-bg-color: var(--wd-bg-color);
+  --el-bg-color-page: var(--wd-bg-color-page);
+  --el-bg-color-overlay: var(--wd-bg-color-overlay);
+
+  --el-font-size-base: var(--wd-font-size-base);
+  --el-border-radius-base: var(--wd-radius-base);
+}

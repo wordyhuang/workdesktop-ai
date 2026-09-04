@@ -1,0 +1,44 @@
+/**
+ * WorkDesktop 语义令牌（PRD 9.1）
+ * 与 ElementPlus 主题变量对齐，组件样式一律引用 var(--wd-*)，不硬编码色值
+ */
+:root {
+  /* 品牌 / 语义色 */
+  --wd-color-primary: #409eff;
+  --wd-color-success: #67c23a;
+  --wd-color-warning: #e6a23c;
+  --wd-color-danger: #f56c6c;
+  --wd-color-info: #909399;
+
+  /* 文本 */
+  --wd-text-color-primary: #303133;
+  --wd-text-color-regular: #606266;
+  --wd-text-color-secondary: #909399;
+  --wd-text-color-placeholder: #a8abb2;
+
+  /* 边框 / 背景 */
+  --wd-border-color: #dcdfe6;
+  --wd-border-color-light: #e4e7ed;
+  --wd-bg-color: #ffffff;
+  --wd-bg-color-page: #f5f7fa;
+  --wd-bg-color-overlay: #ffffff;
+
+  /* 尺寸 */
+  --wd-size-default: 32px;
+  --wd-size-large: 40px;
+  --wd-size-small: 24px;
+
+  /* 圆角 / 间距 */
+  --wd-radius-base: 4px;
+  --wd-radius-small: 2px;
+  --wd-spacing-base: 12px;
+  --wd-spacing-large: 16px;
+
+  /* 字体 */
+  --wd-font-size-base: 14px;
+  --wd-font-size-small: 12px;
+  --wd-font-size-large: 16px;
+
+  /* 层级 */
+  --wd-z-index-popup: 2000;
+}

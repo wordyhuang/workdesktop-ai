@@ -1,0 +1,6 @@
+/**
+ * WorkDesktop 样式入口
+ * 汇总语义令牌、主题与组件样式；组件样式一律引用 var(--wd-*)
+ */
+@import './tokens.css';
+@import './theme.css';

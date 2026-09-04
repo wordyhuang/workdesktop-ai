@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationDir": null,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "paths": {
+      "@docs/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "vite.config.ts", "../src/**/*.ts", "../src/**/*.vue"]
+}

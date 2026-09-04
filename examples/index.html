@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WorkDesktop 纯 HTML 引入示例（UMD）</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <!-- 组件库样式与 UMD 产物 -->
+    <link rel="stylesheet" href="../dist/style.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- 依赖：Vue3 / ElementPlus / 图标 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue/dist/index.iife.min.js"></script>
+    <!-- WorkDesktop UMD（全局 WorkDesktop） -->
+    <script src="../dist/index.umd.js"></script>
+
+    <script>
+      // 全局配置注入（script 场景入口，等价于 npm 场景的 app.use(WorkDesktop, config)）
+      window.workDesktopConfig = {
+        page: { pager: { pageSize: 5 } },
+        response: {
+          props: { codeName: 'code', messageName: 'message', dataName: 'data' },
+          successCode: 0
+        }
+      }
+
+      const { createApp } = Vue
+      const app = createApp({
+        data() {
+          return {
+            rows: [
+              { id: 1, name: '项目 A', owner: '张三', status: 1 },
+              { id: 2, name: '项目 B', owner: '李四', status: 0 },
+              { id: 3, name: '项目 C', owner: '王五', status: 1 },
+              { id: 4, name: '项目 D', owner: '赵六', status: 1 },
+              { id: 5, name: '项目 E', owner: '钱七', status: 0 },
+              { id: 6, name: '项目 F', owner: '孙八', status: 1 },
+              { id: 7, name: '项目 G', owner: '周九', status: 0 }
+            ],
+            roles: [
+              { value: 1, text: '管理员' },
+              { value: 2, text: '编辑' },
+              { value: 3, text: '访客' }
+            ],
+            role: 1,
+            enabled: true
+          }
+        },
+        methods: {
+          onRoleChange(val) {
+            ElementPlus.ElMessage.info('选择角色：' + val)
+          },
+          onSwitch(val) {
+            ElementPlus.ElMessage.success('开关状态：' + (val ? '开' : '关'))
+          },
+          onApiClick() {
+            ElementPlus.ElMessage.success('ApiButton 触发 click（无接口）')
+          },
+          statusText(row) {
+            return row.status === 1 ? '启用' : '禁用'
+          }
+        },
+        template: `
+          <div style="max-width: 900px; margin: 24px auto; padding: 0 16px">
+            <h2 style="margin-bottom: 4px">WorkDesktop 纯 HTML 引入</h2>
+            <p style="color:#909399; font-size:13px; margin-top:0">
+              通过 script 标签引入 UMD 产物，全局 <code>WorkDesktop</code> 插件注册全部 wd-* 组件。
+            </p>
+
+            <wd-panel title="数据表格" description="DataGrid 静态数据 + 分页">
+              <wd-data-grid :data-source="rows" row-key="id" :with-index="true">
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" label="项目" min-width="160"></el-table-column>
+                <el-table-column prop="owner" label="负责人" width="120"></el-table-column>
+                <el-table-column prop="status" label="状态" width="100">
+                  <template #default="{ row }">
+                    <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">{{ statusText(row) }}</el-tag>
+                  </template>
+                </el-table-column>
+              </wd-data-grid>
+            </wd-panel>
+
+            <wd-panel title="表单控件" description="Select / Switch / Tips / 按钮组">
+              <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center">
+                <span>
+                  <b>角色：</b>
+                  <wd-select v-model="role" :data-source="roles" style="width:160px" @change="onRoleChange"></wd-select>
+                </span>
+                <span>
+                  <b>状态：</b>
+                  <wd-switch v-model="enabled" @change="onSwitch"></wd-switch>
+                </span>
+                <wd-tips type="box" tips="纯 HTML 也可用声明式组件"></wd-tips>
+                <wd-tips-button text="悬停提示按钮" tips="基于 el-tooltip 的提示按钮"></wd-tips-button>
+                <wd-api-button type="primary" text="请求按钮(事件)" @click="onApiClick"></wd-api-button>
+              </div>
+            </wd-panel>
+
+            <p style="color:#c0c4cc; font-size:12px; margin-top:24px">
+              WorkDesktop UMD 版本：window.WorkDesktop · 全局配置：window.workDesktopConfig
+            </p>
+          </div>
+        `
+      })
+
+      app.use(ElementPlus)
+      app.use(WorkDesktop)
+      app.mount('#app')
+    </script>
+  </body>
+</html>

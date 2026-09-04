@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-docs/
+*.log
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.local
+.env
+.env.*
+!.env.example
+.npmrc
