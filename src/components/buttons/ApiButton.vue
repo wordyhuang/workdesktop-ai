@@ -1,12 +1,12 @@
 <template>
   <el-button v-bind="$attrs" :loading="loading" @click="onClick">
-    <slot />
+    <slot>{{ text }}</slot>
   </el-button>
 </template>
 
 <script setup lang="ts">
 import { useApiAction } from './useApiAction'
-import { filterProp, headRefreshDatagridProp, apiProps } from '../common/props'
+import { filterProp, headRefreshDatagridProp, apiProps, buttonTextProp } from '../common/props'
 
 defineOptions({ name: 'WdApiButton', inheritAttrs: false })
 
@@ -14,6 +14,7 @@ const props = defineProps({
   ...filterProp,
   ...headRefreshDatagridProp,
   ...apiProps,
+  ...buttonTextProp,
   /** 按钮级 loading（默认 true）；false 时按钮不转圈 */
   buttonLoading: { type: Boolean, default: true },
   /** 页面级 loading（全局遮罩 ElLoading） */

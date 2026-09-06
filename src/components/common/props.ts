@@ -19,6 +19,11 @@ export const headRefreshDatagridProp = {
   }
 }
 
+/** 按钮文字（属性式写法，也可用默认插槽覆盖；声明后不再透传给 el-button 的布尔 text） */
+export const buttonTextProp = {
+  text: { type: String, default: '' }
+}
+
 /** API 类共享 props（按钮组 / 输入选择组 / 上传组等能力组件） */
 export const apiProps = {
   /** 请求地址（无则不请求） */

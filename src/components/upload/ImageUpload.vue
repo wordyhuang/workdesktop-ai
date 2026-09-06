@@ -63,8 +63,8 @@ const props = defineProps({
   primaryKey: { type: String, default: 'id' },
   /** 最大图片数量，超限隐藏加号 */
   maxCount: { type: Number, default: 8 },
-  /** 缩略图尺寸（px） */
-  thumbnailSize: { type: Number, default: 100 },
+  /** 缩略图尺寸（px，兼容属性式字符串写法） */
+  thumbnailSize: { type: [Number, String], default: 100 },
   /** 是否点击缩略图大图预览（集成 Viewer） */
   preview: { type: Boolean, default: true },
   /** 接收类型，默认 image/* */

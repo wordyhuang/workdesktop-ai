@@ -30,6 +30,8 @@
         api="/user/list"
         remote
         filterable
+        value-prop="id"
+        text-prop="name"
         keyword-key="name"
         placeholder="输入姓名远程搜索"
         style="width: 280px"
@@ -50,6 +52,7 @@ const code1 = `<wd-select api="/options/roles" placeholder="请选择角色" />`
 const code2 = `<wd-select :data-source="options"
   :add-data="[{ value: 0, text: '全部角色' }]" />`
 const code3 = `<wd-select api="/user/list" remote filterable
+  value-prop="id" text-prop="name"
   keyword-key="name" placeholder="输入姓名远程搜索" />`
 
 const options = [

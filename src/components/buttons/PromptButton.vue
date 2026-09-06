@@ -1,13 +1,13 @@
 <template>
   <el-button v-bind="$attrs" :loading="loading" @click="onClick">
-    <slot />
+    <slot>{{ text }}</slot>
   </el-button>
 </template>
 
 <script setup lang="ts">
 import { ElMessageBox } from 'element-plus'
 import { useApiAction } from './useApiAction'
-import { filterProp, headRefreshDatagridProp, apiProps } from '../common/props'
+import { filterProp, headRefreshDatagridProp, apiProps, buttonTextProp } from '../common/props'
 
 defineOptions({ name: 'WdPromptButton', inheritAttrs: false })
 
@@ -15,6 +15,7 @@ const props = defineProps({
   ...filterProp,
   ...headRefreshDatagridProp,
   ...apiProps,
+  ...buttonTextProp,
   /** 输入框标题 */
   promptTitle: { type: String, default: '请输入' },
   /** 输入框占位文本 */

@@ -1,17 +1,18 @@
 <template>
   <el-button v-bind="$attrs" @click="onClick">
-    <slot />
+    <slot>{{ text }}</slot>
   </el-button>
 </template>
 
 <script setup lang="ts">
 import { getCurrentInstance, type PropType } from 'vue'
-import { filterProp } from '../common/props'
+import { filterProp, buttonTextProp } from '../common/props'
 
 defineOptions({ name: 'WdRouteButton', inheritAttrs: false })
 
 const props = defineProps({
   ...filterProp,
+  ...buttonTextProp,
   /** 路由 name（与 routePath 二选一） */
   routeName: { type: String, default: '' },
   /** 路由 path */

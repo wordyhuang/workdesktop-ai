@@ -1,19 +1,20 @@
 <template>
-  <el-autocomplete
-    v-model="inner"
-    v-loading="loading"
-    :fetch-suggestions="fetchSuggestions"
-    :value-key="labelKey"
-    v-bind="$attrs"
-    @select="onSelect"
-    @change="onChange"
-  >
-    <template #default="{ item }">
-      <slot :option="item.raw" :text="item[valueKey]" :value="item[valueKey]">
-        <span>{{ item[labelKey] }}</span>
-      </slot>
-    </template>
-  </el-autocomplete>
+  <div v-loading="loading" class="wd-auto-complete">
+    <el-autocomplete
+      v-model="inner"
+      :fetch-suggestions="fetchSuggestions"
+      :value-key="labelKey"
+      v-bind="$attrs"
+      @select="onSelect"
+      @change="onChange"
+    >
+      <template #default="{ item }">
+        <slot :option="item.raw" :text="item[valueKey]" :value="item[valueKey]">
+          <span>{{ item[labelKey] }}</span>
+        </slot>
+      </template>
+    </el-autocomplete>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -78,3 +79,12 @@ function onChange(val: any) {
   emit('change', val)
 }
 </script>
+
+<style scoped>
+.wd-auto-complete {
+  width: 100%;
+}
+.wd-auto-complete :deep(.el-autocomplete) {
+  width: 100%;
+}
+</style>

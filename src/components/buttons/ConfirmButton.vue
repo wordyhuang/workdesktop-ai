@@ -1,13 +1,13 @@
 <template>
   <el-button v-bind="$attrs" :loading="loading" @click="onClick">
-    <slot />
+    <slot>{{ text }}</slot>
   </el-button>
 </template>
 
 <script setup lang="ts">
 import { ElMessageBox } from 'element-plus'
 import { useApiAction } from './useApiAction'
-import { filterProp, headRefreshDatagridProp, apiProps } from '../common/props'
+import { filterProp, headRefreshDatagridProp, apiProps, buttonTextProp } from '../common/props'
 
 defineOptions({ name: 'WdConfirmButton', inheritAttrs: false })
 
@@ -15,6 +15,7 @@ const props = defineProps({
   ...filterProp,
   ...headRefreshDatagridProp,
   ...apiProps,
+  ...buttonTextProp,
   /** 确认文案 */
   confirmText: { type: String, default: '确认执行该操作？' },
   /** 取消按钮文案（空则不显示取消按钮） */

@@ -1,6 +1,6 @@
 {
   "name": "workdesktop-ai",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "WorkDesktop 企业级 Vue3 组件库（基于 ElementPlus，HTML 模板渲染友好、AI 编码友好）",
   "type": "module",
   "main": "dist/index.umd.js",

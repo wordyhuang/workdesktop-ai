@@ -336,6 +336,13 @@ let removeBeforeClose: (() => void) | null = null
 // 容器携带的数据（DrawerButton drawerData），props.data 优先
 const containerData = computed(() => props.data || container?.data)
 
+// 同步数据预填（首次渲染前）：props.data / 容器 data 在 setup 阶段已可用，
+// 提前回填可避免插槽内 el-switch / el-radio 等控件首帧绑定 undefined 触发 EP 校验警告；
+// api 异步详情仍在 onMounted 中拉取并覆盖
+if (containerData.value) {
+  fillForm(containerData.value)
+}
+
 onMounted(() => {
   // HTML 场景：把 model 暴露给根模板作用域（v-model="model.xxx"）
   const appContext = instance?.appContext
