@@ -6,6 +6,7 @@
         api="/user/list"
         :active="true"
         filter="s5"
+        row-key="id"
         :with-selection="true"
         :tools="{ refresh: true }"
         @selection-change="onSelectionChange"

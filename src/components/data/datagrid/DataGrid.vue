@@ -158,7 +158,7 @@ import { getGlobalConfig } from '../../../lib/core/config'
 import { safeJsonParse } from '../../../lib/core/utils'
 import { useColumnSettings } from './useColumnSettings'
 
-defineOptions({ name: 'WdDatagrid' })
+defineOptions({ name: 'WdDataGrid' })
 
 /**
  * 列渲染器：把默认插槽里的 el-table-column vnode 渲染进 el-table。

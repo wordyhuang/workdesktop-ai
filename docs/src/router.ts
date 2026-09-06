@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { componentNav } from './api-meta'
 import HomeView from './views/HomeView.vue'
 import ComponentDocView from './views/ComponentDocView.vue'
 import PlaygroundView from './views/PlaygroundView.vue'
@@ -17,13 +16,7 @@ const scenarioRoutes = [
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
-  ...componentNav.map((g) =>
-    g.items.map((c) => ({
-      path: `/components/${c.path}`,
-      name: `Doc-${c.path}`,
-      component: ComponentDocView
-    }))
-  ).flat(),
+  { path: '/components/:path', name: 'ComponentDoc', component: ComponentDocView },
   { path: '/playground', name: 'Playground', component: PlaygroundView },
   { path: '/linkage', name: 'Linkage', component: LinkageView },
   ...scenarioRoutes.map((s) => ({

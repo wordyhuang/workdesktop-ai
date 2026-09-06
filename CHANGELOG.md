@@ -56,7 +56,6 @@
 - 测试体系：vitest + @vue/test-utils，基础设施单测 87 用例 + DataGrid/DataForm 集成 19 用例，基础库行覆盖率 98%。
 - 中文内置文案，语义化版本与开源配置（MIT）。
 
-<!-- 仓库地址确定后，可在各版本标题补上比较链接，例如：
-[Unreleased]: https://github.com/<owner>/workdesktop-ai/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/<owner>/workdesktop-ai/releases/tag/v1.0.0
--->
+[Unreleased]: https://github.com/wordyhuang/workdesktop-ai/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/wordyhuang/workdesktop-ai/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/wordyhuang/workdesktop-ai/releases/tag/v1.0.0

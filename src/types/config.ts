@@ -83,7 +83,7 @@ export interface PagerConfig {
 export interface PageConfig {
   /** 全局尺寸：large/default/small */
   global: { size: string }
-  /** 按组件类型的默认配置，key 为组件 PascalName，如 WdDatagrid */
+  /** 按组件类型的默认配置，key 为组件 PascalName，如 WdDataGrid */
   componentDefault: Record<string, any>
   pager: PagerConfig
 }

@@ -13,7 +13,7 @@ import type { WorkDesktopConfig } from '../../types/config'
  *   componentDefault 的值作为默认，props 中非 undefined 的值覆盖。
  *
  * @example
- * const cfg = useConfig('WdDatagrid', props)
+ * const cfg = useConfig('WdDataGrid', props)
  * cfg.value.withPager
  */
 export function useConfig<T extends Record<string, any> = Record<string, any>>(

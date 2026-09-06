@@ -231,6 +231,48 @@ export function createMockInterceptor() {
   }
 }
 
+/**
+ * 创建 axios adapter：在请求层短路 /mock/*，不发出真实 HTTP。
+ *
+ * 文档站没有后端，/mock/* 请求若真正发出会被 dev server 以 404 拒绝，
+ * 导致响应拦截器（createMockInterceptor）根本不执行。adapter 在网络层之前
+ * 直接返回伪造响应，未命中 /mock 的请求则委托给默认 adapter（fetch/xhr）。
+ */
+export function createMockAdapter() {
+  return async (config: any) => {
+    const url = String(config.url || '')
+    const method = String(config.method || 'get').toLowerCase()
+    const route = routes.find((r) => r.method === method && r.pattern.test(url))
+
+    if (!route) {
+      // 非 mock 请求：交给 axios 默认 adapter
+      const { getAdapter } = await import('axios')
+      const defaultAdapter = getAdapter(['fetch', 'xhr', 'http'])
+      return defaultAdapter(config)
+    }
+
+    const query = config.params || {}
+    let body: Record<string, any> = {}
+    if (config.data) {
+      try {
+        body = typeof config.data === 'string' ? JSON.parse(config.data) : config.data
+      } catch {
+        body = { raw: config.data }
+      }
+    }
+    const result = route.handler({ params: { ...query, ...body }, url })
+
+    return {
+      data: { code: result.code ?? 0, message: result.message ?? 'ok', data: result.data ?? null },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: {}
+    }
+  }
+}
+
 /** 供静态示例直接读内存数据（Playground / 导出按钮用） */
 export const mockStore = {
   get roles() {

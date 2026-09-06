@@ -15,7 +15,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5174,
+    port: 5003,
     host: '0.0.0.0'
   },
   build: {

@@ -18,6 +18,7 @@
             <wd-data-grid
               :data-source="users"
               row-key="id"
+              :with-selection="true"
               :with-pager="false"
               :with-index="true"
               style="height: 360px"

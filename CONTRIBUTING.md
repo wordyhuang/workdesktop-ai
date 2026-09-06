@@ -12,7 +12,7 @@
 
 ```bash
 npm install            # 安装依赖
-npm run docs:dev       # 文档站本地预览（http://localhost:5173）
+npm run docs:dev       # 文档站本地预览（http://localhost:5003）
 npm run dev            # Playground 本地开发
 ```
 

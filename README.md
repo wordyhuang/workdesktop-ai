@@ -171,7 +171,7 @@ app.use(WorkDesktop, {
 
 | 分组 | 组件 |
 | ---- | ---- |
-| 数据 | `WdDataGrid`（WdDatagrid，`<wd-data-grid>`）、`WdEditableTable` |
+| 数据 | `WdDataGrid`（`<wd-data-grid>`）、`WdEditableTable` |
 | 表单 | `WdDataForm`（`<wd-data-form>`） |
 | 按钮组 | `WdApiButton` / `WdConfirmButton` / `WdPromptButton` / `WdRouteButton` / `WdTipsButton` / `WdDrawerButton` / `WdDialogButton` |
 | 容器组 | `WdDialog` / `WdDrawer` / `WdIframe` / `WdSearchPanel` |

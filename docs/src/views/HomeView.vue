@@ -10,7 +10,10 @@
       <div class="home__stats">
         <el-statistic title="组件" :value="allComponents.length" />
         <el-statistic title="基础模块" :value="4" />
-        <el-statistic title="双产物" value="ESM / UMD" />
+        <div class="home__stat-text">
+          <div class="el-statistic__number">ESM / UMD</div>
+          <div class="el-statistic__head">双产物</div>
+        </div>
       </div>
     </section>
 
@@ -98,6 +101,22 @@ const features = [
   display: flex;
   justify-content: center;
   gap: 64px;
+}
+.home__stat-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.home__stat-text .el-statistic__number {
+  font-size: 30px;
+  font-weight: 600;
+  color: #303133;
+  line-height: 1.2;
+}
+.home__stat-text .el-statistic__head {
+  font-size: 13px;
+  color: #909399;
 }
 .home__section {
   background: #fff;
