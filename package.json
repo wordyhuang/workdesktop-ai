@@ -5,15 +5,143 @@
   "type": "module",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/types/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./dist/types/src/index.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.umd.js"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./base.css": "./dist/base.css",
+    "./api-button": {
+      "types": "./dist/types/src/entries/api-button.d.ts",
+      "import": "./dist/api-button/index.mjs"
+    },
+    "./auto-complete": {
+      "types": "./dist/types/src/entries/auto-complete.d.ts",
+      "import": "./dist/auto-complete/index.mjs"
+    },
+    "./auto-complete/style.css": "./dist/auto-complete/style.css",
+    "./checkbox-list": {
+      "types": "./dist/types/src/entries/checkbox-list.d.ts",
+      "import": "./dist/checkbox-list/index.mjs"
+    },
+    "./confirm-button": {
+      "types": "./dist/types/src/entries/confirm-button.d.ts",
+      "import": "./dist/confirm-button/index.mjs"
+    },
+    "./data-form": {
+      "types": "./dist/types/src/entries/data-form.d.ts",
+      "import": "./dist/data-form/index.mjs"
+    },
+    "./data-form/style.css": "./dist/data-form/style.css",
+    "./data-grid": {
+      "types": "./dist/types/src/entries/data-grid.d.ts",
+      "import": "./dist/data-grid/index.mjs"
+    },
+    "./data-grid/style.css": "./dist/data-grid/style.css",
+    "./dialog-button": {
+      "types": "./dist/types/src/entries/dialog-button.d.ts",
+      "import": "./dist/dialog-button/index.mjs"
+    },
+    "./drawer": {
+      "types": "./dist/types/src/entries/drawer.d.ts",
+      "import": "./dist/drawer/index.mjs"
+    },
+    "./drawer/style.css": "./dist/drawer/style.css",
+    "./drawer-button": {
+      "types": "./dist/types/src/entries/drawer-button.d.ts",
+      "import": "./dist/drawer-button/index.mjs"
+    },
+    "./editable-grid": {
+      "types": "./dist/types/src/entries/editable-grid.d.ts",
+      "import": "./dist/editable-grid/index.mjs"
+    },
+    "./editable-grid/style.css": "./dist/editable-grid/style.css",
+    "./form-item": {
+      "types": "./dist/types/src/entries/form-item.d.ts",
+      "import": "./dist/form-item/index.mjs"
+    },
+    "./form-item/style.css": "./dist/form-item/style.css",
+    "./iframe": {
+      "types": "./dist/types/src/entries/iframe.d.ts",
+      "import": "./dist/iframe/index.mjs"
+    },
+    "./iframe/style.css": "./dist/iframe/style.css",
+    "./image-upload": {
+      "types": "./dist/types/src/entries/image-upload.d.ts",
+      "import": "./dist/image-upload/index.mjs"
+    },
+    "./image-upload/style.css": "./dist/image-upload/style.css",
+    "./panel": {
+      "types": "./dist/types/src/entries/panel.d.ts",
+      "import": "./dist/panel/index.mjs"
+    },
+    "./panel/style.css": "./dist/panel/style.css",
+    "./prompt-button": {
+      "types": "./dist/types/src/entries/prompt-button.d.ts",
+      "import": "./dist/prompt-button/index.mjs"
+    },
+    "./radio-list": {
+      "types": "./dist/types/src/entries/radio-list.d.ts",
+      "import": "./dist/radio-list/index.mjs"
+    },
+    "./requester": {
+      "types": "./dist/types/src/entries/requester.d.ts",
+      "import": "./dist/requester/index.mjs"
+    },
+    "./route-button": {
+      "types": "./dist/types/src/entries/route-button.d.ts",
+      "import": "./dist/route-button/index.mjs"
+    },
+    "./search-item": {
+      "types": "./dist/types/src/entries/search-item.d.ts",
+      "import": "./dist/search-item/index.mjs"
+    },
+    "./search-item/style.css": "./dist/search-item/style.css",
+    "./search-panel": {
+      "types": "./dist/types/src/entries/search-panel.d.ts",
+      "import": "./dist/search-panel/index.mjs"
+    },
+    "./search-panel/style.css": "./dist/search-panel/style.css",
+    "./select": {
+      "types": "./dist/types/src/entries/select.d.ts",
+      "import": "./dist/select/index.mjs"
+    },
+    "./station": {
+      "types": "./dist/types/src/entries/station.d.ts",
+      "import": "./dist/station/index.mjs"
+    },
+    "./station/style.css": "./dist/station/style.css",
+    "./switch": {
+      "types": "./dist/types/src/entries/switch.d.ts",
+      "import": "./dist/switch/index.mjs"
+    },
+    "./tips": {
+      "types": "./dist/types/src/entries/tips.d.ts",
+      "import": "./dist/tips/index.mjs"
+    },
+    "./tips/style.css": "./dist/tips/style.css",
+    "./tips-button": {
+      "types": "./dist/types/src/entries/tips-button.d.ts",
+      "import": "./dist/tips-button/index.mjs"
+    },
+    "./upload": {
+      "types": "./dist/types/src/entries/upload.d.ts",
+      "import": "./dist/upload/index.mjs"
+    },
+    "./viewer": {
+      "types": "./dist/types/src/entries/viewer.d.ts",
+      "import": "./dist/viewer/index.mjs"
+    },
+    "./viewer/style.css": "./dist/viewer/style.css",
+    "./package.json": "./package.json"
   },
+  "sideEffects": [
+    "*.css",
+    "**/*.css"
+  ],
   "files": [
     "dist",
     "README.md",
@@ -22,8 +150,10 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run build:types",
-    "build:lib": "vite build",
+    "build": "npm run build:esm && npm run build:umd && npm run build:types",
+    "build:lib": "npm run build:esm && npm run build:umd",
+    "build:esm": "vite build",
+    "build:umd": "vite build --mode umd",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly --outDir dist/types",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
@@ -48,6 +178,7 @@
     "vue": "^3.3.0"
   },
   "dependencies": {
+    "async-validator": "^4.2.5",
     "axios": "^1.7.7"
   },
   "devDependencies": {

@@ -1,5 +1,8 @@
 <template>
   <div class="example-page">
+    <unpack-note>
+      该组件点击后发起 API 请求，对返回数据中的 <code>data</code> 不做字段提取，而是把请求结果通过事件抛出：成功 <code>api-success</code> 携带 <code>{ data, code, message }</code>、业务失败 <code>api-fail</code> 携带 <code>{ code, message }</code>、异常 <code>api-exception</code> 携带 <code>{ error, message }</code>；其中 <code>data</code> 即后端返回的业务数据本体。
+    </unpack-note>
     <demo-block
       title="基础用法"
       desc="点击弹出二次确认，确认后才发起请求；文案可配"
@@ -8,7 +11,7 @@
     >
       <wd-confirm-button
         type="danger"
-        text="删除用户"
+        label="删除用户"
         confirm-text="确认删除该用户？此操作不可恢复。"
         api="/user"
         :api-method="'delete'"
@@ -16,7 +19,7 @@
       />
       <wd-confirm-button
         type="warning"
-        text="自定义标题"
+        label="自定义标题"
         confirm-title="危险操作"
         confirm-text="确定要执行该操作吗？"
         api="/user/save"
@@ -24,10 +27,10 @@
       />
     </demo-block>
 
-    <demo-block title="事件" desc="confirm / cancel 事件监听" :code="code2">
+    <demo-block title="事件" desc="confirm / cancel 事件监听" :code="code2" layout="row">
       <wd-confirm-button
         type="primary"
-        text="带事件回调"
+        label="带事件回调"
         confirm-text="确定执行？"
         @confirm="onConfirm"
         @cancel="onCancel"
@@ -40,10 +43,10 @@
 import { ElMessage } from 'element-plus'
 
 const code1 = `<wd-confirm-button type="danger"
-  text="删除用户" confirm-text="确认删除该用户？"
+  label="删除用户" confirm-text="确认删除该用户？"
   api="/user" :api-method="'delete'" :api-param="{ id: 1 }" />`
 
-const code2 = `<wd-confirm-button text="带事件回调"
+const code2 = `<wd-confirm-button label="带事件回调"
   @confirm="onConfirm" @cancel="onCancel" />`
 
 function onConfirm() {

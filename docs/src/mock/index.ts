@@ -26,10 +26,21 @@ interface MockRoute {
 export interface UserItem {
   id: number
   name: string
+  /** 性别：1 男，2 女 */
+  gender: number
   dept: string
   role: number
   status: number
   email: string
+  phone: string
+  /** 岗位 */
+  job: string
+  /** 季度目标完成进度（0-100） */
+  progress: number
+  /** 最近一次绩效：A/B/C/D */
+  performance: string
+  /** 入职日期 YYYY-MM-DD */
+  entryTime: string
   createTime: string
 }
 
@@ -43,17 +54,51 @@ const states = [
   { value: 0, text: '禁用' }
 ]
 const depts = ['技术部', '产品部', '设计部', '市场部', '运营部']
+const jobs = [
+  '前端工程师', '后端工程师', '测试工程师', '架构师',
+  '产品经理', 'UI 设计师', '交互设计师',
+  '市场专员', '品牌经理', '运营专员', '数据分析师'
+]
+/** 姓名与性别配对：[姓名, 性别(1男 2女)] */
+const namePool: [string, number][] = [
+  ['张伟', 1], ['王芳', 2], ['李娜', 2], ['刘洋', 1], ['陈静', 2],
+  ['杨帆', 1], ['赵磊', 1], ['黄敏', 2], ['周杰', 1], ['吴婷', 2],
+  ['徐强', 1], ['孙丽', 2], ['马超', 1], ['朱琳', 2], ['胡军', 1],
+  ['郭娟', 2], ['林峰', 1], ['何雪', 2], ['高翔', 1], ['罗丹', 2],
+  ['郑凯', 1], ['梁爽', 2], ['谢鹏', 1], ['韩梅', 2], ['唐勇', 1],
+  ['冯璐', 2], ['于浩', 1], ['董洁', 2], ['萧远', 1], ['袁媛', 2],
+  ['邓超', 1], ['许晴', 2], ['傅博', 1], ['沈妍', 2], ['彭飞', 1],
+  ['苏红', 2], ['吕刚', 1], ['蒋雯', 2], ['蔡明', 1], ['贾玲', 2],
+  ['丁宁', 2], ['魏晨', 1], ['薛佳', 2], ['叶斌', 1], ['阎妮', 2],
+  ['余欢', 1], ['潘越', 1], ['杜鹃', 2], ['戴琪', 2], ['夏天', 1],
+  ['钟琴', 2], ['汪海', 1], ['任洁', 2]
+]
+const performancePool = ['A', 'B', 'C', 'B', 'A', 'C', 'B', 'D']
+
+function pad2(n: number) {
+  return String(n).padStart(2, '0')
+}
 
 const store = {
-  users: Array.from({ length: 53 }, (_, i): UserItem => ({
-    id: i + 1,
-    name: `用户${i + 1}`,
-    dept: depts[i % depts.length],
-    role: (i % 3) + 1,
-    status: i % 3 === 0 ? 0 : 1,
-    email: `user${i + 1}@example.com`,
-    createTime: `2026-0${(i % 9) + 1}-${String((i % 27) + 1).padStart(2, '0')}`
-  })),
+  users: namePool.map(([name, gender], i): UserItem => {
+    const id = i + 1
+    const progress = [100, 92, 88, 76, 65, 58, 43, 27, 12, 0][i % 10]
+    return {
+      id,
+      name,
+      gender,
+      dept: depts[i % depts.length],
+      role: (i % 3) + 1,
+      status: i % 7 === 2 ? 0 : 1,
+      email: `user${String(id).padStart(3, '0')}@workdesktop.cn`,
+      phone: `13${(i % 9) + 1}${String(10000000 + ((i * 7919) % 89999999)).slice(0, 8)}`,
+      job: jobs[i % jobs.length],
+      progress,
+      performance: performancePool[i % performancePool.length],
+      entryTime: `20${19 + (i % 7)}-${pad2((i % 12) + 1)}-${pad2((i % 27) + 1)}`,
+      createTime: `2026-0${(i % 9) + 1}-${pad2((i % 27) + 1)}`
+    }
+  }),
   files: [] as { id: number; name: string; url: string }[],
   nextFileId: 1
 }
@@ -76,9 +121,21 @@ function queryUserList(params: Record<string, any>) {
   const p = params.param || params || {}
   const keyword = String(p.name || p.keyword || '').trim()
   let list = store.users
-  if (keyword) list = list.filter((u) => u.name.includes(keyword) || u.email.includes(keyword))
+  if (keyword) {
+    list = list.filter(
+      (u) => u.name.includes(keyword) || u.email.includes(keyword) || u.phone.includes(keyword)
+    )
+  }
   if (p.dept) list = list.filter((u) => u.dept === p.dept)
+  if (p.role) list = list.filter((u) => u.role === Number(p.role))
+  if (p.gender) list = list.filter((u) => u.gender === Number(p.gender))
+  if (p.performance) list = list.filter((u) => u.performance === String(p.performance))
   if (p.status !== undefined && p.status !== '') list = list.filter((u) => u.status === Number(p.status))
+  // entryTime 为日期区间（数组或逗号分隔字符串）：[开始, 结束]
+  const range = Array.isArray(p.entryTime) ? p.entryTime : String(p.entryTime || '').split(',')
+  if (range.length === 2 && range[0] && range[1]) {
+    list = list.filter((u) => u.entryTime >= range[0] && u.entryTime <= range[1])
+  }
   const currentPage = Number(p.currentPage ?? params.currentPage ?? 1) || 1
   const pageSize = Number(p.pageSize ?? params.pageSize ?? 10) || 10
   const start = (currentPage - 1) * pageSize
@@ -110,11 +167,17 @@ mock('post', /\/mock\/user\/save$/, ({ params }) => {
   const newId = Math.max(0, ...store.users.map((u) => u.id)) + 1
   store.users.unshift({
     id: newId,
-    name: params.name || `用户${newId}`,
+    name: params.name || `新员工${newId}`,
+    gender: Number(params.gender) || 1,
     dept: params.dept || depts[0],
     role: Number(params.role) || 1,
     status: Number(params.status) ?? 1,
-    email: params.email || `user${newId}@example.com`,
+    email: params.email || `user${String(newId).padStart(3, '0')}@workdesktop.cn`,
+    phone: params.phone || '13800000000',
+    job: params.job || jobs[0],
+    progress: Number(params.progress) || 0,
+    performance: params.performance || 'C',
+    entryTime: params.entryTime || '2026-09-04',
     createTime: '2026-09-04'
   })
   return ok({ id: newId }, '新增成功')
@@ -201,6 +264,67 @@ mock('get', /\/mock\/user\/export$/, () =>
   ok({ url: 'https://example.com/export/users.xlsx' }, '导出任务已创建')
 )
 
+// ---------- 任务列表（EditableGrid 接口分页 + 批量保存演示） ----------
+interface TaskItem {
+  id: number
+  name: string
+  owner: string
+  priority: string
+  progress: number
+}
+
+const taskNames = [
+  '组件库文档站', '订单中台重构', '数据看板二期', '权限体系升级', '移动端适配',
+  '网关限流改造', '日志平台接入', 'CI 流水线优化', '灰度发布方案', '缓存穿透治理',
+  '消息队列迁移', '搜索体验优化', '账单对账系统', '客服工单重构', 'AB 实验平台',
+  '内容审核接入', '国际化改造', '性能压测专项', '依赖升级治理', '安全漏洞修复',
+  '新人引导改版', '数据字典梳理', '接口契约测试'
+]
+
+const store2 = {
+  tasks: taskNames.map((name, i): TaskItem => ({
+    id: i + 1,
+    name,
+    owner: namePool[i % namePool.length][0],
+    priority: ['高', '中', '低'][i % 3],
+    progress: [100, 92, 88, 76, 65, 58, 43, 27, 12, 0][i % 10]
+  })),
+  nextTaskId: taskNames.length + 1
+}
+
+function queryTaskList(params: Record<string, any>) {
+  const p = params.param || params || {}
+  const keyword = String(p.name || p.keyword || '').trim()
+  let list = store2.tasks
+  if (keyword) list = list.filter((t) => t.name.includes(keyword) || t.owner.includes(keyword))
+  if (p.priority) list = list.filter((t) => t.priority === String(p.priority))
+  const currentPage = Number(p.currentPage ?? params.currentPage ?? 1) || 1
+  const pageSize = Number(p.pageSize ?? params.pageSize ?? 10) || 10
+  const start = (currentPage - 1) * pageSize
+  return {
+    list: list.slice(start, start + pageSize),
+    total: list.length,
+    currentPage,
+    pageSize
+  }
+}
+
+mock('get', /\/mock\/task\/list$/, ({ params }) => ok(queryTaskList(params)))
+mock('post', /\/mock\/task\/list$/, ({ params }) => ok(queryTaskList(params)))
+
+mock('post', /\/mock\/task\/batch-save$/, ({ params }) => {
+  const rows: TaskItem[] = Array.isArray(params.rows) ? params.rows : []
+  rows.forEach((row) => {
+    const idx = store2.tasks.findIndex((t) => t.id === Number(row.id))
+    if (idx >= 0) {
+      store2.tasks[idx] = { ...store2.tasks[idx], ...row, id: Number(row.id) }
+    } else {
+      store2.tasks.unshift({ ...row, id: store2.nextTaskId++ })
+    }
+  })
+  return ok({ count: rows.length }, `已保存 ${rows.length} 行`)
+})
+
 /**
  * 创建响应拦截器：命中 /mock/* 则返回伪造响应，否则放行真实请求
  */
@@ -270,6 +394,65 @@ export function createMockAdapter() {
       config,
       request: {}
     }
+  }
+}
+
+/**
+ * 读取 HTTP 请求 body（JSON）
+ */
+function readBody(req: any): Promise<Record<string, any>> {
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = []
+    req.on('data', (c: Buffer) => chunks.push(c))
+    req.on('end', () => {
+      if (!chunks.length) return resolve({})
+      const raw = Buffer.concat(chunks).toString('utf-8')
+      try {
+        resolve(raw ? JSON.parse(raw) : {})
+      } catch {
+        resolve({ raw })
+      }
+    })
+  })
+}
+
+/**
+ * 创建 vite dev server 中间件（HTTP 层 mock）：
+ * 请求真实发出（浏览器 Network 可见 GET/POST /mock/xxx），由 dev server 返回伪造响应，
+ * 未命中 /mock 的请求放行给 vite 正常处理。替代原来的 axios adapter 短路方案，
+ * 解决「点击后 Network 面板看不到请求」的演示困惑。
+ */
+export function createMockHttpHandler() {
+  return async (req: any, res: any, next: any) => {
+    if (req.url === undefined) return next()
+    const [pathname, queryStr] = String(req.url).split('?')
+    if (!pathname.startsWith('/mock/')) return next()
+
+    const method = String(req.method || 'get').toLowerCase()
+    const route = routes.find((r) => r.method === method && r.pattern.test(pathname))
+    if (!route) {
+      res.statusCode = 404
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ code: -1, message: `mock 未定义: ${method} ${pathname}`, data: null }))
+      return
+    }
+
+    const query: Record<string, any> = {}
+    if (queryStr) {
+      for (const [k, v] of new URLSearchParams(queryStr)) {
+        query[k] = v
+      }
+    }
+
+    let body: Record<string, any> = {}
+    if (method === 'post' || method === 'put' || method === 'delete' || method === 'patch') {
+      body = await readBody(req)
+    }
+
+    const result = route.handler({ params: { ...query, ...body }, url: pathname })
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ code: result.code ?? 0, message: result.message ?? 'ok', data: result.data ?? null }))
   }
 }
 

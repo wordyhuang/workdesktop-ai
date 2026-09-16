@@ -2,10 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { resetConfig, setGlobalConfig } from '../config'
 
 // ---- mock 网络层与 element-plus 提示/loading ----
-const { ElMessage, ElNotification, loadingService, loadingClose, axiosRequest, axiosCreate } =
+const { ElMessage, ElNotification, ElMessageBox, loadingService, loadingClose, axiosRequest, axiosCreate } =
   vi.hoisted(() => {
     const ElMessage = vi.fn()
     const ElNotification = vi.fn()
+    const ElMessageBox = {
+      alert: vi.fn(() => Promise.resolve()),
+      confirm: vi.fn(() => Promise.resolve())
+    }
     const loadingClose = vi.fn()
     const loadingService = vi.fn(() => ({ close: loadingClose }))
     const axiosRequest = vi.fn()
@@ -14,13 +18,14 @@ const { ElMessage, ElNotification, loadingService, loadingClose, axiosRequest, a
       defaults: {},
       interceptors: { request: { use: vi.fn() }, response: { use: vi.fn() } }
     }))
-    return { ElMessage, ElNotification, loadingService, loadingClose, axiosRequest, axiosCreate }
+    return { ElMessage, ElNotification, ElMessageBox, loadingService, loadingClose, axiosRequest, axiosCreate }
   })
 
 vi.mock('element-plus', () => ({
   ElMessage,
   ElNotification,
-  ElLoading: { service: loadingService }
+  ElLoading: { service: loadingService },
+  ElMessageBox
 }))
 vi.mock('axios', () => ({
   default: { create: axiosCreate }
@@ -69,16 +74,21 @@ describe('http.request 主流程', () => {
     expect(result.success).toBe(false)
     expect(result.data).toBeNull()
     expect(result.message).toBe('无权限')
-    // 默认 fail.showTips=true → ElMessage
-    expect(ElMessage).toHaveBeenCalledWith(expect.objectContaining({ message: '无权限' }))
+    // 默认 fail.showTips=true + tipsMode=messagebox → ElMessageBox.alert
+    expect(ElMessageBox.alert).toHaveBeenCalledWith(
+      '无权限',
+      '操作失败',
+      expect.objectContaining({ type: 'error' })
+    )
+    expect(ElMessage).not.toHaveBeenCalled()
   })
 
-  it('fail 使用 notify 时走 ElNotification', async () => {
-    setGlobalConfig({ response: { fail: { tipsType: 'notify' } } })
+  it('fail 使用 notify 模式时走 ElNotification', async () => {
+    setGlobalConfig({ response: { fail: { tipsMode: 'notify', tipsType: 'warning' } } })
     respond({ code: -2, message: '出错啦', data: null })
     await request.post('/save')
     expect(ElNotification).toHaveBeenCalled()
-    expect(ElMessage).not.toHaveBeenCalled()
+    expect(ElMessageBox.alert).not.toHaveBeenCalled()
   })
 
   it('非标准响应（数组/原始值）直接透传为 data', async () => {
@@ -187,8 +197,13 @@ describe('http.request 主流程', () => {
     const onBefore = vi.fn()
     const off = request.on((p: any) => p.type === 'apiException' && onBefore())
     await expect(request.get('/x')).rejects.toMatchObject({ success: false, message: 'Network Error' })
-    // 默认 exception.showTips=true → 弹错误提示
-    expect(ElMessage).toHaveBeenCalledWith(expect.objectContaining({ message: 'Network Error' }))
+    // 默认 exception.showTips=true + tipsMode=messagebox → ElMessageBox.alert
+    expect(ElMessageBox.alert).toHaveBeenCalledWith(
+      'Network Error',
+      '网络异常',
+      expect.objectContaining({ type: 'error' })
+    )
+    expect(ElMessage).not.toHaveBeenCalled()
     expect(onBefore).toHaveBeenCalled()
     off()
   })
@@ -236,5 +251,203 @@ describe('http.create 组件级实例覆盖', () => {
     respond({ code: 0, data: 'ok' })
     await request.get('/users')
     expect(lastAxiosConfig().url).toBe('/global/users')
+  })
+})
+
+describe('http 请求去重（in-flight dedup）', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    resetConfig()
+  })
+
+  it('并发相同请求合并：只发一次网络调用，两个调用方都拿到数据', async () => {
+    respond({ code: 0, data: 'shared' })
+    const [r1, r2] = await Promise.all([
+      request.get('/same', { a: 1 }),
+      request.get('/same', { a: 1 })
+    ])
+    expect(axiosRequest).toHaveBeenCalledTimes(1)
+    expect(r1.data).toBe('shared')
+    expect(r2.data).toBe('shared')
+  })
+
+  it('相同 url 不同 params 不合并', async () => {
+    respond({ code: 0, data: 'x' })
+    respond({ code: 0, data: 'y' })
+    const [r1, r2] = await Promise.all([
+      request.get('/same', { a: 1 }),
+      request.get('/same', { a: 2 })
+    ])
+    expect(axiosRequest).toHaveBeenCalledTimes(2)
+    expect(r1.data).toBe('x')
+    expect(r2.data).toBe('y')
+  })
+
+  it('相同 params 不同 url 不合并', async () => {
+    respond({ code: 0, data: 'x' })
+    respond({ code: 0, data: 'y' })
+    const [r1, r2] = await Promise.all([
+      request.get('/a', { a: 1 }),
+      request.get('/b', { a: 1 })
+    ])
+    expect(axiosRequest).toHaveBeenCalledTimes(2)
+    expect(r1.data).toBe('x')
+    expect(r2.data).toBe('y')
+  })
+
+  it('串行相同请求不合并（前一个完成后再次请求）', async () => {
+    respond({ code: 0, data: 'x' })
+    await request.get('/same', { a: 1 })
+    respond({ code: 0, data: 'x' })
+    await request.get('/same', { a: 1 })
+    expect(axiosRequest).toHaveBeenCalledTimes(2)
+  })
+
+  it('全局 request.dedup=false 时关闭合并', async () => {
+    setGlobalConfig({ request: { dedup: false } })
+    respond({ code: 0, data: 'x' })
+    respond({ code: 0, data: 'y' })
+    const [r1, r2] = await Promise.all([
+      request.get('/same', { a: 1 }),
+      request.get('/same', { a: 1 })
+    ])
+    expect(axiosRequest).toHaveBeenCalledTimes(2)
+    expect(r1.data).toBe('x')
+    expect(r2.data).toBe('y')
+  })
+
+  it('reqOptions.dedup=false 单次请求跳过合并', async () => {
+    respond({ code: 0, data: 'x' })
+    respond({ code: 0, data: 'y' })
+    const [r1, r2] = await Promise.all([
+      request.get('/same', { a: 1 }, { dedup: false }),
+      request.get('/same', { a: 1 }, { dedup: false })
+    ])
+    expect(axiosRequest).toHaveBeenCalledTimes(2)
+    expect(r1.data).toBe('x')
+    expect(r2.data).toBe('y')
+  })
+
+  it('create 子实例与全局实例共享去重', async () => {
+    respond({ code: 0, data: 'shared' })
+    const ins = request.create()
+    const [r1, r2] = await Promise.all([
+      request.get('/same'),
+      ins.get('/same')
+    ])
+    expect(axiosRequest).toHaveBeenCalledTimes(1)
+    expect(r1.data).toBe('shared')
+    expect(r2.data).toBe('shared')
+  })
+})
+
+describe('http 响应提示策略（tipsMode）', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    resetConfig()
+  })
+
+  it('成功：默认不提示（success.showTips=false）', async () => {
+    respond({ code: 0, message: 'ok', data: 'x' })
+    await request.get('/x')
+    expect(ElMessage).not.toHaveBeenCalled()
+    expect(ElMessageBox.alert).not.toHaveBeenCalled()
+    expect(ElNotification).not.toHaveBeenCalled()
+  })
+
+  it('成功：开启提示后走 ElMessage（tipsMode=message）', async () => {
+    setGlobalConfig({ response: { success: { showTips: true } } })
+    respond({ code: 0, message: '操作成功', data: 'x' })
+    await request.get('/x')
+    expect(ElMessage).toHaveBeenCalledWith(expect.objectContaining({
+      message: '操作成功',
+      type: 'success'
+    }))
+    expect(ElMessageBox.alert).not.toHaveBeenCalled()
+  })
+
+  it('失败：默认走 ElMessageBox.alert（tipsMode=messagebox）', async () => {
+    respond({ code: -1, message: '参数错误', data: null })
+    await request.post('/save', { a: 1 })
+    expect(ElMessageBox.alert).toHaveBeenCalledWith(
+      '参数错误',
+      '操作失败',
+      expect.objectContaining({ type: 'error' })
+    )
+    expect(ElMessage).not.toHaveBeenCalled()
+  })
+
+  it('失败：可配置为 notify 模式', async () => {
+    setGlobalConfig({ response: { fail: { tipsMode: 'notify', tipsType: 'warning' } } })
+    respond({ code: -2, message: '库存不足', data: null })
+    await request.post('/save')
+    expect(ElNotification).toHaveBeenCalledWith(expect.objectContaining({
+      message: '库存不足',
+      type: 'warning'
+    }))
+    expect(ElMessageBox.alert).not.toHaveBeenCalled()
+  })
+
+  it('失败：showTips=false 时不弹任何提示', async () => {
+    setGlobalConfig({ response: { fail: { showTips: false } } })
+    respond({ code: -1, message: '错了', data: null })
+    await request.post('/save')
+    expect(ElMessage).not.toHaveBeenCalled()
+    expect(ElMessageBox.alert).not.toHaveBeenCalled()
+    expect(ElNotification).not.toHaveBeenCalled()
+  })
+
+  it('网络异常：默认走 ElMessageBox.alert（tipsMode=messagebox）', async () => {
+    axiosRequest.mockRejectedValueOnce(new Error('Network Error'))
+    await expect(request.get('/x')).rejects.toMatchObject({ success: false })
+    expect(ElMessageBox.alert).toHaveBeenCalledWith(
+      'Network Error',
+      '网络异常',
+      expect.objectContaining({ type: 'error' })
+    )
+  })
+
+  it('reqOptions.tipsConfig 单次覆盖（成功改 messagebox）', async () => {
+    respond({ code: 0, message: '保存成功', data: 'x' })
+    await request.post('/save', { a: 1 }, {
+      tipsConfig: { success: { tipsMode: 'messagebox', showTips: true, tipsType: 'success', title: '完成' } }
+    })
+    expect(ElMessageBox.alert).toHaveBeenCalledWith(
+      '保存成功',
+      '完成',
+      expect.objectContaining({ type: 'success' })
+    )
+  })
+
+  it('messagebox 关闭/取消不抛异常', async () => {
+    ElMessageBox.alert.mockRejectedValueOnce('cancel')
+    respond({ code: -1, message: 'fail', data: null })
+    // 不 reject 就是通过
+    const result = await request.post('/save')
+    expect(result.success).toBe(false)
+    expect(ElMessageBox.alert).toHaveBeenCalledTimes(1)
+  })
+
+  it('tipsMode=none 不提示', async () => {
+    setGlobalConfig({ response: { fail: { tipsMode: 'none' } } })
+    respond({ code: -1, message: 'x', data: null })
+    await request.post('/save')
+    expect(ElMessage).not.toHaveBeenCalled()
+    expect(ElMessageBox.alert).not.toHaveBeenCalled()
+  })
+
+  it('title 可通过 props 覆盖', async () => {
+    setGlobalConfig({
+      response: {
+        fail: { tipsMode: 'messagebox', tipsType: 'error', title: '错啦', props: { customClass: 'my-err' } }
+      }
+    })
+    respond({ code: -1, message: '内容错', data: null })
+    await request.post('/save')
+    expect(ElMessageBox.alert).toHaveBeenCalledWith(
+      '内容错',
+      '错啦',
+      expect.objectContaining({ type: 'error', customClass: 'my-err' })
+    )
   })
 })

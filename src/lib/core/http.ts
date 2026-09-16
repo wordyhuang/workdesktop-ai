@@ -4,13 +4,17 @@ import axios, {
   type AxiosResponse,
   type Method
 } from 'axios'
-import { ElMessage, ElNotification, ElLoading } from 'element-plus'
+import { ElMessage, ElNotification, ElLoading, ElMessageBox } from 'element-plus'
 import type { ReqOptions, TipsConfig, WorkDesktopConfig } from '../../types/config'
 import { getGlobalConfig } from './config'
 import { deepMerge } from './utils'
 
 /**
  * HTTP 请求模块（PRD 5.1 / 第 7 章）
+ *
+ * RequestAPI 是本库的请求核心（PRD 5.1）：所有请求类组件（DataGrid/DataForm/
+ * 按钮组/输入选择/上传等）都基于它开发；同时对外公开，允许开发者在组件外
+ * 手动调用 API 请求代码。库内置全局单例 `request`，也可 `new RequestAPI()` 自建实例。
  *
  * 响应处理流程：
  * 1. 请求前显示 loading（可配置）
@@ -51,31 +55,52 @@ export interface ApiResult<T = any> {
 type Listener = ApiEventHandler
 
 /**
- * 统一提示：按 tipsType 分发到 ElMessage / ElNotification
+ * 统一提示：按 tipsMode 分发到 ElMessage / ElNotification / ElMessageBox
+ *
+ * - 'message'：轻量消息（自动消失），type 取自 tipsType
+ * - 'notify'：右上角通知，type 取自 tipsType
+ * - 'messagebox'：模态弹框（需用户确认），type 取自 tipsType，title 可配置
+ * - 'none' / showTips=false：不提示
  */
 function showTips(tips: TipsConfig | undefined, message: string) {
   if (!tips || tips.showTips === false) return
-  const type = tips.tipsType
-  if (!type || type === 'none') return
+  const mode = tips.tipsMode
+  if (!mode || mode === 'none') return
+  const type = tips.tipsType || 'info'
   const props = tips.props || {}
-  if (type === 'notify' || type === 'notification') {
-    ElNotification({ message, type: 'info', ...props })
+  if (mode === 'message') {
+    ElMessage({ message, type, ...props })
     return
   }
-  const elType = ['success', 'warning', 'error', 'info'].includes(type) ? type : 'info'
-  ElMessage({ message, type: elType as any, ...props })
+  if (mode === 'notify') {
+    ElNotification({ message, type, ...props })
+    return
+  }
+  if (mode === 'messagebox') {
+    const title = tips.title || ''
+    ElMessageBox.alert(message, title, { type, ...props }).catch(() => {
+      // 用户关闭弹框（ESC/遮罩）不抛异常到上层
+    })
+    return
+  }
+  // 兜底：未知 mode 不提示
 }
 
 /**
- * WorkDesktop HTTP 客户端
+ * RequestAPI 请求客户端（公开类）
+ *
+ * 所有组件基于它开发；开发者也可手动 new 实例并调用 get/post/put/delete/request。
+ * 默认单例见文件底部 `export const request`。
  */
-class WorkDesktopHttp {
+export class RequestAPI {
   private axiosInstance: AxiosInstance
   private listeners: Set<Listener> = new Set()
   /** 组件/实例级配置覆盖（request.create 使用） */
   private instanceConfig: DeepPartialConfig = {}
   private loadingInstance: ReturnType<typeof ElLoading.service> | null = null
   private loadingCount = 0
+  /** 进行中的请求（in-flight dedup）：key = method:url:序列化params，并发相同请求合并为一次网络调用 */
+  private inFlightRequests = new Map<string, Promise<ApiResult<any>>>()
 
   constructor(axiosConfig?: AxiosRequestConfig) {
     this.axiosInstance = axios.create(axiosConfig || {})
@@ -83,11 +108,14 @@ class WorkDesktopHttp {
 
   /**
    * 创建绑定组件级配置的实例（PRD 5.1）
+   * 子实例复用父级监听器与去重表：同族实例（全局单例 + 各组件 create 出来的子实例）
+   * 之间并发相同请求同样合并，保证表列内多行组件发起的相同请求只打一次网络。
    */
-  create(componentReqConfig?: DeepPartialConfig): WorkDesktopHttp {
-    const child = new WorkDesktopHttp()
+  create(componentReqConfig?: DeepPartialConfig): RequestAPI {
+    const child = new RequestAPI()
     child.instanceConfig = componentReqConfig || {}
     child.listeners = this.listeners
+    child.inFlightRequests = this.inFlightRequests
     return child
   }
 
@@ -153,6 +181,46 @@ class WorkDesktopHttp {
     const cfg = this.resolveConfig()
     const method = (config.method || 'get').toLowerCase()
     const url = this.buildUrl(config.url || '', cfg)
+
+    // 请求去重（in-flight dedup）：并发相同的 method+url+params 合并为一次网络调用，
+    // 后续调用方直接共享首个请求结果；仅合并并发中的请求，完成即清理，串行不受影响。
+    // 合并时跟随方不重复触发事件与 loading；跟随方的 signal 不挂到共享请求（避免单行卸载误杀整批）。
+    const dedupEnabled = reqOptions?.dedup ?? cfg.request.dedup
+    if (dedupEnabled) {
+      const key = this.buildDedupKey(method, url, config)
+      const inFlight = this.inFlightRequests.get(key)
+      if (inFlight) return inFlight as Promise<ApiResult<T>>
+      const promise = this.executeRequest<T>(config, reqOptions, url, method)
+      this.inFlightRequests.set(key, promise)
+      promise.then(
+        () => this.inFlightRequests.delete(key),
+        () => this.inFlightRequests.delete(key)
+      )
+      return promise
+    }
+
+    return this.executeRequest<T>(config, reqOptions, url, method)
+  }
+
+  /** 去重 key：method + 解析后 url + 序列化请求体；请求体不可序列化时退化为固定后缀（该场景不合并） */
+  private buildDedupKey(method: string, url: string, config: AxiosRequestConfig): string {
+    let paramsKey: string
+    try {
+      paramsKey = JSON.stringify(config.data ?? config.params ?? null)
+    } catch {
+      paramsKey = '[unserializable]'
+    }
+    return `${method}:${url}:${paramsKey}`
+  }
+
+  /** 真实请求执行体（含事件/loading/封解封），被 request() 去重包装后调用 */
+  private async executeRequest<T = any>(
+    config: AxiosRequestConfig,
+    reqOptions: ReqOptions | undefined,
+    url: string,
+    method: string
+  ): Promise<ApiResult<T>> {
+    const cfg = this.resolveConfig()
 
     const baseEvent: ApiEventPayload = {
       type: 'apiBefore',
@@ -295,7 +363,9 @@ type DeepPartialConfig = Record<string, any>
 
 /**
  * 全局单例（脱离组件直接调用，PRD 5.1）
+ *
+ * 所有组件共享该实例；开发者也可直接手动调用，或 `new RequestAPI()` 自建独立实例。
  */
-export const request = new WorkDesktopHttp()
+export const request = new RequestAPI()
 
 export default request

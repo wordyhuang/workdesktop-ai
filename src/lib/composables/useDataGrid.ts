@@ -11,6 +11,11 @@ import { getGlobalConfig } from '../core/config'
  * grid.fetchData()
  */
 
+export interface SortState {
+  prop: string
+  order: 'ascending' | 'descending'
+}
+
 export interface UseDataGridOptions {
   /** 数据接口地址 */
   api?: string
@@ -54,6 +59,8 @@ export function useDataGrid(options: UseDataGridOptions = {}) {
   const loading = ref(false)
   const searchParams = reactive<Record<string, any>>({})
   const selection = ref<any[]>([])
+  // 排序状态
+  const sortState = ref<SortState | null>(null)
 
   const pageParam = cfg.request.pageParam
   const listCfg = cfg.response.list
@@ -61,18 +68,24 @@ export function useDataGrid(options: UseDataGridOptions = {}) {
   let controller: AbortController | null = null
 
   /**
-   * 组装列表请求体：{ currentPage, pageSize, param: {...搜索+固定参数} }
+   * 组装列表请求体：{ currentPage, pageSize, param: {...搜索+固定参数+排序} }
    */
   function buildParams(extra?: Record<string, any>) {
     const params: Record<string, any> = {
       [pageParam.pageField]: currentPage.value,
       [pageParam.sizeField]: pageSize.value
     }
-    params[pageParam.searchField] = {
+    const search = {
       ...apiParam,
       ...searchParams,
       ...(extra || {})
     }
+    // 如果有排序，增加排序参数
+    if (sortState.value) {
+      search.sortProp = sortState.value.prop
+      search.sortOrder = sortState.value.order
+    }
+    params[pageParam.searchField] = search
     return params
   }
 
@@ -135,13 +148,6 @@ export function useDataGrid(options: UseDataGridOptions = {}) {
     return fetchData()
   }
 
-  /** 重置到第一页并清空搜索条件 */
-  function reset() {
-    currentPage.value = 1
-    Object.keys(searchParams).forEach((k) => delete searchParams[k])
-    return fetchData()
-  }
-
   function onChangeCurrentpage(value: number) {
     currentPage.value = value
     return fetchData()
@@ -172,6 +178,25 @@ export function useDataGrid(options: UseDataGridOptions = {}) {
     return fetchData()
   }
 
+  /** 排序变更，更新排序状态并查询 */
+  function changeSort({ prop, order }: { prop: string; order: 'ascending' | 'descending' | null }) {
+    if (!prop || !order) {
+      sortState.value = null
+    } else {
+      sortState.value = { prop, order }
+    }
+    currentPage.value = 1
+    return fetchData()
+  }
+
+  /** 重置到第一页并清空搜索条件 + 排序 */
+  function reset() {
+    currentPage.value = 1
+    Object.keys(searchParams).forEach((k) => delete searchParams[k])
+    sortState.value = null
+    return fetchData()
+  }
+
   if (immediate) {
     fetchData()
   }
@@ -186,11 +211,13 @@ export function useDataGrid(options: UseDataGridOptions = {}) {
     loading,
     searchParams,
     selection,
+    sortState,
     // 方法
     fetchData,
     refresh,
     reset,
     search,
+    changeSort,
     onChangeCurrentpage,
     onChangePagesize,
     setSelection,

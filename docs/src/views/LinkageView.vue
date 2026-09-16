@@ -1,11 +1,15 @@
 <template>
   <div class="linkage-page">
-    <h1 class="linkage__title">联动联调演示</h1>
-    <p class="linkage__desc">覆盖声明式联动（filter + headRefreshDatagrid）、事件驱动联动（row-action）与事件总线（useEventBus）跨层级通信。</p>
+    <PageHeader
+      eyebrow="LINKAGE PLAYGROUND"
+      icon="Connection"
+      title="联动联调演示"
+      desc="覆盖声明式联动（filter + headRefreshDatagrid）、事件驱动联动（row-action）与事件总线（useEventBus）跨层级通信。"
+    />
 
-    <!-- 1. 声明式联动 -->
-    <wd-panel title="声明式联动" description="SearchPanel 查询 → 刷新同 filter DataGrid；DrawerButton 表单提交 → 关闭抽屉 + 刷新表格（headRefreshDatagrid）">
-      <wd-search-panel head-refresh-datagrid filter="link1" collapsible>
+    <!-- 1. 声明式联动：搜索面板 + 数据列表（分别用 Panel 包裹，外层无大容器） -->
+    <wd-panel title="搜索条件">
+      <wd-search-panel head-refresh-datagrid filter="link1">
         <template #default="{ model }">
           <el-form-item label="姓名">
             <el-input v-model="model.name" clearable placeholder="模糊搜索" style="width: 200px" />
@@ -17,12 +21,17 @@
           </el-form-item>
         </template>
       </wd-search-panel>
+    </wd-panel>
 
+    <wd-panel
+      title="数据列表"
+      description="SearchPanel 查询 → 刷新同 filter DataGrid；DrawerButton 表单提交 → 关闭抽屉 + 刷新表格（headRefreshDatagrid）"
+    >
       <div class="linkage__toolbar">
         <wd-drawer-button
           type="primary"
-          text="新增用户"
-          drawer-title="新增用户"
+          label="新增用户"
+          title="新增用户"
           filter="link1"
           head-refresh-datagrid="link1"
         >
@@ -191,15 +200,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.linkage__title {
-  margin: 0 0 4px;
-  font-size: 22px;
-  color: #303133;
-}
-.linkage__desc {
-  margin: 0 0 16px;
-  color: #909399;
-  font-size: 13px;
+.linkage-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 .linkage__toolbar {
   display: flex;
@@ -209,41 +213,88 @@ onUnmounted(() => {
 }
 .linkage__hint {
   font-size: 12px;
-  color: #909399;
+  color: var(--wd-text-color-secondary, #909399);
 }
+
+/* 事件日志卡 */
 .linkage__log {
-  background: #f7f8fa;
-  border: 1px solid #ebeef5;
-  border-radius: 6px;
-  padding: 12px;
+  position: relative;
+  background: var(--wd-bg-color-page, #f7f8fa);
+  border: 1px solid var(--wd-border-color-light, #ebeef5);
+  border-radius: 12px;
+  padding: 14px 16px;
   height: 100%;
   min-height: 180px;
   box-sizing: border-box;
+  overflow: hidden;
+}
+.linkage__log::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--wd-color-primary, #409eff), var(--el-color-primary-light-3, #79bbff));
 }
 .linkage__log-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 13px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--wd-text-color-primary, #303133);
+  margin-bottom: 10px;
+}
+.linkage__log-title::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wd-color-primary, #409eff);
+  box-shadow: 0 0 0 3px var(--el-color-primary-light-9, #ecf5ff);
 }
 .linkage__log-empty {
-  color: #c0c4cc;
+  color: var(--wd-text-color-placeholder, #c0c4cc);
   font-size: 13px;
+  padding: 8px 0;
 }
 .linkage__log-item {
+  position: relative;
   font-size: 12px;
-  color: #409eff;
-  line-height: 1.8;
-  font-family: Consolas, monospace;
+  color: var(--wd-color-primary, #409eff);
+  line-height: 1.7;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  padding: 5px 8px;
+  margin-bottom: 4px;
+  background: var(--el-color-primary-light-9, #ecf5ff);
+  border-radius: 7px;
+  word-break: break-all;
 }
+
+/* 事件总线收发端 */
 .linkage__bus-sender,
 .linkage__bus-receiver {
-  padding: 4px;
+  padding: 6px 4px;
 }
 .linkage__label {
-  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 14px;
   font-size: 13px;
-  font-weight: 600;
-  color: #606266;
+  font-weight: 700;
+  color: var(--wd-text-color-regular, #606266);
+}
+.linkage__label::before {
+  content: '';
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--wd-color-primary, #409eff), var(--el-color-primary-light-3, #79bbff));
+}
+
+@media (max-width: 960px) {
+  .linkage__toolbar {
+    flex-wrap: wrap;
+  }
 }
 </style>

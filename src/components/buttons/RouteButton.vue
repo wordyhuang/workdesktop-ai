@@ -1,18 +1,29 @@
 <template>
-  <el-button v-bind="$attrs" @click="onClick">
-    <slot>{{ text }}</slot>
+  <el-tooltip
+    v-if="tips"
+    :content="tips"
+    :effect="tipsType"
+    :placement="placement"
+  >
+    <el-button v-bind="$attrs" @click="onClick">
+      <slot>{{ label }}</slot>
+    </el-button>
+  </el-tooltip>
+  <el-button v-else v-bind="$attrs" @click="onClick">
+    <slot>{{ label }}</slot>
   </el-button>
 </template>
 
 <script setup lang="ts">
 import { getCurrentInstance, type PropType } from 'vue'
-import { filterProp, buttonTextProp } from '../common/props'
+import { filterProp, buttonTextProp, tipsProp } from '../common/props'
 
 defineOptions({ name: 'WdRouteButton', inheritAttrs: false })
 
 const props = defineProps({
   ...filterProp,
   ...buttonTextProp,
+  ...tipsProp,
   /** 路由 name（与 routePath 二选一） */
   routeName: { type: String, default: '' },
   /** 路由 path */

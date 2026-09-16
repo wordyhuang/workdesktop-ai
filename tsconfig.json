@@ -10,6 +10,7 @@
     "declarationDir": "dist/types",
     "emitDeclarationOnly": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,

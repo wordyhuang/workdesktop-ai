@@ -1,5 +1,14 @@
 <template>
   <div class="example-page">
+    <unpack-note>
+      该组件自动对 API 返回数据中的 <code>data</code> 进行解包：<code>data</code> 为选项数组（若为 <code>{ list }</code> 结构则取其 <code>list</code>），逐项按字段映射解析出：
+      <ul>
+        <li><code>text</code>：选项中显示的文本（单选框标签）</li>
+        <li><code>value</code>：选项选中时传递的值</li>
+        <li><code>tips</code>：对选项的说明解释（非空时显示悬停提示）</li>
+      </ul>
+      字段名可用 <code>text-prop</code> / <code>value-prop</code> / <code>tips-prop</code> 自定义（默认 <code>text</code> / <code>value</code> / <code>tips</code>）。
+    </unpack-note>
     <demo-block
       title="基础用法"
       desc="API 自动加载选项，v-model 绑定选中值"
@@ -16,11 +25,32 @@
       title="按钮样式 + 前后追加"
       desc="button-style 切换按钮组；addData 前插固定项"
       :code="code2"
+      layout="row"
     >
       <wd-radio-list
         v-model="value"
         :data-source="options"
         :add-data="[{ value: 0, text: '不限' }]"
+        button-style
+      />
+    </demo-block>
+
+    <demo-block
+      title="选项悬停提示（tipsProp）"
+      desc="数据项中 tips 字段非空时，鼠标悬停该选项弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 tips）"
+      :code="code3"
+      layout="row"
+    >
+      <wd-radio-list
+        v-model="value2"
+        :data-source="tipOptions"
+      />
+      <wd-radio-list
+        v-model="value3"
+        :data-source="customTipOptions"
+        value-prop="id"
+        text-prop="name"
+        tips-prop="remark"
         button-style
       />
     </demo-block>
@@ -36,13 +66,32 @@ const code2 = `<wd-radio-list v-model="value"
   :data-source="options"
   :add-data="[{ value: 0, text: '不限' }]"
   button-style />`
+const code3 = `<!-- 默认取数据项 tips 字段 -->
+<wd-radio-list :data-source="options" />
+// [{ value: 1, text: '启用', tips: '账号可正常登录与使用' }, ...]
+
+<!-- 自定义解包字段名（按钮样式） -->
+<wd-radio-list :data-source="options" button-style
+  value-prop="id" text-prop="name" tips-prop="remark" />`
 
 const options = [
   { value: 1, text: '启用' },
   { value: 2, text: '停用' },
   { value: 3, text: '归档' }
 ]
+const tipOptions = [
+  { value: 1, text: '启用', tips: '账号可正常登录与使用' },
+  { value: 2, text: '停用', tips: '账号保留数据，但暂时无法登录' },
+  { value: 3, text: '归档' }
+]
+const customTipOptions = [
+  { id: 1, name: '正式员工', remark: '享受完整薪酬与福利' },
+  { id: 2, name: '外包人员', remark: '仅授予项目所需的最小权限' },
+  { id: 3, name: '实习生' }
+]
 const value = ref(1)
+const value2 = ref(1)
+const value3 = ref(1)
 </script>
 
 <style scoped>

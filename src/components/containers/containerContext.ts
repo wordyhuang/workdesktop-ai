@@ -4,7 +4,7 @@
 import { inject, provide, type InjectionKey } from 'vue'
 
 export interface ContainerContext {
-  /** 容器携带的数据（DrawerButton drawerData 等，供内部表单回填） */
+  /** 容器携带的数据（DrawerButton data 等，供内部表单回填） */
   data?: Record<string, any>
   /** 请求关闭容器（DataForm headCloseDrawer 提交成功后调用） */
   requestClose: (reason?: string) => void

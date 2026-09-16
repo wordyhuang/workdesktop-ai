@@ -1,11 +1,25 @@
 <template>
   <div class="example-page">
+    <unpack-note>
+      该组件对 API 返回数据中 <code>data</code> 的解包分两处：
+      <ul>
+        <li><b>加载详情</b>（<code>api</code> 拉取）：把 <code>data</code> 整体作为表单对象回填到表单（按字段名浅合并），并通过 <code>load-success</code> 事件抛出 <code>data</code></li>
+        <li><b>提交表单</b>（<code>submitApi</code>）：提交后从返回中解出 <code>data</code>，成功时通过 <code>submit-success</code> 事件抛出 <code>data</code>，失败时通过 <code>submit-fail</code> 抛出完整结果</li>
+      </ul>
+    </unpack-note>
     <demo-block
-      title="新增模式（create）"
-      desc="基于 el-form 自动表单，提交走 submitApi；校验通过才提交，成功后 emit submit-success"
+      title="新增模式（create）+ 方法调用"
+      desc="基于 el-form 自动表单，提交走 submitApi；校验通过才提交。上方按钮演示通过 ref 调用 getFormData() / isDirty() / validate() / resetForm()（提交按钮已内置，submitForm() 亦可手动调用）"
       :code="code1"
     >
+      <div style="margin-bottom: 12px">
+        <el-button size="small" @click="callGetData">getFormData() 取表单数据</el-button>
+        <el-button size="small" @click="callDirty">isDirty() 是否改动</el-button>
+        <el-button size="small" @click="callValidate">validate() 校验</el-button>
+        <el-button size="small" @click="callReset">resetForm() 重置</el-button>
+      </div>
       <wd-data-form
+        ref="createForm"
         mode="create"
         submit-api="/user/save"
         :head-close-drawer="false"
@@ -70,7 +84,31 @@
 </template>
 
 <script setup lang="ts">
-const code1 = `<wd-data-form mode="create" submit-api="/user/save" :rules="rules">
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+
+const createForm = ref()
+
+async function callGetData() {
+  const data = createForm.value?.getFormData() || {}
+  ElMessage.info(`getFormData() => ${JSON.stringify(data)}`)
+}
+function callDirty() {
+  ElMessage.info(createForm.value?.isDirty() ? 'isDirty() => 有未保存修改' : 'isDirty() => 无修改')
+}
+async function callValidate() {
+  const ok = await createForm.value?.validate()
+  if (ok) ElMessage.success('validate() 校验通过')
+  else ElMessage.warning('validate() 校验未通过')
+}
+function callReset() {
+  createForm.value?.resetForm()
+  ElMessage.success('已调用 resetForm()')
+}
+
+const code1 = `<!-- 加 ref -->
+<wd-data-form ref="createForm" mode="create"
+  submit-api="/user/save" :rules="rules">
   <template #default="{ model }">
     <el-form-item label="姓名" prop="name">
       <el-input v-model="model.name" />
@@ -81,7 +119,15 @@ const code1 = `<wd-data-form mode="create" submit-api="/user/save" :rules="rules
       </el-select>
     </el-form-item>
   </template>
-</wd-data-form>`
+</wd-data-form>
+
+// 通过 ref 调用方法
+const createForm = ref()
+createForm.value.getFormData()           // -> 当前表单数据副本
+createForm.value.isDirty()               // -> boolean，是否有修改
+await createForm.value.validate()        // -> Promise<boolean>
+createForm.value.resetForm()             // 重置（create 清空 / edit 还原快照）
+await createForm.value.submitForm()      // 校验并提交`
 
 const code2 = `<wd-data-form mode="edit" submit-api="/user/save" :data="editData">
   <template #default="{ model }">

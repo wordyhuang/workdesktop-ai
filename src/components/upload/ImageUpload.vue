@@ -22,13 +22,13 @@
       </template>
     </el-upload>
 
-    <wd-viewer
-      v-if="preview"
-      v-model="viewerVisible"
-      :src="viewerSources"
-      :page="viewerPage"
-      type="image"
-      @page-change="onViewerPageChange"
+    <!-- 图片大图预览：使用 el-image-viewer 组件（ElementPlus 内置） -->
+    <el-image-viewer
+      v-if="preview && viewerVisible"
+      :url-list="viewerSources"
+      :initial-index="viewerPage - 1"
+      @close="viewerVisible = false"
+      @switch="onViewerPageChange"
     />
   </div>
 </template>
@@ -42,7 +42,6 @@ import { request } from '../../lib/core/http'
 import { getGlobalConfig } from '../../lib/core/config'
 import { refreshDataGrid } from '../../lib/core/linkage'
 import { filterProp, headRefreshDatagridProp } from '../common/props'
-import Viewer from '../utils/Viewer.vue'
 import type { PropType } from 'vue'
 
 defineOptions({ name: 'WdImageUpload', inheritAttrs: false })
@@ -65,7 +64,7 @@ const props = defineProps({
   maxCount: { type: Number, default: 8 },
   /** 缩略图尺寸（px，兼容属性式字符串写法） */
   thumbnailSize: { type: [Number, String], default: 100 },
-  /** 是否点击缩略图大图预览（集成 Viewer） */
+  /** 是否点击缩略图大图预览 */
   preview: { type: Boolean, default: true },
   /** 接收类型，默认 image/* */
   accept: { type: String, default: '' },
@@ -106,7 +105,7 @@ watch(
   }
 )
 
-/** 仅展示成功图片的地址（用于 Viewer 轮播） */
+/** 仅展示成功图片的地址（用于预览轮播） */
 const viewerSources = computed(() =>
   innerFileList.value.map((f) => f.url || (f as any).biz?.url || '').filter(Boolean)
 )
@@ -237,8 +236,8 @@ const onPreview: UploadProps['onPreview'] = (uploadFile) => {
   viewerVisible.value = true
 }
 
-function onViewerPageChange(page: number) {
-  viewerPage.value = page
+function onViewerPageChange(index: number) {
+  viewerPage.value = index + 1
 }
 
 const onExceed: UploadProps['onExceed'] = () => {

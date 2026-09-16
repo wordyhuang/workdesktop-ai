@@ -17,10 +17,11 @@
       <!-- 底部操作区 -->
       <div v-if="withActions" class="wd-data-form__footer">
         <slot name="footer" :submit="submitForm" :reset="resetForm" :loading="loading">
-          <el-button @click="onClose">{{ closeText }}</el-button>
+          <!-- 关闭 / 保存并继续：仅在容器（drawer/dialog）或 iframe 内显示，独立使用时隐藏 -->
+          <el-button v-if="inHost" @click="onClose">{{ closeText }}</el-button>
           <el-button v-if="actionConf.showReset" @click="resetForm">{{ actionConf.resetText }}</el-button>
           <el-button
-            v-if="isCreate && keepFormButton && actionConf.showContinue"
+            v-if="inHost && isCreate && keepFormButton && actionConf.showContinue"
             :loading="loading"
             @click="submitForm(true)"
           >
@@ -90,7 +91,7 @@ const props = defineProps({
   inline: { type: Boolean, default: false },
   /** 联动分组 */
   filter: { type: String, default: '' },
-  /** 外部传入的初始数据（DrawerButton drawerData 等） */
+  /** 外部传入的初始数据（DrawerButton data 等） */
   data: { type: Object as PropType<Record<string, any>>, default: undefined }
 })
 
@@ -292,6 +293,11 @@ function onClose() {
     container.requestClose('manual')
     return
   }
+  // iframe 场景：通知父容器（wd-drawer url 模式 / wd-iframe 承载）请求关闭
+  if (inIframe.value) {
+    window.parent?.postMessage({ type: 'wd-container:close' }, '*')
+    return
+  }
   // 独立使用：自行确认
   if (props.confirmLeave && isDirty()) {
     ElMessageBox.confirm('有未保存的修改，确认离开？', '提示', {
@@ -330,11 +336,23 @@ watch(
   { deep: true }
 )
 
-// 容器上下文（被 wd-drawer / wd-dialog 承载时存在）
+// 容器上下文（被 wd-drawer 承载时存在，mode=dialog 同为该组件）
 const container = useContainer()
 let removeBeforeClose: (() => void) | null = null
-// 容器携带的数据（DrawerButton drawerData），props.data 优先
+// 容器携带的数据（DrawerButton data），props.data 优先
 const containerData = computed(() => props.data || container?.data)
+
+// 是否处于 iframe 子页面（被 wd-drawer url 模式 / wd-iframe 承载；跨域访问 window.top 会抛错，视为 iframe）
+const inIframe = computed(() => {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.self !== window.top
+  } catch {
+    return true
+  }
+})
+// 是否处于宿主环境（drawer/dialog 容器 或 iframe）——决定底部「关闭」「保存并继续」按钮是否显示
+const inHost = computed(() => !!container || inIframe.value)
 
 // 同步数据预填（首次渲染前）：props.data / 容器 data 在 setup 阶段已可用，
 // 提前回填可避免插槽内 el-switch / el-radio 等控件首帧绑定 undefined 触发 EP 校验警告；

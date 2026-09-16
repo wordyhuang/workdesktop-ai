@@ -22,8 +22,8 @@ export {
   getComponentDefault
 } from './lib/core/config'
 
-// HTTP 客户端
-export { request, default as http } from './lib/core/http'
+// HTTP 客户端：RequestAPI 为公开请求核心类（可 new 自建实例），request 为全局单例
+export { RequestAPI, request, default as http } from './lib/core/http'
 export type { ApiResult, ApiEventPayload, ApiEventType, ApiEventHandler } from './lib/core/http'
 
 // 声明式联动
@@ -35,6 +35,13 @@ export {
   getDataGrids,
   clearLinkageRegistry
 } from './lib/core/linkage'
+
+// Station 联动（底栏信息 / 内容刷新）
+export {
+  registerStation,
+  setStationFooter,
+  refreshStationView
+} from './lib/core/station-linkage'
 
 // 组合式 hooks
 export { useRequest } from './lib/composables/useRequest'

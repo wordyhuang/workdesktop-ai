@@ -1,12 +1,22 @@
 <template>
-  <el-button v-bind="$attrs" :loading="loading" @click="onClick">
-    <slot>{{ text }}</slot>
+  <el-tooltip
+    v-if="tips"
+    :content="tips"
+    :effect="tipsType"
+    :placement="placement"
+  >
+    <el-button v-bind="$attrs" :loading="loading" @click="onClick">
+      <slot>{{ label }}</slot>
+    </el-button>
+  </el-tooltip>
+  <el-button v-else v-bind="$attrs" :loading="loading" @click="onClick">
+    <slot>{{ label }}</slot>
   </el-button>
 </template>
 
 <script setup lang="ts">
 import { useApiAction } from './useApiAction'
-import { filterProp, headRefreshDatagridProp, apiProps, buttonTextProp } from '../common/props'
+import { filterProp, headRefreshDatagridProp, apiProps, buttonTextProp, tipsProp } from '../common/props'
 
 defineOptions({ name: 'WdApiButton', inheritAttrs: false })
 
@@ -15,6 +25,7 @@ const props = defineProps({
   ...headRefreshDatagridProp,
   ...apiProps,
   ...buttonTextProp,
+  ...tipsProp,
   /** 按钮级 loading（默认 true）；false 时按钮不转圈 */
   buttonLoading: { type: Boolean, default: true },
   /** 页面级 loading（全局遮罩 ElLoading） */

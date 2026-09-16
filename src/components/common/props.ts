@@ -19,9 +19,29 @@ export const headRefreshDatagridProp = {
   }
 }
 
-/** 按钮文字（属性式写法，也可用默认插槽覆盖；声明后不再透传给 el-button 的布尔 text） */
+/**
+ * 按钮文字属性（属性式写法，也可用默认插槽覆盖）。
+ * 命名用 label 而非 text：el-button 的 text 是「文字按钮」布尔开关，通过 $attrs 透传支持，
+ * 组件不再截获该名，避免同名冲突（文字按钮样式直接写 text 属性即可）。
+ */
 export const buttonTextProp = {
-  text: { type: String, default: '' }
+  label: { type: String, default: '' }
+}
+
+/**
+ * 悬停提示共享 props，所有按钮都支持基于 el-tooltip 的悬停提示。
+ * 仅当设置非空 tips 时显示 tooltip。
+ */
+export const tipsProp = {
+  /** 悬停提示内容 */
+  tips: { type: String, default: '' },
+  /** tooltip 主题：dark/light */
+  tipsType: { type: String as PropType<'dark' | 'light'>, default: 'dark' },
+  /** 弹出位置 */
+  placement: {
+    type: String as PropType<'top' | 'bottom' | 'left' | 'right' | string>,
+    default: 'top'
+  }
 }
 
 /** API 类共享 props（按钮组 / 输入选择组 / 上传组等能力组件） */
@@ -55,6 +75,8 @@ export const optionsProps = {
   textProp: { type: String, default: 'text' },
   /** 值字段 */
   valueProp: { type: String, default: 'value' },
+  /** 选项悬停提示字段：数据项该字段非空时，鼠标悬停选项显示 tooltip（默认 tips） */
+  tipsProp: { type: String, default: 'tips' },
   /** 选项前插固定项 */
   addData: { type: Array as PropType<any[]>, default: undefined },
   /** 选项后追加固定项 */

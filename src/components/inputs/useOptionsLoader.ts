@@ -12,6 +12,7 @@ export interface UseOptionsOptions {
   dataSource: Ref<any[] | undefined>
   textProp: Ref<string>
   valueProp: Ref<string>
+  tipsProp?: Ref<string>
   addData: Ref<any[] | undefined>
   appendData: Ref<any[] | undefined>
   emit: (event: any, ...args: any[]) => void
@@ -20,6 +21,8 @@ export interface UseOptionsOptions {
 export interface NormalizedOption {
   text: string
   value: any
+  /** 悬停提示内容（取 tipsProp 字段，无则为空字符串） */
+  tips: string
   /** 原始数据（默认插槽上下文 { option }） */
   raw: Record<string, any>
 }
@@ -33,16 +36,19 @@ export function useOptionsLoader(opts: UseOptionsOptions) {
   function normalize(list: any[]): NormalizedOption[] {
     const textKey = opts.textProp.value
     const valueKey = opts.valueProp.value
+    const tipsKey = opts.tipsProp?.value || 'tips'
     return (list || []).map((item) => {
       if (item && typeof item === 'object') {
+        const tips = item[tipsKey]
         return {
           text: item[textKey],
           value: item[valueKey],
+          tips: tips === null || tips === undefined ? '' : String(tips),
           raw: item
         }
       }
       // 基本类型数组 [1,2,3] / ['a','b']
-      return { text: String(item), value: item, raw: { [textKey]: String(item), [valueKey]: item } }
+      return { text: String(item), value: item, tips: '', raw: { [textKey]: String(item), [valueKey]: item } }
     })
   }
 

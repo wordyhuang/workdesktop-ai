@@ -1,9 +1,13 @@
 <template>
   <div class="example-page">
+    <unpack-note>
+      该组件通过 <code>api</code> 提交开关状态，对返回数据中的 <code>data</code> 不做字段提取（开关状态由 <code>v-model</code> 维护，失败自动回滚）；请求结果通过 <code>api-success</code> / <code>api-after</code> 事件携带 <code>data</code> 抛出。
+    </unpack-note>
     <demo-block
       title="切换即请求"
       desc="开关切换自动提交请求（param-key 指定字段），失败自动回滚"
       :code="code1"
+      layout="row"
     >
       <wd-switch
         v-model="status"

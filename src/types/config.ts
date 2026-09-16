@@ -32,6 +32,8 @@ export interface RequestConfig {
   urlPrefix: string
   /** 网络异常是否抛出 */
   throwException: boolean
+  /** 并发相同请求合并去重（method+url+params 一致只发一次），默认 true；reqOptions.dedup 可单次覆盖 */
+  dedup: boolean
   loading: RequestLoadingConfig
   /** 透传给 axios 的配置（headers、timeout、withCredentials 等） */
   axiosConfig: Record<string, any>
@@ -53,11 +55,20 @@ export interface ResponseListConfig {
 }
 
 export interface TipsConfig {
-  /** 提示类型：success/warning/error/info/message/notify/none */
-  tipsType: string
+  /** 提示呈现方式：
+   * - 'message'：轻量消息提示（ElMessage）
+   * - 'notify'：右上角通知（ElNotification）
+   * - 'messagebox'：模态弹框（ElMessageBox.alert），需用户手动确认
+   * - 'none'：不提示
+   */
+  tipsMode: 'message' | 'notify' | 'messagebox' | 'none'
+  /** 提示语义类型：success/warning/error/info */
+  tipsType: 'success' | 'warning' | 'error' | 'info'
   /** 是否显示提示 */
   showTips?: boolean
-  /** 透传给 ElMessage/ElNotification 的属性 */
+  /** 弹框标题（仅 messagebox 模式有效） */
+  title?: string
+  /** 透传给对应组件的属性（ElMessage / ElNotification / ElMessageBox） */
   props?: Record<string, any>
 }
 
@@ -78,6 +89,8 @@ export interface PagerConfig {
   pageSize: number
   layout: string
   hideOnSinglePage: boolean
+  /** 分页在底栏的水平位置：left/center/right，默认 right */
+  position: 'left' | 'center' | 'right'
 }
 
 export interface PageConfig {
@@ -96,6 +109,8 @@ export interface ThemeConfig {
 }
 
 export interface WorkDesktopConfig {
+  /** 库版本号，界面上显示的版本号统一从这里读取（与 package.json version 保持一致） */
+  version: string
   page: PageConfig
   request: RequestConfig
   response: ResponseConfig
@@ -114,6 +129,8 @@ export interface ReqOptions {
   axiosConfig?: Record<string, any>
   /** AbortSignal，用于中断 */
   signal?: AbortSignal
+  /** 单次请求是否参与去重（默认取全局 request.dedup） */
+  dedup?: boolean
   /** 是否列表请求（影响封包分页参数与解封列表结构），由调用方组件控制，http 不强制 */
   [key: string]: any
 }

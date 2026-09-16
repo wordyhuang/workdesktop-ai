@@ -1,0 +1,658 @@
+# workdesktop-ai — AI 开发参考（LLM-Optimized Component Library Reference）
+
+- 创建时间: 2026-09-16 19:45:30
+- 最后修改时间: 2026-09-16 22:03:47
+- 当前版本: V_1.1
+- 适用对象: AI 编码助手（非人类读者；信息密度优先，无修辞）
+- 核心目标: 使 AI 完整认识 workdesktop-ai 组件库，并能正确使用其完成开发任务
+- 文档简略描述: workdesktop-ai@1.0.2 全量事实参考：包结构 / 引入方式 / 全局配置 / 请求体系 / 声明式联动 / 28 组件 API（props/emits/slots/methods）/ 跨 iframe 协议 / 陷阱清单
+
+================================================================================
+## 0. 如何使用本文档（FOR AI）
+================================================================================
+- 本文档为唯一事实源优先级：本文档 < 源码（src/）。冲突时以源码为准。
+- 所有组件注册名（name）均为 `WdXxx`；模板中可用 `<wd-xxx>` 或 `<WdXxx>`。
+- 组件基于 ElementPlus（el-*），多数 $attrs 透传到底层 el 组件，标注「透传」处可直接使用 el-* 原生属性。
+- 「默认值」列 = 组件内置默认；全局配置可覆盖的项会标注 [G]（page.componentDefault）。
+- 标注 [陷阱] 的条目见 §11，开发前必读。
+
+================================================================================
+## 1. 包事实（PACKAGE FACTS）
+================================================================================
+```yaml
+name: workdesktop-ai
+version: 1.0.2
+description: WorkDesktop 企业级 Vue3 组件库（基于 ElementPlus，HTML 模板渲染友好、AI 编码友好）
+type: module
+main: dist/index.umd.js        # UMD, window.WorkDesktop
+module: dist/index.esm.js      # ESM
+types: dist/types/src/index.d.ts
+sideEffects: ["*.css", "**/*.css"]   # CSS 有副作用，tree-shaking 不会删
+peerDependencies:              # 宿主项目必须安装
+  vue: ^3.3.0
+  element-plus: ^2.5.0
+  "@element-plus/icons-vue": ^2.0.0
+dependencies:
+  axios: ^1.7.7
+  async-validator: ^4.2.5
+```
+
+================================================================================
+## 2. 引入方式（IMPORT）
+================================================================================
+### 2.1 ESM 全量（构建工具项目首选）
+```ts
+import { createApp } from 'vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import WorkDesktop from 'workdesktop-ai'
+import 'workdesktop-ai/style.css'        // 全量样式（含全部组件）
+// import 'workdesktop-ai/base.css'      // 仅基础样式（按需场景）
+
+app.use(ElementPlus)
+app.use(WorkDesktop, globalConfig?)      // 第二参 = 全局配置，见 §4
+```
+
+### 2.2 UMD / 浏览器直引（HTML 模板渲染场景）
+```html
+<script>
+  // 在加载 UMD 之前定义全局配置（可选）
+  window.workDesktopConfig = { /* 同 globalConfig */ }
+</script>
+<script src=".../dist/index.umd.js"></script>
+<!-- 全局变量: window.WorkDesktop；组件自动注册为 wd-* -->
+```
+
+### 2.3 按需子路径（27 个组件入口）
+格式：`import WdXxx from 'workdesktop-ai/<subpath>'`
+每个子路径含 types + ESM(.mjs)。
+
+| 子路径 | 组件 | 独立样式 |
+|---|---|---|
+| api-button | WdApiButton | — |
+| auto-complete | WdAutoComplete | auto-complete/style.css |
+| checkbox-list | WdCheckboxList | — |
+| confirm-button | WdConfirmButton | — |
+| data-form | WdDataForm | data-form/style.css |
+| data-grid | WdDataGrid | data-grid/style.css |
+| dialog-button | WdDialogButton | — |
+| drawer | WdDrawer | drawer/style.css |
+| drawer-button | WdDrawerButton | — |
+| editable-grid | WdEditableGrid | editable-grid/style.css |
+| form-item | WdFormItem | form-item/style.css |
+| iframe | WdIframe | iframe/style.css |
+| image-upload | WdImageUpload | image-upload/style.css |
+| panel | WdPanel | panel/style.css |
+| prompt-button | WdPromptButton | — |
+| radio-list | WdRadioList | — |
+| requester | WdRequester | — |
+| route-button | WdRouteButton | — |
+| search-item | WdSearchItem | search-item/style.css |
+| search-panel | WdSearchPanel | search-panel/style.css |
+| select | WdSelect | — |
+| station | WdStation | station/style.css |
+| switch | WdSwitch | — |
+| tips | WdTips | tips/style.css |
+| tips-button | WdTipsButton | — |
+| upload | WdUpload | — |
+| viewer | WdViewer | viewer/style.css |
+
+- [陷阱] WdPopconfirmButton 无独立子路径，只能从主入口 `import { WdPopconfirmButton } from 'workdesktop-ai'`。
+- 无独立 style.css 的子路径：组件样式为零依赖（纯 el-* 组合）或已含在 base.css。
+- 按需引入样式写法：`import 'workdesktop-ai/base.css'` + `import 'workdesktop-ai/<subpath>/style.css'`（仅上表列出的 14 个）。
+
+### 2.4 主入口导出面（src/index.ts 逐字）
+```ts
+export default WorkDesktop                 // Vue 插件（install 注册全部 28 组件 + 初始化配置）
+export * from './components'               // 28 个组件，全部 Wd 前缀
+// 配置
+export { initConfig, setGlobalConfig, getGlobalConfig, resetConfig, mergeConfig, getComponentDefault }
+// 请求
+export { RequestAPI, request }             // request = 全局单例
+export { default as http }                 // 同 request 体系默认导出
+export type { ApiResult, ApiEventPayload, ApiEventType, ApiEventHandler }
+// 联动（§6）
+export { registerDataGrid, refreshDataGrid, searchDataGrid, resetSearchDataGrid, getDataGrids, clearLinkageRegistry }
+// Station 联动（§6.3）
+export { registerStation, setStationFooter, refreshStationView }
+// hooks
+export { useRequest, useDataGrid, useConfig, useGlobalConfig, useEventBus, useGlobalState }
+// 工具
+export { deepMerge }
+export type * from './types'
+```
+
+================================================================================
+## 3. 统一响应协议（RESPONSE PROTOCOL）
+================================================================================
+- 所有 API 响应结构：`{ code: number, data: any, message: string }`
+- 成功判定：`code >= successCode`（successCode 默认 0，全局可配）
+- 字段名可全局改名：response.props（§4）
+- 列表结构字段可全局改名：response.list（§4）
+- Promise 语义：[关键] 业务失败（code 不达标）→ **resolve**，`success=false`，**不 reject**；仅网络/运行异常 → reject。
+```ts
+interface ApiResult<T = any> {
+  success: boolean      // 业务成功
+  data: T
+  code?: number
+  message?: string
+  raw?: any             // 原始响应
+}
+interface ReqOptions {
+  showLoading?: boolean
+  showTips?: boolean
+  tipsConfig?: TipsConfig
+  axiosConfig?: AxiosRequestConfig
+  signal?: AbortSignal
+  dedup?: boolean       // 并发去重，默认 true：method+url+params 一致时只发一次
+  [key: string]: any
+}
+```
+
+================================================================================
+## 4. 全局配置（GLOBAL CONFIG）
+================================================================================
+### 4.1 三级覆盖与缓存时机 [关键]
+优先级（低→高）：内置 defaultConfig < 全局层（`app.use(WorkDesktop, cfg)` / `window.workDesktopConfig`）< 组件 props。
+- 配置在**组件挂载时读取一次并缓存**；运行中修改全局配置只影响**之后新挂载**的组件。
+- 已挂载组件要应用新配置：用 `:key` 变更强制重建。
+
+### 4.2 WorkDesktopConfig 结构
+```ts
+interface WorkDesktopConfig {
+  page?: {
+    componentDefault?: Record<string, Record<string, any>>  // 按组件 name 覆盖 props 默认值，如 { WdRequester: { method: 'get' } }
+    pager?: PagerConfig
+  }
+  request?: {
+    urlPrefix?: string            // URL 前缀，默认 ''
+    throwException?: boolean      // 默认 false：业务失败不抛异常
+    dedup?: boolean               // 默认 true：并发相同请求合并去重
+    loading?: { enable: boolean; props?: Record<string, any> }
+    axiosConfig?: AxiosRequestConfig   // 默认 { timeout: 30000 }，透传 axios
+    pageParam?: PageParamConfig
+    transform?: { requestInterceptor?: (cfg: any) => any; responseInterceptor?: (res: any) => any }
+  }
+  response?: ResponseConfig
+  theme?: { colors?: Record<string, string>; cssVars?: Record<string, string> }  // 变更后 applyTheme 写入 :root CSS 变量
+}
+interface PagerConfig {
+  size?: 'small' | 'default' | 'large'
+  pageSizes?: number[]
+  pageSize?: number
+  layout?: string             // el-pagination layout
+  hideOnSinglePage?: boolean
+  position?: 'left' | 'center' | 'right'
+}
+interface PageParamConfig {
+  pageField?: string          // 默认 'currentPage'
+  sizeField?: string          // 默认 'pageSize'
+  searchField?: string        // 默认 'param'（搜索条件包裹字段）
+}
+interface ResponseConfig {
+  props?: { codeName?: string; messageName?: string; dataName?: string }  // 响应字段名映射，默认 code/message/data
+  successCode?: number                                                  // 默认 0
+  list?: { listName?: string; totalName?: string; pageSizeName?: string; currentPageName?: string }
+  success?: TipsConfig
+  fail?: TipsConfig
+  exception?: TipsConfig
+  complete?: TipsConfig
+}
+interface TipsConfig {
+  tipsMode?: 'message' | 'notify' | 'messagebox' | 'none'
+  tipsType?: 'success' | 'warning' | 'error' | 'info'
+  showTips?: boolean
+  title?: string
+  props?: Record<string, any>   // 透传给对应 ElMessage/ElNotification/ElMessageBox
+}
+// 所有配置方法均接受 DeepPartial（深合并）
+```
+
+### 4.3 配置 API（6 个方法）
+```ts
+useGlobalConfig(): WorkDesktopConfig            // 组合式中获取全局配置
+setGlobalConfig(cfg: DeepPartial<WorkDesktopConfig>): void
+mergeConfig(target, source): any                // 深合并
+getGlobalConfig(): WorkDesktopConfig
+resetConfig(): void
+useConfig(): WorkDesktopConfig
+// 入口另导出: initConfig(cfg), getComponentDefault(name) 
+```
+
+================================================================================
+## 5. 请求体系（HTTP / REQUEST）
+================================================================================
+### 5.1 RequestAPI 与全局单例
+```ts
+const api = new RequestAPI(axiosConfig?)        // 自建实例
+// 全局单例 request（入口导出）：
+request.get(url, params?, reqOptions?)
+request.post(url, data?, reqOptions?)
+request.put(url, data?, reqOptions?)
+request.delete(url, params?, reqOptions?)
+request.request(axiosConfig, reqOptions?)
+request.create(componentReqConfig?)             // 派生组件级请求配置
+request.on(handler): () => void                 // 订阅全局事件，返回取消函数
+```
+### 5.2 请求生命周期事件（所有请求类组件统一，顺序固定）
+```
+apiBefore → (apiSuccess | apiFail | apiException) → apiAfter
+// apiFail=业务失败(resolve)；apiException=异常(reject 路径)
+```
+### 5.3 useRequest hook
+```ts
+const { data, loading, error, run, refresh, abort } = useRequest(api, options?)
+interface UseRequestOptions {
+  method?: string        // 默认 'post'
+  immediate?: boolean    // 默认 true
+  initialParams?: any
+  reqOptions?: ReqOptions
+  onSuccess?: (result: ApiResult) => void
+  onFail?: (result: ApiResult) => void
+  onError?: (err: any) => void
+}
+```
+
+================================================================================
+## 6. 声明式联动（LINKAGE）
+================================================================================
+### 6.1 机制
+- `filter: string`：联动分组标识。同一 filter 值的组件视为一组；空串 = 默认组。
+- `headRefreshDatagrid: boolean | string`：请求类动作成功后触发联动刷新。
+  - `true`：刷新同 filter 组的所有 DataGrid。
+  - `string`：定向刷新指定 filter 名的组。
+- 适用：按钮组（API/Drawer/Dialog/Prompt 等）、WdSwitch、WdUpload/WdImageUpload、WdDataForm、WdSearchPanel 等均带此二属性。
+
+### 6.2 DataGrid 联动注册表 API（6 个）
+```ts
+registerDataGrid(instance): () => void                       // 注册，返回注销函数
+refreshDataGrid(headRefreshDatagrid: boolean|string, selfFilter?): number   // 返回刷新数量
+searchDataGrid(params, headRefreshDatagrid, selfFilter?): void
+resetSearchDataGrid(headRefreshDatagrid, selfFilter?): void
+getDataGrids(filter?): DataGridInstance[]
+clearLinkageRegistry(): void
+```
+### 6.3 Station 联动 API（3 个）
+```ts
+registerStation(instance): () => void
+setStationFooter(target: boolean|string, info: string, selfFilter?): void   // target=true 同组；string 定向
+refreshStationView(target: boolean|string = true, selfFilter?): number      // 返回刷新数量
+```
+
+================================================================================
+## 7. 共享 Props / Emits 组（先定义，组件节引用）
+================================================================================
+```ts
+// elButtonCommonProps（15，透传 el-button）:
+type, size, plain, round, circle, link, text, bg, disabled, icon, native-type, autofocus, tag, color, dark
+// elButtonProps = elButtonCommonProps + loading
+// elButtonPropsNoLoading = elButtonCommonProps（API 类按钮专用：loading 由组件内部接管）
+
+tipsProp:   { tips?: string, tipsType?: 'dark'|'light' = 'dark', placement?: string = 'top' }
+
+buttonApiProps: {
+  api?: string                      // 请求地址
+  apiMethod?: string = 'post'
+  apiParam?: Record<string, any> = {}
+  buttonLoading?: boolean = true    // 请求期间按钮 loading
+  pageLoading?: boolean = false     // 请求期间整页 loading
+  headRefreshDatagrid?: boolean|string = false
+  filter?: string = ''
+}
+
+optionsProps: {                     // 选项加载类（Select/AutoComplete/CheckboxList/RadioList）
+  api?: string
+  apiMethod?: string = 'get'
+  apiParam?: Record<string, any>
+  active?: boolean = true           // 挂载即加载 [注意:与 DataGrid.active 默认 false 不同]
+  dataSource?: any[]                // 静态数据，优先于 api
+  textProp?: string = 'text'
+  valueProp?: string = 'value'
+  tipsProp?: string = 'tips'        // 选项 tips 字段名（此处为字符串字段名，非 tipsProp 组）
+  addData?: any                     // 头部追加项
+  appendData?: any                  // 尾部追加项
+}
+
+containerProps: {                   // 弹层容器类（Drawer/DrawerButton/DialogButton）
+  modelValue?: boolean              // v-model 控制显隐（按钮类不需要）
+  title?: string
+  url?: string                      // iframe 地址
+  size?: string = '50%'             // 弹层宽度（drawer 宽 / dialog 宽）
+  confirmMessage?: string           // 关闭前确认
+  data?: Record<string, any>        // 传给弹层的数据
+  headRefreshDatagrid?: boolean|string
+  filter?: string
+}
+
+popconfirmProps: {                  // WdPopconfirmButton 专用（部分改名避 el-button 冲突）
+  confirmButtonText = '确定', cancelButtonText = '取消',
+  confirmButtonType = 'primary', cancelButtonType = 'text',
+  popIcon, popIconColor = '#f90', hideAfter = 200, popDisabled = false,
+  width = 150, trigger = 'click', popperClass, popperOptions,
+  showAfter = 0, teleported = true, persistent = false
+}
+
+buttonLabelProp: { label?: string } // 按钮文案
+
+// optionsEmits（选项类统一 6 个）:
+'update:modelValue'(val), change(val), apiBefore({url}), apiSuccess({data}), apiFail({code,message}), apiAfter()
+// buttonApiEmits（API 按钮统一 6 个）:
+click(evt), apiBefore({url,method,params}), apiSuccess({data,code,message}),
+apiFail({code,message}), apiException({error,message}), apiAfter({data?,error?})
+```
+
+================================================================================
+## 8. 组件总览（28 个）
+================================================================================
+| # | 组件 | 类 | 一句话职能 |
+|---|---|---|---|
+| 1 | WdApiButton | 按钮 | 点击发 API 请求 |
+| 2 | WdConfirmButton | 按钮 | MessageBox 确认后发请求 |
+| 3 | WdDialogButton | 按钮 | 打开 dialog 弹层（iframe/插槽） |
+| 4 | WdPopconfirmButton | 按钮 | Popconfirm 确认后发请求 |
+| 5 | WdPromptButton | 按钮 | 输入值并入参后发请求 |
+| 6 | WdRouteButton | 按钮 | 路由/链接跳转 |
+| 7 | WdTipsButton | 按钮 | 纯提示按钮（按钮基座） |
+| 8 | WdDrawerButton | 按钮 | 打开 drawer/dialog 弹层 |
+| 9 | WdDataGrid | 数据 | 分页表格（远程/静态） |
+| 10 | WdEditableGrid | 数据 | 可编辑表格 |
+| 11 | WdViewer | 数据 | 描述列表/详情查看 |
+| 12 | WdRequester | 数据 | 命令式请求器（v-model 开关触发） |
+| 13 | WdDataForm | 表单 | 数据表单（加载/提交/脏检查） |
+| 14 | WdSearchPanel | 表单 | 搜索面板（联动 DataGrid） |
+| 15 | WdFormItem | 表单 | 表单项包装（tip） |
+| 16 | WdSearchItem | 表单 | 搜索项（SearchPanel 语义） |
+| 17 | WdDrawer | 容器 | 抽屉/对话框（iframe 宿主） |
+| 18 | WdIframe | 容器 | iframe 嵌入（通信/自适应高） |
+| 19 | WdSelect | 输入 | 下拉选择（远程/静态） |
+| 20 | WdAutoComplete | 输入 | 自动完成 |
+| 21 | WdCheckboxList | 输入 | 多选组 |
+| 22 | WdRadioList | 输入 | 单选组 |
+| 23 | WdSwitch | 输入 | 开关（切换即请求，失败回滚） |
+| 24 | WdUpload | 上传 | 文件上传 |
+| 25 | WdImageUpload | 上传 | 图片上传（强制 image/*） |
+| 26 | WdPanel | 样式 | 面板容器 |
+| 27 | WdTips | 样式 | 提示图标/提示框 |
+| 28 | WdStation | 布局 | 管理台整页布局（菜单/标签页/工具栏） |
+
+================================================================================
+## 9. 组件详目（props / emits / slots / methods）
+================================================================================
+格式约定：`= 默认值`；`?` 可选；`[G]` 可被 page.componentDefault 全局覆盖；`+` 表示在引用组之上新增。
+
+### 9.1 WdApiButton（按钮基座 + API）
+- props: buttonLabelProp + elButtonPropsNoLoading + tipsProp + buttonApiProps
+- emits: buttonApiEmits
+- 行为: api 为空时仅触发 click，不发请求。
+- [陷阱] 外部透传 loading 无效（内部接管），控制 loading 用 buttonLoading。
+
+### 9.2 WdConfirmButton
+- props: WdApiButton 全部 + confirmText = '确认执行该操作？' / cancelText = '取消'（置空字符串则不显示取消按钮）/ confirmTitle = '提示'
+- emits: buttonApiEmits + confirm / cancel
+- 行为: ElMessageBox.confirm，type 固定 warning；「确定」按钮文案固定不可配。
+
+### 9.3 WdPopconfirmButton
+- props: WdApiButton 全部 + popconfirmProps（16 项，见 §7）
+- emits: buttonApiEmits + confirm / cancel / show / hide
+- 行为: tooltip 与 popconfirm 平级（virtual-ref）；placement 同时作用于 tooltip 与 popconfirm。
+- 引入: 仅主入口（无子路径，见 §2.3 [陷阱]）。
+
+### 9.4 WdPromptButton
+- props: WdApiButton 全部 + promptTitle = '请输入' / promptPlaceholder = '请输入内容' / paramKey = 'value' / promptDefault = ''
+- emits: buttonApiEmits + prompt(value)（无插槽模式）或 confirm（有插槽模式）
+- slots: #content — 存在即切换为自定义内容模式（此时触发 confirm 而非 prompt）
+- 行为: 输入值以 `{ [paramKey]: value }` 浅合并入 apiParam（同名键被覆盖）；API 成功才关弹窗，失败保留；弹窗按钮文案固定「确定/取消」。
+
+### 9.5 WdRouteButton
+- props: buttonLabelProp + elButtonProps + tipsProp + filter +
+  routeName / routePath / params = {} / query = {} / target = '_self'
+- 行为: routeName 优先于 routePath；target = '_blank' 仅支持 routePath（window.open 拼 query）；无 router 环境退化 location.href。
+
+### 9.6 WdTipsButton
+- props: buttonLabelProp + elButtonProps + tipsProp + filter
+- 行为: 提示基座；tips 非空才包裹 el-tooltip。
+
+### 9.7 WdDrawerButton
+- props: WdTipsButton 全部 + mode = 'drawer' | 'dialog' / title / url / data = {} / size = '50%'（弹层宽度）/ direction = 'rtl' / headRefreshDatagrid / filter
+- emits: open / close / confirm（payload 透传）
+- slots: #button（按钮内容）；默认插槽 { data, close }（close = 关闭弹层函数）；#footer（透传 footerProps，含 close）
+- 行为: 弹层懒挂载（首次点击才渲染）；url 模式 data 拼 query。
+- [陷阱] size 被弹层宽度占用 → 控制按钮本身尺寸用 buttonSize。
+
+### 9.8 WdDialogButton（WdDrawerButton 的 dialog 专用简化版）
+- name: WdDialogButton；inheritAttrs = false
+- props: filter / headRefreshDatagrid / tipsProp / label = '' / title = '' / url = '' / data = {} / size = '50%'（对话框宽度）/ type = 'primary' / buttonSize = 'default' / disabled = false
+- emits: open / close / confirm（payload 透传）
+- slots: #button；默认插槽 { data, close }；#footer（透传 footerProps）
+- 行为: 内部固定组合 WdDrawer `mode="dialog"`；懒挂载（首次点击 → rendered → nextTick → 打开）。
+
+### 9.9 WdDataGrid
+- props（33）:
+  ```
+  api, apiMethod = 'post', apiParam, active = false [G], dataSource,
+  withPager = true, pagerStyle = 'normal', pagerPosition, 
+  modeSwitch（卡片/表格模式切换）, dynamicColumn, columnStorageKey,
+  border, stripe, autoHeight, height = 'fix' | string | number,
+  rowKey, tableSize, withIndex = true, withSelection, modelValue（已选 v-model）,
+  selectionKey, withSelectionCart, cartRowKey, cartConfig,
+  rowspanKey, rowspanColumn, treeProps, defaultExpandAll,
+  tools, toolsPosition = 'right', toolbarPosition = 'left', rowActions, filter
+  ```
+- 类型:
+  ```ts
+  tools = { refresh?, columnSetting?, modeSwitch?, size?, add?, export?, mode? = 'round', buttonSize? }
+  cartConfig = { type? = 'dialog', title? = '已选数据', buttonText?, size? = 560, showClear?, showRemove? }
+  RowAction = { text: string, command?: string, type?: string }
+  treeProps = { children?: string, hasChildren?: string }
+  ```
+- emits（11）: add / export / row-action({command,row}) / page-change / selection-change / mode-change / loaded / apiBefore / apiAfter / cart-change / update:modelValue
+- slots（5）: 默认（列定义，el-table-column 或列配置）/ toolbar { selection, list } / empty / card-item { row, index } / cart-content { list, remove, clear }
+- methods（11）: requestApi(extraParam?) / refresh() / search(params) / resetSearch() / getSelection() / clearSelection() / getCartList() / clearCart() / onChangeCurrentpage(page) / onChangePagesize(size) / tableRef（逃生舱 → el-table 实例）
+- 请求参数结构: `{ [pageField]: n, [sizeField]: n, [searchField]: {...条件} }`（字段名见 PageParamConfig）
+
+### 9.10 WdEditableGrid（继承 WdDataGrid 能力）
+- 列配置 EditableColumn（17 字段）:
+  ```
+  prop, label, width, minWidth, align, fixed,
+  editor: 'input' | 'number' | 'select' | 'date',
+  editable, placeholder, options, min, max, precision,
+  required, validator, rules, formatter
+  ```
+- 新增 props: editMode = 'cell' | 'row' / saveApi / saveMethod = 'post' / defaultRow / withToolbar / withAdd / withSave / withDelete / withActions / addButtonText = '新增一行' / saveButtonText = '批量保存' / actionWidth = 150
+- 默认差异: rowKey = 'id'；border/stripe = true；withIndex = false；tools.refresh = true
+- 脏行机制 [关键]: 新增行恒脏；修改回原值自动取消脏标记；validate/saveAll 只处理脏行；翻页清空编辑态；静态数据深拷贝隔离。
+- methods: saveAll() / validate() / addRow(row?) / getDirtyRows() + WdDataGrid 全套。
+
+### 9.11 WdViewer
+- 项配置 ViewerItem（13 字段）:
+  ```
+  prop, label, span, width, align, labelAlign, slot, render, formatter,
+  type: 'text' | 'tag' | 'time' | 'status' | 'image' | 'copy',
+  tagColors, timeFormat, imageSize
+  ```
+- props: title / column = 3 / border = true / size / labelStyle = { width:'100px', textAlign:'right' } / contentStyle / api / apiMethod = 'get' / apiParam / active = false [G] / data / items / emptyText = '暂无数据'
+- 行为: data（静态）优先于 api；apiParam 变化自动重新请求；标题栏自带大小切换/字段显隐工具。
+- slots: #content { row, data }（全接管）；`{prop}-cell` { row, value }（单元格级）
+- methods: requestApi(extraParam?) / getData() / resetData()
+
+### 9.12 WdRequester（命令式请求器）
+- props: modelValue（触发开关）/ url / method = 'post' [G] / params / reqOptions [G]
+- emits: update:modelValue / api-before(abort 函数) / api-success(ApiResult) / api-fail(ApiResult) / api-exception(error) / api-after
+- 行为: 一次性开关语义（modelValue true 触发后自动回 false）；新请求自动静默中断旧请求。
+
+### 9.13 WdDataForm
+- props:
+  ```
+  mode = 'create' | 'edit',
+  api（详情加载）, apiMethod = 'get', apiParam,
+  submitApi, submitMethod = 'post', submitKeys, submitExcludeKeys（数组或逗号字符串）,
+  active = false [G], confirmLeave = true, withActions = true,
+  actionConfig = { resetText, submitText, continueText, closeText, showReset, showContinue },
+  headCloseDrawer = true, headRefreshDatagrid, keepFormButton = true,
+  rules, labelWidth = '100px', labelPosition = 'right', inline, data, filter
+  ```
+- emits: submit-success / submit-fail / load-success / change / close({reason}) / apiBefore({type}) / apiAfter({type})
+- slots: 默认 { model, form }；#footer { submit, reset, loading }
+- methods: submitForm(continueNext?) / validate() / resetForm(clearOnly?) / getFormData() / fillForm(data) / requestApi() / isDirty() / beforeLeave() / formRef（逃生舱 → el-form）
+- 行为: 底部操作按钮仅在宿主环境（WdDrawer / iframe 弹层）中显示 [陷阱]。
+
+### 9.14 WdSearchPanel
+- props: collapsible = true / expand（v-model）/ defaultExpand [陷阱: 元数据标注 true，源码实际 false → 需显式传入] / withActions = true / searchText = '搜索' / resetText = '重置' / expandText = '展开' / collapseText = '收起' / labelWidth = '80px' / actionWidth = 'auto' / headRefreshDatagrid / filter
+- emits: search(params) / reset / expand-change / update:expand
+- slots: 默认 { model }（表单项）/ more { model }（折叠区）/ actions { search, reset }
+- methods: resetForm() / getSearchParams() / expand() / collapse()
+- 行为: $attrs 透传 el-form；HTML（无构建）场景可用全局属性 `q`。
+
+### 9.15 WdFormItem
+- props: label / prop / tip / tipPlacement = 'top'
+- slots: 默认 / label
+- 行为: $attrs 透传 el-form-item。
+
+### 9.16 WdSearchItem
+- 同 WdFormItem（SearchPanel 内语义化别名）。
+
+### 9.17 WdDrawer
+- props: containerProps（8）+ mode = 'drawer' | 'dialog' / direction = 'rtl' / origin / reloadOnOpen = false
+- emits: update:modelValue / open / close / confirm({reason}) / iframe-message({type,payload}) / iframe-ready / iframe-dirty({dirty}) / iframe-submit-success
+- slots: 默认 / footer { close }
+- methods: open() / sendToIframe(type, payload?)
+- 行为: url 模式 data 拼 query，iframe ready 后下发 `wd-container:init`；内嵌 iframe 高度 drawer = 100%（min 400px）、dialog = 60vh；append-to-body。
+
+### 9.18 WdIframe
+- props: src / height = '480px' / autoHeight / origin / refreshKey = 0
+- emits: load / message(data)
+- methods: send(message) / refresh()
+- 行为: autoHeight 依赖子页 postMessage 上报 `{ type: 'wd-iframe-height', height }`。
+
+### 9.19 WdPanel
+- props: title / description / collapsible = false / opened = true / shadow = 'hover'
+- emits: update:opened / change
+- slots: title / extra（内部 @click.stop）/ 默认 / footer
+- 行为: title 属性或 title 插槽存在才渲染头部。
+
+### 9.20 WdSelect
+- props: modelValue / multiple = false / remote = false / filterable = true（默认开启）/ keywordKey = 'keyword' + optionsProps
+- 数据形态: OptionItem 支持对象或基本类型；内部标准化 NormalizedOption { text, value, tips, raw }；dataSource 优先于 api；响应 data 为 `{ list }` 结构时自动取 list。
+- emits: optionsEmits
+- slots: 默认 { option, text, value }（自定义选项）
+
+### 9.21 WdAutoComplete
+- props: modelValue = string / valueKey = 'value' / labelKey = 'text' / keywordKey = 'keyword' + optionsProps
+- emits: optionsEmits + select(raw)
+- 行为: api + active = true → 输入即远程搜索；否则首次输入加载一次后本地过滤。
+
+### 9.22 WdCheckboxList
+- props: modelValue = array / buttonStyle = false + optionsProps
+- emits: optionsEmits
+
+### 9.23 WdRadioList
+- props: modelValue = any / buttonStyle = false + optionsProps
+- emits: optionsEmits
+
+### 9.24 WdSwitch
+- props: modelValue = false / api / apiMethod = 'post' / apiParam / paramKey = 'status' / activeValue = true / inactiveValue = false / tips / headRefreshDatagrid / filter
+- 行为: 切换即请求 `{ ...apiParam, [paramKey]: 当前值 }`；[关键] 失败自动回滚（apiFail / apiException 均回滚）；无 api 时退化为普通开关。
+
+### 9.25 WdUpload
+- props: api（自动拼 urlPrefix；完整 http(s):// 不拼）/ deleteApi / deleteMethod = 'post' / primaryKey = 'id' / submitButtonText = '开始上传' / buttonText = '点击上传' / accept / limit / multiple = false / autoUpload = true / name = 'file' / data = {} / disabled / showFileList = true / maxSize = 0（MB，0 = 不限）/ modelValue = array / headRefreshDatagrid / filter
+- 记录结构 UploadFileRecord: { name, url, [primaryKey], ...其他 }
+- 行为 [关键]: 走 el-upload 原生 XHR（不经 axios），但自动拼 urlPrefix 并透传 token 头（Authorization: Bearer）；上传成功后整个响应 data 挂在文件对象 biz 上，取 data.url / data.path 回显；删除先二次确认，再按 `{ ...data, [primaryKey]: 值 }` 调 deleteApi。
+- methods: submitUpload() / clearFiles()（仅本地）/ addFile(UploadUserFile) / uploadRef（逃生舱 → el-upload）
+
+### 9.26 WdImageUpload
+- props: api / deleteApi / deleteMethod = 'post' / primaryKey = 'id' / maxCount = 8 / thumbnailSize = 100 / preview = true（el-image-viewer）/ accept（默认 image/*）/ maxSize = 5（MB）/ tip / modelValue = string[] / headRefreshDatagrid / filter
+- 行为: [关键] 强制 image/* 校验（改 accept 也绕不过）；data 为对象取 data.url/data.path，为字符串直接用；上传失败条目自动移除；达 maxCount 隐藏加号。
+- methods: clearFiles() / uploadRef
+
+### 9.27 WdTips
+- props: tips / type = 'word' | 'box'（默认 word）/ icon / color = '#909399'
+- icon: 仅内置 InfoFilled / WarningFilled / QuestionFilled 三个，其他值回退 InfoFilled。
+- 行为: word 模式 tooltip 固定 dark + top；默认插槽仅 box 模式生效。
+
+### 9.28 WdStation（管理台布局）
+- 类型:
+  ```ts
+  StationMenuGroup = { key, title, icon?, menus }
+  StationMenuItem  = { title, icon?, path?, name?, badge?, disabled?, affix?, group?, groupKey?, groupIcon?, children?, [key: string]: any }
+  StationTab       = { key, title, path?, affix? }
+  StationToolbarConfig = { refresh?, settings?, user?, login? }  // 各项: 'left' | 'right' | 'none'，默认 'right'
+  ```
+- props（20）:
+  ```
+  title, logo, menuGroups（array | JSON 字符串，优先）, menus（array | JSON 字符串）,
+  headerMode = 'nav' | 'title', menuMode = 'side' | 'top' | 'none',
+  contentMode = 'page' | 'tabs', routerMode = 'auto' | 'router' | 'html',
+  collapsible = true, collapsed（v-model）, activeGroup, activeMenu,
+  openTabs（v-model 受控）, userName, userAvatar, copyright,
+  footerInfo（v-model）, keepAlive = false, toolbarConfig（object | JSON 字符串）, filter
+  ```
+- 菜单 key 规则 [关键]: `分组key:name||path||title`（内部称 _key，按此优先级取 name → path → title 生成）。
+- emits（13）: 含 menu-select / group-change / tab-click / tab-close / update:collapsed / update:openTabs / update:footerInfo 等。
+- slots（12）: 默认 / logo { collapsed } / menu-top / menu-bottom / header-left / header-center / header-right / top-menu-left / top-menu-right / tabs-left / tabs-right / footer
+- methods: refresh() / openTab(tab) / closeTab(key)
+- 行为: [陷阱] 父容器必须提供确定高度否则塌陷；affix 标签固定不可关闭；分导台仅 headerMode = 'nav' 且分组数 > 1 时显示；group-change 不触发路由；menuGroups / menus 可直接传 JSON 字符串（HTML 场景）。
+
+================================================================================
+## 10. 跨 iframe 协议（POSTMESSAGE PROTOCOL）
+================================================================================
+宿主（WdDrawer/WdIframe）与 iframe 子页通过 postMessage 通信：
+```
+wd-container:ready            子页 → 宿主：子页就绪
+wd-container:init             宿主 → 子页：下发初始化数据（Drawer url 模式 data）
+wd-container:dirty            子页 → 宿主：表单脏状态 { dirty: boolean }
+wd-container:submit-success   子页 → 宿主：提交成功（宿主据此关闭/联动刷新）
+wd-iframe-height              子页 → 宿主(WdIframe)：高度上报 { type, height }，autoHeight 依赖
+```
+宿主 API: WdDrawer.sendToIframe(type, payload?) / WdIframe.send(message)。
+宿主事件: iframe-message({type,payload}) / iframe-ready / iframe-dirty({dirty}) / iframe-submit-success（WdDrawer）；message(data)（WdIframe）。
+
+================================================================================
+## 11. 陷阱清单（PITFALLS — 开发前必读）
+================================================================================
+1. API 类按钮（ApiButton 系）：外部透传 `loading` 无效，组件内部接管；控制用 `buttonLoading`。
+2. WdDrawerButton / WdDialogButton：`size` 是弹层宽度；按钮自身尺寸用 `buttonSize`。
+3. `active` 默认值不一致：optionsProps.active = true；WdDataGrid.active / WdViewer.active / WdDataForm.active = false（需远程加载时显式开启）。
+4. WdSwitch：请求失败自动回滚状态（apiFail / apiException 都回滚），无需手动恢复。
+5. WdStation：菜单 key 规则 `分组key:name||path||title`；父容器必须给定确定高度（flex/定高），否则塌陷。
+6. WdSearchPanel：defaultExpand 元数据标注 true 与源码 false 不一致 → 需要默认展开时显式 `:default-expand="true"` 或 v-model:expand。
+7. WdUpload：上传走 el-upload 原生 XHR（不经 axios 实例拦截器），但自动拼 urlPrefix + 透传 Authorization: Bearer token；删除有二次确认。
+8. WdEditableGrid：翻页清空未保存编辑态；静态 dataSource 会被深拷贝（改源数据不生效，需重新赋值）；saveAll/validate 只处理脏行。
+9. WdViewer：data（静态）优先于 api；apiParam 变化自动重拉。
+10. WdPromptButton：API 失败弹窗保留不关闭（成功才关）。
+11. WdPopconfirmButton：无独立子路径入口，仅主入口导出。
+12. 全局配置在组件挂载时缓存：运行中改配置只影响新挂载组件；已挂载组件用 :key 强制重建。
+13. WdDataForm：底部操作按钮仅在宿主环境（Drawer/iframe 弹层）显示；独立页面内使用需自建按钮并用 methods。
+14. WdConfirmButton：ElMessageBox type 固定 warning；「确定」按钮文案固定不可配（cancelText 置空可隐藏取消按钮）。
+15. WdImageUpload：强制 image/* 校验，accept 改为非图片也绕不过；modelValue 为 string[]（非对象数组）。
+16. 业务失败（code 未达 successCode）Promise 仍然 resolve（success=false），只有网络/运行异常才 reject — 不要用 try/catch 捕获业务失败。
+17. WdTips.icon 仅支持 3 个内置图标名，其他值静默回退 InfoFilled。
+18. optionsProps 中的 `tipsProp` 是「选项 tips 字段名」（string），与按钮的 tipsProp 组（tips/tipsType/placement）同名不同义。
+19. WdRequester：method / reqOptions 支持 page.componentDefault.WdRequester 全局覆盖；新请求自动中断旧请求。
+20. 并发去重 dedup 默认开启：method+url+params 完全一致的并发请求只发一次；需要强制多次时传 `dedup: false`。
+
+================================================================================
+## 12. 典型组合模式（USAGE PATTERNS）
+================================================================================
+### 12.1 搜索 + 表格 + 操作按钮（同组联动）
+```vue
+<wd-search-panel filter="user" head-refresh-datagrid>
+  <wd-search-item label="姓名" prop="name"><el-input v-model="m.name" /></wd-search-item>
+</wd-search-panel>
+<wd-data-grid ref="grid" api="/user/list" :active="true" filter="user" :row-actions="[{text:'删除',command:'del'}]" @row-action="onAction" />
+<wd-api-button label="新增" api="/user/save" head-refresh-datagrid />
+```
+### 12.2 弹层表单（按钮 → Drawer → DataForm → 自动回刷）
+```vue
+<wd-drawer-button label="编辑" url="/form.html" :data="{ id: row.id }" head-refresh-datagrid />
+<!-- 弹层内: <wd-data-form submit-api="/user/save" @submit-success="..."> -->
+```
+### 12.3 命令式请求
+```vue
+<wd-requester v-model="trigger" url="/api/refresh" method="post" @api-success="onOk" />
+```
+
+================================================================================
+## 版本变化
+================================================================================
+- V_1.1（2026-09-16 22:03:47）：校正 §4.2 配置结构 —— ResponseConfig.props 键名更正为 codeName/messageName/dataName（对齐 src/lib/configs/default-config.ts）；request 配置块补全 urlPrefix/throwException/dedup/loading/axiosConfig/transform；theme 明确 colors/cssVars 结构。
+- V_1.0（2026-09-16 19:45:30）：首版。覆盖 workdesktop-ai@1.0.2 全量事实：包结构、3 种引入方式（27 子路径 + 14 独立样式对照）、WorkDesktopConfig 完整结构与 6 配置 API、统一响应协议、RequestAPI/request/useRequest、声明式联动（6 + 3 函数）、共享 Props/Emits 组、28 组件详目（含 api-meta 缺失的 WdDialogButton，源自源码核对）、跨 iframe 协议、20 条陷阱清单、3 个典型组合模式。

@@ -7,10 +7,32 @@
   >
     <template v-for="opt in options" :key="String(opt.value)">
       <el-radio-button v-if="buttonStyle" :value="opt.value">
-        <slot :option="opt.raw" :text="opt.text" :value="opt.value">{{ opt.text }}</slot>
+        <el-tooltip
+          v-if="opt.tips"
+          :content="opt.tips"
+          placement="top"
+          effect="dark"
+          :show-after="200"
+        >
+          <span class="wd-option-text">
+            <slot :option="opt.raw" :text="opt.text" :value="opt.value" :tips="opt.tips">{{ opt.text }}</slot>
+          </span>
+        </el-tooltip>
+        <slot v-else :option="opt.raw" :text="opt.text" :value="opt.value" :tips="opt.tips">{{ opt.text }}</slot>
       </el-radio-button>
       <el-radio v-else :value="opt.value">
-        <slot :option="opt.raw" :text="opt.text" :value="opt.value">{{ opt.text }}</slot>
+        <el-tooltip
+          v-if="opt.tips"
+          :content="opt.tips"
+          placement="top"
+          effect="dark"
+          :show-after="200"
+        >
+          <span class="wd-option-text">
+            <slot :option="opt.raw" :text="opt.text" :value="opt.value" :tips="opt.tips">{{ opt.text }}</slot>
+          </span>
+        </el-tooltip>
+        <slot v-else :option="opt.raw" :text="opt.text" :value="opt.value" :tips="opt.tips">{{ opt.text }}</slot>
       </el-radio>
     </template>
   </el-radio-group>
@@ -41,6 +63,7 @@ const { options, loading } = useOptionsLoader({
   dataSource: refs.dataSource as any,
   textProp: refs.textProp,
   valueProp: refs.valueProp,
+  tipsProp: refs.tipsProp,
   addData: refs.addData as any,
   appendData: refs.appendData as any,
   emit
@@ -55,3 +78,9 @@ function onChange(val: any) {
   emit('change', val)
 }
 </script>
+
+<style scoped>
+.wd-option-text {
+  display: inline-block;
+}
+</style>

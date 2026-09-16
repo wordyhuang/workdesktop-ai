@@ -12,7 +12,7 @@
       <wd-tips type="box" icon="QuestionFilled" tips="带图标的行内提示" color="#409eff" />
     </demo-block>
 
-    <demo-block title="表格列提示" desc="常用于表头/字段说明" :code="code2">
+    <demo-block title="表格列提示" desc="常用于表头/字段说明" :code="code2" layout="row">
       <el-table :data="rows" border size="small" style="width: 420px">
         <el-table-column label="字段">
           <template #header>

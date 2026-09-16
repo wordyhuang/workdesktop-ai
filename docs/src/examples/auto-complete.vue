@@ -1,5 +1,14 @@
 <template>
   <div class="example-page">
+    <unpack-note>
+      该组件自动对 API 返回数据中的 <code>data</code> 进行解包：<code>data</code> 为选项数组（若为 <code>{ list }</code> 结构则取其 <code>list</code>），逐项按字段映射解析出：
+      <ul>
+        <li><code>text</code>：选项中显示的文本</li>
+        <li><code>value</code>：选项选中时传递的值</li>
+        <li><code>tips</code>：对选项的说明解释（非空时显示悬停提示）</li>
+      </ul>
+      字段名可用 <code>text-prop</code> / <code>value-prop</code> / <code>tips-prop</code> 自定义（默认 <code>text</code> / <code>value</code> / <code>tips</code>）。
+    </unpack-note>
     <demo-block
       title="本地过滤"
       desc="dataSource 静态数据 + 输入即过滤；选中触发 select 事件"
