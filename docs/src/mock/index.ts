@@ -22,6 +22,22 @@ interface MockRoute {
   handler: MockHandler
 }
 
+// ---------- 全局延迟配置 ----------
+/**
+ * Mock API 延迟（毫秒）：所有 /mock/* 响应统一随机等待 min~max，
+ * 模拟真实网络耗时，便于演示组件的加载（loading）状态。
+ * dev（vite HTTP 中间件）与 prod（axios adapter）两条链路共用；
+ * min/max 调 0 即关闭延迟。
+ */
+export const mockApiDelay = { min: 500, max: 1000 }
+
+/** 按 mockApiDelay 区间随机等待 */
+function sleepRandom(): Promise<void> {
+  const { min, max } = mockApiDelay
+  const ms = Math.max(0, min + Math.random() * Math.max(0, max - min))
+  return ms ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
+}
+
 // ---------- 内存数据 ----------
 export interface UserItem {
   id: number
@@ -386,6 +402,9 @@ export function createMockAdapter() {
     }
     const result = route.handler({ params: { ...query, ...body }, url })
 
+    // 全局 mock 延迟：模拟网络耗时，演示加载状态
+    await sleepRandom()
+
     return {
       data: { code: result.code ?? 0, message: result.message ?? 'ok', data: result.data ?? null },
       status: 200,
@@ -450,6 +469,10 @@ export function createMockHttpHandler() {
     }
 
     const result = route.handler({ params: { ...query, ...body }, url: pathname })
+
+    // 全局 mock 延迟：模拟网络耗时，演示加载状态（404 未命中不延迟，立即暴露配置错误）
+    await sleepRandom()
+
     res.statusCode = 200
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify({ code: result.code ?? 0, message: result.message ?? 'ok', data: result.data ?? null }))

@@ -15,13 +15,21 @@
           </template>
         </span>
       </template>
+      <!-- 顶栏右侧：皮肤切换入口（画刷圆形按钮，点击打开全站换肤抽屉） -->
+      <template #header-right>
+        <el-tooltip content="切换皮肤" placement="bottom" :show-after="200">
+          <el-button class="skin-entry" circle aria-label="切换皮肤" @click="skinVisible = true">
+            <el-icon><Brush /></el-icon>
+          </el-button>
+        </el-tooltip>
+      </template>
     </wd-station>
 
     <!-- 全站主题皮肤：挂到 WdStation 顶栏 settings 工具，点击打开抽屉 -->
     <el-drawer v-model="skinVisible" title="全站主题皮肤" size="420px">
       <div class="skin-picker">
         <p class="skin-picker__tip">
-          选择皮肤，全站实时换肤（主题色 / 底色 / 描边，Element 组件联动）。
+          组件库 10 套系统预设皮肤，选择后经 <code>theme.skin</code> 一键套用，全站实时换肤（Element 组件联动）。
           <el-tag size="small" type="info" effect="plain">刷新恢复默认</el-tag>
         </p>
         <div v-for="s in SITE_SKINS" :key="s.key" class="skin-item" :class="{ 'is-active': s.key === currentSkinKey }"
@@ -46,7 +54,7 @@
 <script setup lang="ts">
 import { nextTick, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { CircleCheckFilled } from '@element-plus/icons-vue'
+import { Brush, CircleCheckFilled } from '@element-plus/icons-vue'
 import { useGlobalConfig } from '../../../src'
 import { componentNav } from '../api-meta'
 import { SITE_SKINS, currentSkinKey, swatchesOf, applySkin } from '../skins'
@@ -57,8 +65,8 @@ const skinVisible = ref(false)
 /** 底栏版本信息：版本号统一从全局配置读取（src/lib/configs/default-config.ts 的 version） */
 const footerInfo = `v${useGlobalConfig().version} · Vue3 + ElementPlus`
 
-/** 顶栏工具点位：只保留 settings（皮肤），refresh/user/login 关闭 */
-const toolbarConfig = { refresh: 'none', settings: 'right', user: 'none', login: 'none' }
+/** 顶栏工具点位全部关闭（refresh/settings/user/login）；皮肤入口为 header-right 插槽的画刷按钮 */
+const toolbarConfig = { refresh: 'none', settings: 'none', user: 'none', login: 'none' }
 
 /**
  * 导航映射为 WdStation 分组菜单（分组可折叠形态）：
@@ -66,8 +74,9 @@ const toolbarConfig = { refresh: 'none', settings: 'right', user: 'none', login:
  *   无 children 的节点为平铺菜单项（el-menu-item）
  * - 概览：首页（平铺）
  * - 组件分组：复用 componentNav，每组一个可折叠节点（path → /components/{path}；
- *   菜单显示名去掉 Wd 前缀，如 WdDataGrid → DataGrid）
- * - 工具指南：Playground / 联动演示 / 场景搭建指引 / 全局样式·主题
+ *   菜单显示名去掉 Wd 前缀，如 WdDataGrid → DataGrid）；
+ *   「核心基础设施」组末尾额外挂独立页「全局样式 / 主题」（/theme）与「组件联动」（/linkage）
+ * - 工具指南：Playground / 场景搭建指引
  * 菜单项 path 与路由一致，router 模式点击跳转。
  */
 interface DocMenuNode {
@@ -84,16 +93,23 @@ const menuGroups: { key: string; title?: string; menus: DocMenuNode[] }[] = [
       { title: '首页', path: '/', icon: 'HomeFilled' },
       ...componentNav.map((g) => ({
         title: g.label,
-        children: g.items.map((c) => ({ title: c.name.replace(/^Wd/, ''), path: `/components/${c.path}` }))
+        children: [
+          ...g.items.map((c) => ({ title: c.name.replace(/^Wd/, ''), path: `/components/${c.path}` })),
+          // 「全局样式 / 主题」「组件联动」独立页挂在核心基础设施分组下
+          ...(g.label === '核心基础设施'
+            ? [
+                { title: '全局样式 / 主题', path: '/theme' },
+                { title: '组件联动', path: '/linkage' }
+              ]
+            : [])
+        ]
       })),
       {
         title: '工具指南',
         icon: 'Collection',
         children: [
           { title: 'Playground', path: '/playground', icon: 'MagicStick' },
-          { title: '联动演示', path: '/linkage', icon: 'Connection' },
-          { title: '场景搭建指引', path: '/scenario-guide', icon: 'Guide' },
-          { title: '全局样式 / 主题', path: '/theme', icon: 'Brush' }
+          { title: '场景搭建指引', path: '/scenario-guide', icon: 'Guide' }
         ]
       }
     ]
@@ -360,6 +376,11 @@ body,
 .skin-item__check {
   color: var(--wd-color-primary, #409eff);
   font-size: 16px;
+  flex: none;
+}
+
+/* —— 顶栏皮肤入口按钮 —— */
+.skin-entry {
   flex: none;
 }
 </style>

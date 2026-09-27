@@ -633,6 +633,7 @@ const status = ref('1')`,
       { name: 'title', label: '标题', type: 'string', default: '面板标题' },
       { name: 'description', label: '描述', type: 'string', default: '面板描述文字' },
       { name: 'collapsible', label: '可折叠', type: 'boolean', default: false },
+      { name: 'border', label: '边框', type: 'boolean', default: true },
       { name: '__slot__', label: '内容文案', type: 'string', default: '面板内容区：可放任意组件。' }
     ],
     inner: `<p style="margin: 0">{{slotText}}</p>`,

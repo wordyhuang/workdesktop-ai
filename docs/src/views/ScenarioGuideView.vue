@@ -112,7 +112,7 @@
     <!-- 页尾导航 -->
     <footer class="guide-foot">
       <span>更多组件属性请查阅左侧组件文档与</span>
-      <router-link class="guide-foot__link" to="/linkage">联动演示</router-link>
+      <router-link class="guide-foot__link" to="/linkage">组件联动</router-link>
       <span>、</span>
       <router-link class="guide-foot__link" to="/playground">Playground</router-link>
     </footer>

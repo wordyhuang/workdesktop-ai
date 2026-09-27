@@ -3,8 +3,8 @@
     <unpack-note>
       该组件点击后发起 API 请求，对返回数据中的 <code>data</code> 不做字段提取，而是把请求结果通过事件抛出：成功 <code>api-success</code> 携带 <code>{ data, code, message }</code>、业务失败 <code>api-fail</code> 携带 <code>{ code, message }</code>、异常 <code>api-exception</code> 携带 <code>{ error, message }</code>；其中 <code>data</code> 即后端返回的业务数据本体。
     </unpack-note>
-    <demo-block title="基础用法" desc="点击发起请求，自动 loading 与成功提示；无 api 时仅触发 click" :code="code1" layout="row">
-      <wd-api-button type="primary" label="保存配置" api="/user/save" :api-param="{ id: 1 }" />
+    <demo-block title="基础用法" desc="点击发起请求，自动 loading 与成功提示；无 api 时仅触发 click。指定 icon 后，请求期间按钮自动变为 loading 加载形式（icon 被 loading 动画替换），请求结束恢复" :code="code1" layout="row">
+      <wd-api-button type="primary" label="保存配置" :icon="Edit" api="/user/save" :api-param="{ id: 1 }" />
       <wd-api-button type="success" label="触发导出" api="/user/export" />
       <wd-api-button label="无接口按钮（仅事件）" @click="onClick" />
     </demo-block>
@@ -30,10 +30,10 @@
 
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
+import { Edit } from '@element-plus/icons-vue'
 
-const code1 = `<wd-api-button type="primary" api="/user/save" :api-param="{ id: 1 }">
-  保存配置
-</wd-api-button>`
+const code1 = `<wd-api-button type="primary" label="保存配置" :icon="Edit"
+  api="/user/save" :api-param="{ id: 1 }" />`
 
 const code2 = `<wd-api-button type="warning" api="/user/list" :page-loading="true">
   页面遮罩请求

@@ -1,11 +1,12 @@
 <template>
   <div class="linkage-page">
-    <PageHeader
-      eyebrow="LINKAGE PLAYGROUND"
-      icon="Connection"
-      title="联动联调演示"
-      desc="覆盖声明式联动（filter + headRefreshDatagrid）、事件驱动联动（row-action）与事件总线（useEventBus）跨层级通信。"
-    />
+    <PageHeader eyebrow="COMPONENT LINKAGE" icon="Connection" title="组件联动">
+      组件联动指组件之间的数据与行为协同：一个组件的动作（查询 / 提交 / 点击）自动驱动另一个组件响应
+      （刷新列表 / 关闭抽屉 / 接收消息），父页面无需手动牵线轮询。本页演示库内置的三种联动方式——
+      <b>声明式联动</b>：<code>filter</code> 分组 + <code>headRefreshDatagrid</code>，零代码让 SearchPanel、DrawerButton
+      驱动同组 DataGrid 自动刷新；<b>事件驱动联动</b>：DataGrid 操作列 <code>row-action</code> 事件抛出，由父组件接管
+      后续动作；<b>事件总线</b>：<code>useEventBus</code> 发布 / 订阅，任意跨层级组件解耦通信。
+    </PageHeader>
 
     <!-- 1. 声明式联动：搜索面板 + 数据列表（分别用 Panel 包裹，外层无大容器） -->
     <wd-panel title="搜索条件">

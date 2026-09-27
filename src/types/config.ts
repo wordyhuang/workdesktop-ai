@@ -101,7 +101,22 @@ export interface PageConfig {
   pager: PagerConfig
 }
 
+/** 预设皮肤名（与 lib/core/skins.ts 的 SKIN_PRESETS 一一对应） */
+export type SkinName =
+  | 'default'
+  | 'fashion'
+  | 'business'
+  | 'tech'
+  | 'cyberpunk'
+  | 'chinese'
+  | 'flat'
+  | 'cool'
+  | 'governance'
+  | 'apple'
+
 export interface ThemeConfig {
+  /** 预设皮肤名，一键套用整套皮肤；colors/cssVars 可在皮肤基础上继续覆盖（优先级 cssVars > colors > skin） */
+  skin?: SkinName
   /** 语义令牌覆盖（primary/success/warning/danger/info） */
   colors?: Record<string, string>
   /** CSS 变量覆盖（--wd-* / --el-*），优先级高于 colors */

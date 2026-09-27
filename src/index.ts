@@ -22,6 +22,10 @@ export {
   getComponentDefault
 } from './lib/core/config'
 
+// 预设皮肤（theme.skin 一键套用）
+export { SKIN_PRESETS, getSkinPreset, listSkins } from './lib/core/skins'
+export type { SkinPreset } from './lib/core/skins'
+
 // HTTP 客户端：RequestAPI 为公开请求核心类（可 new 自建实例），request 为全局单例
 export { RequestAPI, request, default as http } from './lib/core/http'
 export type { ApiResult, ApiEventPayload, ApiEventType, ApiEventHandler } from './lib/core/http'

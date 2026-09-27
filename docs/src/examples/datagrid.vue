@@ -11,7 +11,7 @@
       字段名可用全局配置 <code>response.list</code> 的 <code>listName</code> / <code>totalName</code> / <code>pageSizeName</code> / <code>currentPageName</code> 自定义（默认 <code>list</code> / <code>total</code> / <code>pageSize</code> / <code>currentPage</code>）。
     </unpack-note>
     <demo-block title="API 数据 + 分页 + 搜索联动 + 工具栏"
-      desc="SearchPanel 与 DataGrid 放在同一个容器内，配置相同 filter，点击查询自动刷新表格（重置到第一页）；同时演示：<br/>1. border 表格边框<br/>2. tools 内置新增/导出按钮（emit add/export 事件）<br/>3. #toolbar 插槽补充自定义按钮<br/>4. 搜索面板支持默认项 + more 展开更多隐藏条件<br/>5. 多种数据类型展示：文本、Tag、进度条、日期等<br/>6. 最右侧操作列：详情/删除按钮"
+      desc="SearchPanel 与 DataGrid 放在同一个容器内，配置相同 filter，点击查询自动刷新表格（重置到第一页）；同时演示：<br/>1. border 表格边框<br/>2. tools 内置新增/导出按钮（emit add/export 事件）<br/>3. #toolbar 插槽补充自定义按钮<br/>4. 搜索面板支持默认项 + more 展开更多隐藏条件<br/>5. 多种数据类型展示：文本、Tag、进度条、日期等<br/>6. 最右侧操作列：详情/编辑/删除按钮（编辑走 WdDrawerButton 打开编辑表单）"
       :code="code1">
       <div>
         <wd-search-panel head-refresh-datagrid filter="main">
@@ -115,7 +115,7 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="170" fixed="right">
+          <el-table-column label="操作" width="230" fixed="right">
             <template #default="{ row }">
               <el-button-group>
                 <wd-drawer-button
@@ -170,6 +170,61 @@
                         </div>
                       </div>
                     </div>
+                  </template>
+                </wd-drawer-button>
+
+                <!-- 编辑：抽屉内打开编辑表单，打开时拷贝行数据，保存才回写（取消不影响原行） -->
+                <wd-drawer-button
+                  label="编辑"
+                  type="warning"
+                  button-size="small"
+                  :title="`${row.name} - 编辑`"
+                  :data="row"
+                  size="50%"
+                  @open="fillEditForm(row)"
+                >
+                  <template #default>
+                    <el-form :model="editForm" label-width="80px">
+                      <el-form-item label="姓名">
+                        <el-input v-model="editForm.name" placeholder="请输入姓名" />
+                      </el-form-item>
+                      <el-form-item label="性别">
+                        <el-radio-group v-model="editForm.gender">
+                          <el-radio :value="1">男</el-radio>
+                          <el-radio :value="2">女</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                      <el-form-item label="部门">
+                        <el-select v-model="editForm.dept" placeholder="请选择部门" style="width: 100%">
+                          <el-option label="技术部" value="技术部" />
+                          <el-option label="产品部" value="产品部" />
+                          <el-option label="设计部" value="设计部" />
+                          <el-option label="市场部" value="市场部" />
+                          <el-option label="运营部" value="运营部" />
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="角色">
+                        <el-select v-model="editForm.role" placeholder="请选择角色" style="width: 100%">
+                          <el-option label="管理员" :value="1" />
+                          <el-option label="编辑" :value="2" />
+                          <el-option label="访客" :value="3" />
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="手机号">
+                        <el-input v-model="editForm.phone" placeholder="请输入手机号" />
+                      </el-form-item>
+                      <el-form-item label="邮箱">
+                        <el-input v-model="editForm.email" placeholder="请输入邮箱" />
+                      </el-form-item>
+                      <el-form-item label="状态">
+                        <el-switch v-model="editForm.status" :active-value="1" :inactive-value="0"
+                          active-text="启用" inactive-text="禁用" inline-prompt />
+                      </el-form-item>
+                    </el-form>
+                  </template>
+                  <template #footer="{ close }">
+                    <el-button @click="close">取消</el-button>
+                    <el-button type="primary" @click="onSaveEdit(row, close)">保存</el-button>
                   </template>
                 </wd-drawer-button>
 
@@ -396,7 +451,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 
@@ -622,7 +677,7 @@ const code1 = `<div>
       </template>
     </el-table-column>
     <!-- 固定在右侧的操作列：el-button-group + small 实底按钮 -->
-    <el-table-column label="操作" width="170" fixed="right">
+    <el-table-column label="操作" width="230" fixed="right">
       <template #default="{ row }">
         <el-button-group>
           <!-- size 是抽屉尺寸；按钮尺寸走 button-size（与弹层尺寸解耦） -->
@@ -647,6 +702,60 @@ const code1 = `<div>
               </el-descriptions>
             </template>
           </wd-drawer-button>
+          <!-- 编辑：抽屉内打开编辑表单；@open 拷贝行数据，保存才回写（取消不影响原行） -->
+          <wd-drawer-button
+            label="编辑"
+            type="warning"
+            button-size="small"
+            :title="\`\${row.name} - 编辑\`"
+            :data="row"
+            size="50%"
+            @open="fillEditForm(row)"
+          >
+            <template #default>
+              <el-form :model="editForm" label-width="80px">
+                <el-form-item label="姓名">
+                  <el-input v-model="editForm.name" placeholder="请输入姓名" />
+                </el-form-item>
+                <el-form-item label="性别">
+                  <el-radio-group v-model="editForm.gender">
+                    <el-radio :value="1">男</el-radio>
+                    <el-radio :value="2">女</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="部门">
+                  <el-select v-model="editForm.dept" placeholder="请选择部门" style="width: 100%">
+                    <el-option label="技术部" value="技术部" />
+                    <el-option label="产品部" value="产品部" />
+                    <el-option label="设计部" value="设计部" />
+                    <el-option label="市场部" value="市场部" />
+                    <el-option label="运营部" value="运营部" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="角色">
+                  <el-select v-model="editForm.role" placeholder="请选择角色" style="width: 100%">
+                    <el-option label="管理员" :value="1" />
+                    <el-option label="编辑" :value="2" />
+                    <el-option label="访客" :value="3" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="手机号">
+                  <el-input v-model="editForm.phone" placeholder="请输入手机号" />
+                </el-form-item>
+                <el-form-item label="邮箱">
+                  <el-input v-model="editForm.email" placeholder="请输入邮箱" />
+                </el-form-item>
+                <el-form-item label="状态">
+                  <el-switch v-model="editForm.status" :active-value="1" :inactive-value="0"
+                    active-text="启用" inactive-text="禁用" inline-prompt />
+                </el-form-item>
+              </el-form>
+            </template>
+            <template #footer="{ close }">
+              <el-button @click="close">取消</el-button>
+              <el-button type="primary" @click="onSaveEdit(row, close)">保存</el-button>
+            </template>
+          </wd-drawer-button>
           <wd-popconfirm-button
             type="danger"
             size="small"
@@ -659,7 +768,17 @@ const code1 = `<div>
       </template>
     </el-table-column>
   </wd-data-grid>
-</div>`
+</div>
+
+// 编辑抽屉配套逻辑（script setup）：
+// const editForm = reactive({ name: '', gender: 1, dept: '', role: 1, phone: '', email: '', status: 1 })
+// function fillEditForm(row) {           // 抽屉打开时拷贝行数据
+//   Object.assign(editForm, { name: row.name, gender: row.gender, dept: row.dept, role: row.role, phone: row.phone, email: row.email, status: row.status })
+// }
+// function onSaveEdit(row, close) {      // 保存：回写原行并关闭抽屉
+//   Object.assign(row, { ...editForm })
+//   close()
+// }`
 
 const codeTools = `<!-- 切换控件：按钮形态 / 尺寸 / 内置工具组位置 / 自定义栏位置 -->
 <div class="toolbar-demo-controls">
@@ -926,6 +1045,35 @@ function openViewer(row: any) {
 
 function onDelete(row: any) {
   ElMessage.success(`删除成功：${row.name || '---'}`)
+}
+
+/** 编辑抽屉表单：打开时拷贝行数据，保存才回写，取消不影响原行 */
+const editForm = reactive({
+  name: '',
+  gender: 1,
+  dept: '',
+  role: 1,
+  phone: '',
+  email: '',
+  status: 1,
+})
+
+function fillEditForm(row: any) {
+  Object.assign(editForm, {
+    name: row.name,
+    gender: row.gender,
+    dept: row.dept,
+    role: row.role,
+    phone: row.phone,
+    email: row.email,
+    status: row.status,
+  })
+}
+
+function onSaveEdit(row: any, close: () => void) {
+  Object.assign(row, { ...editForm })
+  ElMessage.success(`保存成功：${editForm.name || '---'}`)
+  close()
 }
 
 /** 静态示例：2026 Q3 在研项目台账 */

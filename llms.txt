@@ -1,11 +1,11 @@
 # workdesktop-ai — AI 开发参考（LLM-Optimized Component Library Reference）
 
 - 创建时间: 2026-09-16 19:45:30
-- 最后修改时间: 2026-09-16 22:03:47
-- 当前版本: V_1.1
+- 最后修改时间: 2026-09-24 13:44:41
+- 当前版本: V_1.2
 - 适用对象: AI 编码助手（非人类读者；信息密度优先，无修辞）
 - 核心目标: 使 AI 完整认识 workdesktop-ai 组件库，并能正确使用其完成开发任务
-- 文档简略描述: workdesktop-ai@1.0.2 全量事实参考：包结构 / 引入方式 / 全局配置 / 请求体系 / 声明式联动 / 28 组件 API（props/emits/slots/methods）/ 跨 iframe 协议 / 陷阱清单
+- 文档简略描述: workdesktop-ai@1.1.1 全量事实参考：包结构 / 引入方式 / 全局配置 / 请求体系 / 声明式联动 / 28 组件 API（props/emits/slots/methods）/ 跨 iframe 协议 / 陷阱清单
 
 ================================================================================
 ## 0. 如何使用本文档（FOR AI）
@@ -21,7 +21,7 @@
 ================================================================================
 ```yaml
 name: workdesktop-ai
-version: 1.0.2
+version: 1.1.1
 description: WorkDesktop 企业级 Vue3 组件库（基于 ElementPlus，HTML 模板渲染友好、AI 编码友好）
 type: module
 main: dist/index.umd.js        # UMD, window.WorkDesktop
@@ -107,6 +107,9 @@ export default WorkDesktop                 // Vue 插件（install 注册全部 
 export * from './components'               // 28 个组件，全部 Wd 前缀
 // 配置
 export { initConfig, setGlobalConfig, getGlobalConfig, resetConfig, mergeConfig, getComponentDefault }
+// 预设皮肤（§4.4）
+export { SKIN_PRESETS, getSkinPreset, listSkins }
+export type { SkinPreset }
 // 请求
 export { RequestAPI, request }             // request = 全局单例
 export { default as http }                 // 同 request 体系默认导出
@@ -174,8 +177,13 @@ interface WorkDesktopConfig {
     transform?: { requestInterceptor?: (cfg: any) => any; responseInterceptor?: (res: any) => any }
   }
   response?: ResponseConfig
-  theme?: { colors?: Record<string, string>; cssVars?: Record<string, string> }  // 变更后 applyTheme 写入 :root CSS 变量
+  theme?: ThemeConfig  // 变更后 applyTheme 写入 :root CSS 变量；详见 §4.4
 }
+interface ThemeConfig {
+  skin?: SkinName                        // 预设皮肤（§4.4），11 套
+  colors?: Record<string, string>        // 语义色键仅 6 个：primary/success/warning/danger/error/info（error 归一 danger）；非语义键 → --wd-color-{key}
+  cssVars?: Record<string, string>       // 任意 CSS 变量直写 :root
+}                                       // 覆盖优先级（低→高）：skin < colors < cssVars
 interface PagerConfig {
   size?: 'small' | 'default' | 'large'
   pageSizes?: number[]
@@ -218,6 +226,26 @@ resetConfig(): void
 useConfig(): WorkDesktopConfig
 // 入口另导出: initConfig(cfg), getComponentDefault(name) 
 ```
+
+### 4.4 预设皮肤（SKINS — 1.1.1 新增）
+```ts
+type SkinName = 'default' | 'fashion' | 'business' | 'tech' | 'cyberpunk' | 'chinese' | 'flat' | 'neumorphism' | 'gradient' | 'cool' | 'governance'  // 11 套
+interface SkinPreset {
+  key: SkinName
+  label: string         // 中文名
+  desc: string          // 风格描述
+  theme: ThemeConfig    // 皮肤携带的主题配置（colors/cssVars，结构同 §4.2）
+}
+// API（主入口导出，§2.4）
+SKIN_PRESETS: Record<SkinName, SkinPreset>                       // 全部预设映射
+getSkinPreset(key?: string): SkinPreset | undefined              // 无参或未知 key → undefined（由调用方回退）
+listSkins(): SkinPreset[]                                        // 全部 11 套（供皮肤选择器遍历）
+```
+- 用法：`app.use(WorkDesktop, { theme: { skin: 'fashion' } })` 或 `setGlobalConfig({ theme: { skin: 'cyberpunk' } })`。
+- 覆盖优先级（低→高）：皮肤预设 < theme.colors < theme.cssVars。
+- [陷阱] theme.skin 传入未知值：console.warn 并忽略 skin（仅应用用户 colors/cssVars，呈现默认外观），不抛错。
+- El 派生色阶自动推导（1.1.1 起）：applyTheme 按 EP 混色公式（light-N 混白 N/10，dark-2 混黑 20%）由 5 个归一化语义色（primary/success/warning/danger/info）自动生成 `--el-color-{key}-light-3/5/7/8/9` 与 `--el-color-{key}-dark-2`，无需手写；写入 :root 顺序：colors 语义键 → El 派生色阶 → cssVars（后者覆盖前者）。
+- 组件级令牌回退链：组件样式引用形如 `var(--wd-panel-bg, var(--wd-bg-color, #fff))` 的令牌，皮肤/cssVars 可单独定制组件外观；覆盖组件：WdDataGrid/WdEditableGrid 卡片、WdSearchPanel、WdDataForm footer、WdStation aside/header/tabs、WdPanel；完整令牌清单见 src/styles/tokens.css。
 
 ================================================================================
 ## 5. 请求体系（HTTP / REQUEST）
@@ -525,7 +553,7 @@ apiFail({code,message}), apiException({error,message}), apiAfter({data?,error?})
 - 行为: autoHeight 依赖子页 postMessage 上报 `{ type: 'wd-iframe-height', height }`。
 
 ### 9.19 WdPanel
-- props: title / description / collapsible = false / opened = true / shadow = 'hover'
+- props: title / description / collapsible = false / opened = true / shadow = 'hover' / border = true（1.1.1 新增，`:border="false"` 关闭外边框，加 wd-panel--no-border 类）
 - emits: update:opened / change
 - slots: title / extra（内部 @click.stop）/ 默认 / footer
 - 行为: title 属性或 title 插槽存在才渲染头部。
@@ -629,6 +657,7 @@ wd-iframe-height              子页 → 宿主(WdIframe)：高度上报 { type,
 18. optionsProps 中的 `tipsProp` 是「选项 tips 字段名」（string），与按钮的 tipsProp 组（tips/tipsType/placement）同名不同义。
 19. WdRequester：method / reqOptions 支持 page.componentDefault.WdRequester 全局覆盖；新请求自动中断旧请求。
 20. 并发去重 dedup 默认开启：method+url+params 完全一致的并发请求只发一次；需要强制多次时传 `dedup: false`。
+21. theme.skin 未知值不抛错：仅 console.warn 并忽略 skin（§4.4）；排查「皮肤没生效」先看控制台告警。
 
 ================================================================================
 ## 12. 典型组合模式（USAGE PATTERNS）
@@ -654,5 +683,6 @@ wd-iframe-height              子页 → 宿主(WdIframe)：高度上报 { type,
 ================================================================================
 ## 版本变化
 ================================================================================
+- V_1.2（2026-09-24 13:44:41）：对齐 workdesktop-ai@1.1.1 —— §1 版本号更新；§2.4 导出面补 SKIN_PRESETS/getSkinPreset/listSkins/SkinPreset；§4.2 theme 扩展为 ThemeConfig（新增 skin 键）；新增 §4.4 预设皮肤（11 套 SkinName、SkinPreset 结构、3 个 API、覆盖优先级、El 派生色阶自动推导、组件级令牌回退链）；§9.19 WdPanel 补 border prop；§11 陷阱清单 20 → 21 条。
 - V_1.1（2026-09-16 22:03:47）：校正 §4.2 配置结构 —— ResponseConfig.props 键名更正为 codeName/messageName/dataName（对齐 src/lib/configs/default-config.ts）；request 配置块补全 urlPrefix/throwException/dedup/loading/axiosConfig/transform；theme 明确 colors/cssVars 结构。
 - V_1.0（2026-09-16 19:45:30）：首版。覆盖 workdesktop-ai@1.0.2 全量事实：包结构、3 种引入方式（27 子路径 + 14 独立样式对照）、WorkDesktopConfig 完整结构与 6 配置 API、统一响应协议、RequestAPI/request/useRequest、声明式联动（6 + 3 函数）、共享 Props/Emits 组、28 组件详目（含 api-meta 缺失的 WdDialogButton，源自源码核对）、跨 iframe 协议、20 条陷阱清单、3 个典型组合模式。

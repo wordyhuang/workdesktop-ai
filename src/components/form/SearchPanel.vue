@@ -189,8 +189,11 @@ defineExpose({ expand, collapse, resetForm, getSearchParams })
 <style scoped>
 .wd-search-panel {
   width: 100%;
-  background: var(--wd-bg-color, #fff);
-  padding: var(--wd-spacing-base, 8px) var(--wd-spacing-base, 12px) 0;
+  /* 组件级令牌回退链：皮肤可单独定制 SearchPanel */
+  background: var(--wd-search-bg, var(--wd-bg-color, #fff));
+  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
+  background-image: var(--wd-search-bg-image, none);
+  padding: var(--wd-search-padding, var(--wd-spacing-base, 8px) var(--wd-spacing-base, 12px) 0);
   box-sizing: border-box;
 }
 /* 第一行：默认搜索项（fields）+ 右侧操作列（actions），grid 三列布局锁定空间，布局稳定不受第二行影响
@@ -230,7 +233,7 @@ defineExpose({ expand, collapse, resetForm, getSearchParams })
   min-height: 0;
   box-sizing: border-box;
   padding-top: var(--wd-spacing-base, 6px);
-  border-top: 1px dashed var(--wd-border-color-light, #e4e7ed);
+  border-top: var(--wd-border-width, 1px) dashed var(--wd-border-color-light, #e4e7ed);
 }
 /* 右侧操作列：按钮横排一行、不换行/不折行（宽度默认随内容，可经 actionWidth 显式固定） */
 .wd-search-panel__actions {

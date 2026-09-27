@@ -612,8 +612,11 @@ defineExpose({ refresh, openTab, closeTab })
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: var(--wd-bg-color);
-  border-right: 1px solid var(--wd-border-color-light);
+  /* 组件级令牌回退链：皮肤可单独定制导航区背景 */
+  background: var(--wd-station-aside-bg, var(--wd-bg-color));
+  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
+  background-image: var(--wd-station-aside-bg-image, none);
+  border-right: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
   transition: width 0.2s;
 }
 .wd-station__aside.is-collapsed {
@@ -624,10 +627,10 @@ defineExpose({ refresh, openTab, closeTab })
   align-items: center;
   gap: 8px;
   height: 48px;
-  padding: 0 16px;
+  padding: 0 var(--wd-spacing-large, 16px);
   overflow: hidden;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--wd-border-color-light);
+  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
 }
 .wd-station__logo.is-collapsed {
   padding: 0;
@@ -663,8 +666,10 @@ defineExpose({ refresh, openTab, closeTab })
   align-items: center;
   height: 48px;
   padding: 0 var(--wd-spacing-large);
-  background: var(--wd-bg-color);
-  border-bottom: 1px solid var(--wd-border-color-light);
+  background: var(--wd-station-header-bg, var(--wd-bg-color));
+  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
+  background-image: var(--wd-station-header-bg-image, none);
+  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
   flex-shrink: 0;
 }
 .wd-station__header-left {
@@ -757,7 +762,7 @@ defineExpose({ refresh, openTab, closeTab })
   display: flex;
   align-items: center;
   background: var(--wd-bg-color);
-  border-bottom: 1px solid var(--wd-border-color-light);
+  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
   flex-shrink: 0;
 }
 .wd-station__top-menu :deep(.el-menu) {
@@ -771,8 +776,10 @@ defineExpose({ refresh, openTab, closeTab })
   align-items: center;
   flex-shrink: 0;
   padding-top: 4px;
-  background: var(--wd-bg-color);
-  border-bottom: 1px solid var(--wd-border-color-light);
+  background: var(--wd-station-tabs-bg, var(--wd-bg-color));
+  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
+  background-image: var(--wd-station-tabs-bg-image, none);
+  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
 }
 .wd-station__tabs {
   flex: 1;
@@ -789,7 +796,7 @@ defineExpose({ refresh, openTab, closeTab })
 /* 分隔线统一放右侧：每个 tab（含最后一个）默认带右边框，tabs 区右端封闭 */
 .wd-station__tabs-bar :deep(.el-tabs--card > .el-tabs__header .el-tabs__nav .el-tabs__item) {
   border-left: none;
-  border-right: 1px solid var(--wd-border-color-light);
+  border-right: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
 }
 .wd-station__tabs-actions {
   flex-shrink: 0;
@@ -833,8 +840,9 @@ defineExpose({ refresh, openTab, closeTab })
   gap: var(--wd-spacing-base);
   height: 32px;
   padding: 0 var(--wd-spacing-large);
-  background: var(--wd-bg-color);
-  border-top: 1px solid var(--wd-border-color-light);
+  /* 组件级令牌回退链：皮肤可单独定制底栏背景 */
+  background: var(--wd-station-footer-bg, var(--wd-bg-color));
+  border-top: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
   color: var(--wd-text-color-secondary);
   font-size: var(--wd-font-size-small);
   flex-shrink: 0;

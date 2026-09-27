@@ -3,12 +3,16 @@
   <span>企业级 Vue 3 组件库 · 基于 ElementPlus · HTML 模板友好 / AI 编码友好</span>
 </p>
 
-> 文档版本：V\_1.0 ｜ 创建时间：2026-09-16 22:03:47 ｜ 最后修改时间：2026-09-16 22:03:47
+> 文档版本：V\_1.1 ｜ 创建时间：2026-09-16 22:03:47 ｜ 最后修改时间：2026-09-24 13:44:41
 > 适用对象：使用本库的开发者（人类阅读；AI 助手请改读 [llms.txt](./llms.txt)）
 > 核心目标：帮助开发者快速了解、安装并上手 WorkDesktop AI
-> 文档简述：项目门面说明，覆盖特性、安装、三种引入方式、全局配置、组件总览、请求核心、Hooks 与本地开发指引。当前库版本：v1.0.2
+> 文档简述：项目门面说明，覆盖特性、安装、三种引入方式、全局配置、组件总览、请求核心、Hooks 与本地开发指引。当前库版本：v1.1.1
 
 ***
+
+本项目的初衷是想让AI在做前端设计的时候拥有更加可控，更加稳定的输出结果。
+
+<br />
 
 WorkDesktop AI 是一套面向企业后台管理场景的 Vue 3 组件库，在 ElementPlus 之上做「场景化复合封装」：
 
@@ -27,8 +31,8 @@ WorkDesktop AI 是一套面向企业后台管理场景的 Vue 3 组件库，在 
 | 声明式联动      | 属性（`filter` 分组 + `head-refresh-datagrid` 刷新）+ 事件驱动（A+B 混合），无需引入中心化 DSL                               |
 | 组合式 Hooks  | `useRequest` / `useDataGrid` / `useConfig` / `useGlobalConfig` / `useEventBus` / `useGlobalState`    |
 | 双产物 + 按需入口 | `dist/index.esm.js` + `dist/index.umd.js` + 27 个组件子路径入口 + 完整 `.d.ts`                                 |
-| 开箱主题       | 语义色令牌 + CSS 变量覆盖 + 配置对象生成主题                                                                          |
-| 测试保障       | vitest + @vue/test-utils：106 用例，基础库行覆盖率 98%                                                          |
+| 开箱主题       | 11 套预设皮肤一键套用（`theme.skin`）+ 语义色令牌 + El 派生色阶自动推导 + CSS 变量覆盖（优先级 cssVars > colors > skin）              |
+| 测试保障       | vitest + @vue/test-utils：237 用例全通过，行覆盖率 96.6%（阈值 lines/funcs ≥ 80%，branches ≥ 70%）                   |
 
 ## 安装
 
@@ -175,8 +179,9 @@ app.use(WorkDesktop, {
       WdDataForm: { submitApi: '/save' }
     }
   },
-  // 主题
-  theme: { colors: { primary: '#2f6bff' }, cssVars: { '--wd-radius': '8px' } }
+  // 主题：skin 一键套用预设皮肤（11 套可选），colors / cssVars 在其上继续覆盖
+  // 覆盖优先级：cssVars > colors > skin；colors 改动会自动推导 El 浅/深色阶
+  theme: { skin: 'default', colors: { primary: '#2f6bff' }, cssVars: { '--wd-radius': '8px' } }
 })
 ```
 
@@ -301,6 +306,11 @@ python -m http.server 8000
 
 ## 版本变化
 
+- **V\_1.1**（2026-09-24 13:44:41）：对齐库版本 v1.1.1。相对 V\_1.0 的变化：
+  1. 头部库版本 v1.0.2 → v1.1.1；
+  2. 特性表「开箱主题」补充 1.1.1 新增的 11 套预设皮肤（`theme.skin`）与 El 派生色阶自动推导；
+  3. 全局配置示例 `theme` 补充 `skin` 用法与覆盖优先级说明；
+  4. 特性表「测试保障」用例数按当前真实运行结果更新（106 → 237）。
 - **V\_1.0**（2026-09-16 22:03:47）：首次建立带版本标注的 README。相对旧版的变化：
   1. 组件总数 25 → 28（按 `src/components/index.ts` 实际导出核对）；
   2. 「组件总览」按源码分组重排：`WdViewer` 归入数据组、`WdSearchPanel`/`WdFormItem`/`WdSearchItem` 归入表单组，补齐旧版遗漏的 `WdRequester`、`WdFormItem`、`WdSearchItem`、`WdDialogButton`、`WdPopconfirmButton`、`WdStation`；

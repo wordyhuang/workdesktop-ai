@@ -1,5 +1,5 @@
 <template>
-  <div class="wd-panel" :class="`wd-panel--shadow-${shadow}`">
+  <div class="wd-panel" :class="[`wd-panel--shadow-${shadow}`, { 'wd-panel--no-border': !border }]">
     <div
       v-if="title || $slots.title"
       class="wd-panel__header"
@@ -65,7 +65,9 @@ const props = defineProps({
   shadow: {
     type: String as PropType<'always' | 'hover' | 'never'>,
     default: 'hover'
-  }
+  },
+  /** 是否显示外边框（嵌套在卡片/弹层等容器内时可关闭） */
+  border: { type: Boolean, default: true }
 })
 
 const emit = defineEmits<{
@@ -100,9 +102,12 @@ function onHeaderClick() {
 .wd-panel {
   width: 100%;
   margin-bottom: var(--wd-spacing-base, 12px);
-  background: var(--wd-bg-color, #fff);
-  border: 1px solid var(--wd-border-color-light, #e4e7ed);
-  border-radius: var(--wd-radius-base, 4px);
+  /* 组件级令牌回退链：--wd-panel-* 未设时回落全局令牌，皮肤可单独定制 Panel */
+  background: var(--wd-panel-bg, var(--wd-bg-color, #fff));
+  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
+  background-image: var(--wd-panel-bg-image, none);
+  border: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-panel-border-color, var(--wd-border-color-light, #e4e7ed));
+  border-radius: var(--wd-panel-radius, var(--wd-radius-base, 4px));
   box-sizing: border-box;
   overflow: hidden;
   transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
@@ -126,26 +131,32 @@ function onHeaderClick() {
   );
   transform: translateY(-1px);
 }
+/* 无边框：transparent 保持盒模型一致；:hover 提优先级防止悬停阴影重新上色 */
+.wd-panel--no-border,
+.wd-panel--no-border:hover {
+  border-color: transparent;
+}
 
 .wd-panel__header {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px 12px 18px;
-  border-bottom: 1px solid var(--wd-border-color-light, #e4e7ed);
+  gap: var(--wd-spacing-base, 12px);
+  padding: var(--wd-panel-header-padding, var(--wd-spacing-base, 12px) var(--wd-spacing-large, 16px) var(--wd-spacing-base, 12px) 18px);
+  background: var(--wd-panel-header-bg, transparent);
+  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light, #e4e7ed);
   transition: background-color 0.2s ease;
 }
-/* 品牌色标识条 */
+/* 品牌色标识条：组件级令牌回退链，出厂保持 3px 全高主色细条 */
 .wd-panel__header::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--wd-color-primary, #409eff);
-  border-radius: 0 var(--wd-radius-small, 2px) var(--wd-radius-small, 2px) 0;
+  top: var(--wd-panel-title-bar-inset, 0);
+  bottom: var(--wd-panel-title-bar-inset, 0);
+  width: var(--wd-panel-title-bar-width, 3px);
+  background: var(--wd-panel-title-bar-bg, var(--wd-color-primary, #409eff));
+  border-radius: var(--wd-panel-title-bar-radius, 0 var(--wd-radius-small, 2px) var(--wd-radius-small, 2px) 0);
 }
 .wd-panel__header.is-collapsible {
   cursor: pointer;
@@ -164,7 +175,7 @@ function onHeaderClick() {
   font-size: var(--wd-font-size-base, 14px);
   font-weight: 600;
   line-height: 22px;
-  color: var(--wd-text-color-primary, #303133);
+  color: var(--wd-panel-title-color, var(--wd-text-color-primary, #303133));
   white-space: nowrap;
 }
 .wd-panel__description {
@@ -206,11 +217,11 @@ function onHeaderClick() {
   min-height: 0;
 }
 .wd-panel__body {
-  padding: 16px;
+  padding: var(--wd-panel-body-padding, var(--wd-spacing-large, 16px));
 }
 .wd-panel__footer {
-  padding: 10px 16px;
-  border-top: 1px solid var(--wd-border-color-light, #e4e7ed);
-  background: var(--wd-bg-color-page, #f5f7fa);
+  padding: 10px var(--wd-spacing-large, 16px);
+  border-top: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light, #e4e7ed);
+  background: var(--wd-panel-footer-bg, var(--wd-bg-color-page, #f5f7fa));
 }
 </style>

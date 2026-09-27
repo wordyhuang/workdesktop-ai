@@ -1162,9 +1162,13 @@ watch(
   overflow: auto;
 }
 .wd-datagrid__card {
-  border: 1px solid var(--wd-border-color-light, #e4e7ed);
-  border-radius: var(--wd-radius-base, 4px);
-  padding: var(--wd-spacing-base, 12px);
+  /* 组件级令牌回退链：皮肤可单独定制 DataGrid 卡片 */
+  background: var(--wd-datagrid-bg, transparent);
+  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
+  background-image: var(--wd-datagrid-bg-image, none);
+  border: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-datagrid-border-color, var(--wd-border-color-light, #e4e7ed));
+  border-radius: var(--wd-datagrid-radius, var(--wd-radius-base, 4px));
+  padding: var(--wd-datagrid-padding, var(--wd-spacing-base, 12px));
   margin-bottom: var(--wd-spacing-base, 12px);
 }
 .wd-datagrid__card-title {
@@ -1202,8 +1206,8 @@ watch(
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  border-bottom: 1px solid var(--wd-border-color-light, #f0f0f0);
-  border-radius: 4px;
+  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light, #f0f0f0);
+  border-radius: var(--wd-radius-small, 4px);
   transition: background-color 0.15s;
 }
 .wd-datagrid__col-item:hover {

@@ -146,7 +146,6 @@
                 :ref="focusCell"
                 :placeholder="col.placeholder"
                 @change="markCellChanged($index, col)"
-                @blur="deactivateCell"
               />
               <el-input-number
                 v-else-if="activeCell === cellKey($index, col.prop) && col.editor === 'number'"
@@ -156,7 +155,6 @@
                 :max="col.max"
                 :precision="col.precision"
                 @change="markCellChanged($index, col)"
-                @blur="deactivateCell"
               />
               <el-select
                 v-else-if="activeCell === cellKey($index, col.prop) && col.editor === 'select'"
@@ -164,7 +162,6 @@
                 :ref="focusCell"
                 :placeholder="col.placeholder"
                 @change="onSelectChange($index, col)"
-                @blur="deactivateCell"
               >
                 <el-option v-for="opt in col.options || []" :key="opt.value" :label="opt.text" :value="opt.value" />
               </el-select>
@@ -590,7 +587,13 @@ function isRowEditing(index: number) {
 function deactivateCell() {
   activeCell.value = ''
 }
-
+function handleDocumentClick(e: MouseEvent) {
+  if (!activeCell.value || !rootRef.value) return
+  // 如果点击在当前表格内部，不关闭
+  if (rootRef.value.contains(e.target as Node)) return
+  // 点击在外部，关闭激活单元格
+  activeCell.value = ''
+}
 function focusCell(el: any) {
   if (!el) return
   const target = el?.focus ? el : el?.$el?.querySelector?.('input')
@@ -1216,9 +1219,12 @@ onMounted(() => {
     window.addEventListener('resize', onViewportResize)
     measureFixHeight()
   }
+  // 点击外部关闭激活单元格
+  document.addEventListener('mousedown', handleDocumentClick)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onViewportResize)
+  document.removeEventListener('mousedown', handleDocumentClick)
   unregister?.()
 })
 
@@ -1276,7 +1282,7 @@ watch(
 .wd-editable-grid__cell {
   width: 100%;
   min-height: 24px;
-  border-radius: 2px;
+  border-radius: var(--wd-radius-small, 2px);
   transition: background-color 0.2s;
 }
 .wd-editable-grid__cell.is-editable {
@@ -1326,9 +1332,13 @@ watch(
   overflow: auto;
 }
 .wd-editable-grid__card {
-  border: 1px solid var(--wd-border-color-light, #e4e7ed);
-  border-radius: var(--wd-radius-base, 4px);
-  padding: var(--wd-spacing-base, 12px);
+  /* 组件级令牌回退链：皮肤可单独定制 EditableGrid 卡片 */
+  background: var(--wd-editable-grid-bg, transparent);
+  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
+  background-image: var(--wd-editable-grid-bg-image, none);
+  border: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-editable-grid-border-color, var(--wd-border-color-light, #e4e7ed));
+  border-radius: var(--wd-editable-grid-radius, var(--wd-radius-base, 4px));
+  padding: var(--wd-editable-grid-padding, var(--wd-spacing-base, 12px));
   margin-bottom: var(--wd-spacing-base, 12px);
 }
 .wd-editable-grid__card-title {
@@ -1360,7 +1370,7 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 6px 0;
-  border-bottom: 1px solid var(--wd-border-color-light, #f0f0f0);
+  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light, #f0f0f0);
 }
 .wd-editable-grid__col-actions {
   display: flex;

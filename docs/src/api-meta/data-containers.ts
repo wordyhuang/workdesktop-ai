@@ -126,6 +126,7 @@ export const containerData: ComponentMeta[] = [
         '`extra` 插槽区域的点击事件已被拦截（`@click.stop`），点击里面的按钮不会误触面板的折叠/展开。',
         '折叠时主体（default）与底部（footer）会一并收起，展开带高度过渡动画；不要把需要常驻的操作只放在 footer 里。',
         '阴影选择建议：`hover`（默认）适合常规分区；`always` 适合需要突出的核心分区；`never` 仅保留描边，适合密集排列的次级分区。',
+        '`border="false"` 去掉外框描边，适合嵌在卡片、抽屉、灰色底区块等已有容器内；此时建议搭配 `shadow="never"` 避免悬停浮起。',
         '标题区支持键盘操作（Enter / Space 切换折叠），并带有 `aria-expanded` 等无障碍属性。'
       ],
       faq: [
@@ -140,7 +141,8 @@ export const containerData: ComponentMeta[] = [
       { name: 'description', type: 'string', default: "''", desc: '描述' },
       { name: 'collapsible', type: 'boolean', default: 'false', desc: '是否可折叠（点击标题区收起/展开主体与底部）' },
       { name: 'opened', type: 'boolean', default: 'true', desc: '展开状态（配合 collapsible，支持 v-model:opened）' },
-      { name: 'shadow', type: "'always' | 'hover' | 'never'", default: "'hover'", desc: '阴影策略：常驻 / 悬停显示 / 无阴影' }
+      { name: 'shadow', type: "'always' | 'hover' | 'never'", default: "'hover'", desc: '阴影策略：常驻 / 悬停显示 / 无阴影' },
+      { name: 'border', type: 'boolean', default: 'true', desc: '是否显示外边框（嵌套在卡片/弹层等容器内时可关闭）' }
     ],
     emits: [
       { name: 'update:opened', payload: 'value: boolean', desc: '展开状态变化（v-model:opened）' },

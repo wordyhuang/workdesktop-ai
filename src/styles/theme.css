@@ -19,12 +19,19 @@
 
   --el-text-color-primary: var(--wd-text-color-primary);
   --el-text-color-regular: var(--wd-text-color-regular);
+  --el-text-color-secondary: var(--wd-text-color-secondary);
+  --el-text-color-placeholder: var(--wd-text-color-placeholder);
   --el-border-color: var(--wd-border-color);
   --el-border-color-light: var(--wd-border-color-light);
+  --el-border-color-hover: var(--wd-border-color);
+  --el-border-width: var(--wd-border-width);
+  --el-border-style: var(--wd-border-style);
   --el-bg-color: var(--wd-bg-color);
   --el-bg-color-page: var(--wd-bg-color-page);
   --el-bg-color-overlay: var(--wd-bg-color-overlay);
+  --el-fill-color-blank: var(--wd-bg-color);
 
   --el-font-size-base: var(--wd-font-size-base);
   --el-border-radius-base: var(--wd-radius-base);
+  --el-border-radius-small: var(--wd-radius-small);
 }

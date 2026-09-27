@@ -102,11 +102,16 @@
       <p class="doc-page__types-tip">
         Props / Methods / Events 中出现的自定义数据类型，以源码 <code>code/src</code> 中的定义为准。
       </p>
-      <div v-for="(t, i) in meta.dataTypes" :key="i" class="doc-page__type-item">
-        <h3 class="doc-page__type-head">
+      <wd-panel
+        v-for="(t, i) in meta.dataTypes"
+        :key="i"
+        class="doc-page__type-item"
+        shadow="never"
+      >
+        <template #title>
           <span class="doc-page__type-name">{{ t.name }}</span>
           <span class="doc-page__type-ref" v-html="inline(t.ref)" />
-        </h3>
+        </template>
         <p v-for="(d, j) in t.desc" :key="`d${j}`" class="doc-page__type-desc" v-html="inline(d)" />
         <div v-if="t.fields?.length" class="doc-page__table-card">
           <el-table :data="t.fields" size="default" class="doc-page__table">
@@ -119,7 +124,7 @@
         </div>
         <CodeBlock v-if="t.code" :code="t.code" lang="ts" class="doc-page__type-code" />
         <p v-for="(a, j) in t.after" :key="`a${j}`" class="doc-page__type-desc" v-html="inline(a)" />
-      </div>
+      </wd-panel>
     </section>
 
     <!-- 最佳实践与注意事项 + FAQ -->
@@ -389,13 +394,6 @@ function inline(text: string): string {
 .doc-page__type-item + .doc-page__type-item {
   margin-top: 24px;
 }
-.doc-page__type-head {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 0 0 8px;
-}
 .doc-page__type-name {
   font-family: 'SFMono-Regular', Consolas, monospace;
   font-size: 14.5px;
@@ -403,6 +401,7 @@ function inline(text: string): string {
   color: var(--wd-text-color-primary, #303133);
 }
 .doc-page__type-ref {
+  margin-left: 10px;
   font-size: 12.5px;
   line-height: 1.7;
   color: var(--wd-text-color-secondary, #909399);

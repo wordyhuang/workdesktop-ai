@@ -25,6 +25,8 @@
   /* 边框 / 背景（冷灰，衬托品牌蓝） */
   --wd-border-color: #d8dde5;
   --wd-border-color-light: #e5e8ef;
+  --wd-border-width: 1px;
+  --wd-border-style: solid;
   --wd-bg-color: #ffffff;
   --wd-bg-color-page: #f4f6fa;
   --wd-bg-color-overlay: #ffffff;

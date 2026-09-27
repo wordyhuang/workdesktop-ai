@@ -12,7 +12,7 @@ import { layoutData } from './data-layout'
 const byPath = (p: string) => coreData.find((c) => c.path === p)!
 
 export const componentNav: NavGroup[] = [
-  { label: '核心基础设施', items: [byPath('use-config'), byPath('use-request')] },
+  { label: '核心基础设施', items: [byPath('use-config'), byPath('use-request'), byPath('custom-skin')] },
   { label: '数据组件', items: [byPath('datagrid'), byPath('editable-grid'), byPath('viewer'), byPath('requester')] },
   { label: '表单组件', items: [byPath('dataform'), ...formData] },
   { label: '按钮组件', items: buttonData },

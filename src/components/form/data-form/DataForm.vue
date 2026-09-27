@@ -428,9 +428,14 @@ defineExpose({
 .wd-data-form__footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
-  padding-top: var(--wd-spacing-base, 12px);
-  border-top: 1px solid var(--wd-border-color-light, #e4e7ed);
+  /* 组件级令牌：皮肤可给表单 footer 加底色 / 内边距 / 圆角；
+     默认仅顶部留白（按钮与表单右缘对齐），皮肤给底色时应同步给 padding/radius 避免按钮贴边 */
+  padding: var(--wd-form-footer-padding, 12px 0 0);
+  border-top: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light, #e4e7ed);
   margin-top: var(--wd-spacing-base, 12px);
+  border-radius: var(--wd-form-footer-radius, 0);
+  background: var(--wd-form-footer-bg, transparent);
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
   <div class="theme-page">
-    <!-- 页头：说明全站换肤入口在左上角 -->
+    <!-- 页头：说明全站换肤入口在右上角 -->
     <PageHeader eyebrow="DESIGN TOKENS" icon="Brush" title="全局样式 / 主题定制">
       组件库以「语义令牌 → ElementPlus 变量映射 → 组件引用」三层驱动全局外观。切换皮肤：
-      点击<b>左上角 WorkDesktop 旁的画刷按钮</b>，选择皮肤后覆盖令牌写入
+      点击<b>右上角的皮肤按钮（画刷图标）</b>，选择皮肤后覆盖令牌写入
       <code>:root</code>，<b>整个示例站点</b>（含 Element 组件）即整体换肤——本页即当前的实时演示。
     </PageHeader>
 
@@ -36,9 +36,9 @@
       <p>
         现在你可以用本站右上角按钮立即体验：
         <ol>
-          <li>点击左侧栏顶部「WorkDesktop」文字右侧的<b>画刷圆形按钮</b>，从抽屉中选择一个你喜欢的皮肤</li>
+          <li>点击页面右上角的<b>画刷圆形按钮</b>，从抽屉中选择一个你喜欢的皮肤</li>
           <li>选择后整个文档站全站实时换肤，包括 ElementPlus 组件和 WorkDesktop 组件都会跟随主题色变化</li>
-          <li>打开这个「全局样式 / 主题定制」页面，右侧会自动展示对应皮肤的完整 CSS 代码，你可以复制到你的项目中使用</li>
+          <li>打开「自定义皮肤」页面的「全站换肤演示」区块，会实时展示对应皮肤的接入代码，你可以复制到你的项目中使用</li>
           <li>刷新页面会自动恢复默认皮肤，你可以再次体验其他皮肤</li>
         </ol>
       </p>
@@ -54,64 +54,9 @@
       </el-table>
     </section>
 
-    <!-- 4. 全站换肤演示 -->
+    <!-- 4. 接入方式 -->
     <section class="theme__section">
-      <h2>四、全站换肤演示</h2>
-      <p class="theme__note">
-        当前站点皮肤为「{{ currentSkinLabel }}」。下方预览跟随全站皮肤实时变化；右侧代码即当前
-        注入 <code>:root</code> 的同一份 CSS——把它放进你的项目即可复刻该皮肤，无需改动任何组件。
-      </p>
-
-      <div class="theme__stage-grid">
-        <!-- 左：令牌化组件预览（全站皮肤驱动） -->
-        <div class="theme__preview">
-          <div class="theme__preview-head">
-            <span class="theme__preview-badge">当前站点皮肤：{{ currentSkinLabel }}</span>
-          </div>
-
-          <div class="theme__row">
-            <el-button type="primary" size="small">主按钮</el-button>
-            <el-button type="success" size="small">成功</el-button>
-            <el-button type="warning" size="small">警告</el-button>
-            <el-button type="danger" size="small">危险</el-button>
-          </div>
-
-          <wd-panel title="信息总览" description="标题、描述、标识条、边框随令牌" shadow="always">
-            <template #extra>
-              <span class="theme__action">刷新</span>
-            </template>
-            <div class="theme__row">
-              <span class="theme__chip is-primary"><i class="theme__dot" />主色</span>
-              <span class="theme__chip is-success"><i class="theme__dot" />成功</span>
-              <span class="theme__chip is-warning"><i class="theme__dot" />警告</span>
-              <span class="theme__chip is-danger"><i class="theme__dot" />危险</span>
-            </div>
-            <p class="theme__text">正文跟随 --wd-text-color-* 令牌，footer 底色使用 --wd-bg-color-page。</p>
-            <template #footer>
-              <span class="theme__action">查看详情</span>
-            </template>
-          </wd-panel>
-
-          <wd-panel
-            collapsible
-            title="可折叠面板"
-            description="悬停底色 / 箭头悬停色跟随令牌"
-            style="margin-bottom: 0"
-          >
-            <p class="theme__text">折叠展开过渡、footer 底色均引用令牌。</p>
-          </wd-panel>
-        </div>
-
-        <!-- 右：当前皮肤 CSS（与全站注入同源） -->
-        <div class="theme__code">
-          <CodeBlock lang="css" :code="currentSkinCss" />
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. 接入方式 -->
-    <section class="theme__section">
-      <h2>五、接入方式</h2>
+      <h2>四、接入方式</h2>
 
       <div class="theme__sub">
         <h3>方式 A：纯 CSS 覆盖</h3>
@@ -135,12 +80,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { activeSkin, skinCssOf, currentSkinKey } from '../skins'
-
-const currentSkinLabel = computed(() => activeSkin().label)
-const currentSkinCss = computed(() => skinCssOf(currentSkinKey.value))
-
 const tokenRows = [
   { name: '--wd-color-primary', default: '#409eff', desc: '品牌主色（按钮 / 标识条 / 链接 / 焦点）' },
   { name: '--wd-color-success', default: '#67c23a', desc: '成功色（成功按钮 / 标签）' },
@@ -340,101 +279,6 @@ setGlobalConfig({
   color: var(--wd-text-color-secondary, #909399);
 }
 
-.theme__stage-grid {
-  display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 14px;
-  align-items: start;
-}
-.theme__preview {
-  background: var(--wd-bg-color-page, #f5f7fa);
-  border: 1px solid var(--wd-border-color-light, #ebeef5);
-  border-radius: 12px;
-  padding: 16px;
-  transition: background-color 0.25s ease;
-}
-.theme__preview-head {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-.theme__preview-badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--wd-color-primary, #409eff);
-  background: var(--wd-bg-color, #fff);
-  border: 1px dashed var(--wd-border-color, #dcdfe6);
-  border-radius: 999px;
-  padding: 3px 14px;
-}
-.theme__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.theme__row:last-child {
-  margin-bottom: 0;
-}
-.theme__action {
-  color: var(--wd-color-primary, #409eff);
-  font-size: var(--wd-font-size-small, 12px);
-  font-weight: 600;
-  cursor: pointer;
-}
-.theme__action:hover {
-  text-decoration: underline;
-}
-.theme__text {
-  margin: 0;
-  color: var(--wd-text-color-regular, #606266);
-  font-size: 13px;
-  line-height: 1.7;
-}
-.theme__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 5px;
-}
-.theme__chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  line-height: 1.6;
-  background: var(--wd-bg-color, #fff);
-  border: 1px solid var(--wd-border-color-light, #e4e7ed);
-  color: var(--wd-text-color-secondary, #909399);
-}
-.theme__chip .theme__dot {
-  background: currentColor;
-}
-.theme__chip.is-primary {
-  color: var(--wd-color-primary, #409eff);
-  border-color: var(--el-color-primary-light-5, #79bbff);
-  background: var(--el-color-primary-light-9, #ecf5ff);
-}
-.theme__chip.is-success {
-  color: var(--wd-color-success, #67c23a);
-  border-color: var(--el-color-success-light-5, #95d475);
-  background: var(--el-color-success-light-9, #f0f9eb);
-}
-.theme__chip.is-warning {
-  color: var(--wd-color-warning, #e6a23c);
-  border-color: var(--el-color-warning-light-5, #eebe77);
-  background: var(--el-color-warning-light-9, #fdf6ec);
-}
-.theme__chip.is-danger {
-  color: var(--wd-color-danger, #f56c6c);
-  border-color: var(--el-color-danger-light-5, #f89898);
-  background: var(--el-color-danger-light-9, #fef0f0);
-}
-.theme__code {
-  min-width: 0;
-}
 .theme__sub {
   padding: 14px 16px;
   margin-bottom: 12px;
@@ -458,8 +302,7 @@ setGlobalConfig({
   line-height: 1.7;
 }
 @media (max-width: 960px) {
-  .theme__cards,
-  .theme__stage-grid {
+  .theme__cards {
     grid-template-columns: 1fr;
   }
 }
