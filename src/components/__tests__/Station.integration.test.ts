@@ -270,6 +270,59 @@ describe('WdStation 集成', () => {
     expect(text).toContain('用户管理')
   })
 
+  it('headerMode=both：顶部显示分导台，侧边按分组标题展示全量菜单', () => {
+    const wrapper = mountStation({
+      menuGroups: menuGroupsFixture,
+      headerMode: 'both'
+    })
+    // 顶部：分导台与 nav 模式一致（多分组显示）
+    const navItems = wrapper.findAll('.wd-station__nav-item')
+    expect(navItems.map((n) => n.text())).toEqual(['工作区', '系统设置'])
+    // 侧边：按分组标题展示全量菜单（复用 title 模式渲染）
+    const groupTitles = wrapper.findAll('.el-menu-item-group-stub')
+    expect(groupTitles.map((g) => g.attributes('data-title'))).toEqual(['工作区', '系统设置'])
+    const text = wrapper.find('.wd-station__aside').text()
+    expect(text).toContain('工作台')
+    expect(text).toContain('用户管理')
+  })
+
+  it('headerMode=both：切换分组时侧边全量菜单不随分组变化', async () => {
+    const wrapper = mountStation({
+      menuGroups: menuGroupsFixture,
+      headerMode: 'both'
+    })
+    const navItems = wrapper.findAll('.wd-station__nav-item')
+    await navItems[1].trigger('click')
+    expect(wrapper.emitted('update:active-group')![0]).toEqual(['system'])
+    // 全量菜单保持不变
+    const text = wrapper.find('.wd-station__aside').text()
+    expect(text).toContain('工作台')
+    expect(text).toContain('用户管理')
+  })
+
+  it('headerMode=both：仅单分组时顶部退化为系统标题、侧边平铺菜单', () => {
+    const wrapper = mountStation({
+      menuGroups: [menuGroupsFixture[0]],
+      headerMode: 'both'
+    })
+    expect(wrapper.find('.wd-station__nav').exists()).toBe(false)
+    expect(wrapper.find('.wd-station__header-title').exists()).toBe(true)
+    const text = wrapper.find('.wd-station__aside').text()
+    expect(text).toContain('工作台')
+  })
+
+  it('show-header-title=false：headerMode 非 nav 时不再渲染头部中央标题', () => {
+    const wrapper = mountStation({
+      menuGroups: [menuGroupsFixture[0]],
+      headerMode: 'both',
+      showHeaderTitle: false
+    })
+    expect(wrapper.find('.wd-station__nav').exists()).toBe(false)
+    expect(wrapper.find('.wd-station__header-title').exists()).toBe(false)
+    // 侧边菜单不受影响
+    expect(wrapper.find('.wd-station__aside').text()).toContain('工作台')
+  })
+
   it('仅一个分组时分导台自动隐藏', () => {
     const wrapper = mountStation({
       menuGroups: [menuGroupsFixture[0]]

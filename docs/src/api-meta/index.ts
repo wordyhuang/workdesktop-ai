@@ -2,7 +2,8 @@ import type { ComponentMeta, NavGroup } from './types'
 import { coreData } from './data-core'
 import { buttonData } from './data-buttons'
 import { containerData, formData, inputData } from './data-containers'
-import { uploadData, elementData } from './data-upload'
+import { uploadData } from './data-upload'
+import { pageElementData } from './data-page-element'
 import { layoutData } from './data-layout'
 
 /**
@@ -18,7 +19,7 @@ export const componentNav: NavGroup[] = [
   { label: '按钮组件', items: buttonData },
   { label: '容器组件', items: containerData },
   { label: '表单元素', items: [...inputData, ...uploadData] },
-  { label: '辅助组件', items: elementData },
+  { label: '页面元素', items: pageElementData },
   { label: '布局组件', items: layoutData }
 ]
 

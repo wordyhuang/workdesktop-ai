@@ -4,7 +4,7 @@
 </p>
 
 > 文档版本：V\_1.1 ｜ 创建时间：2026-09-16 22:03:47 ｜ 最后修改时间：2026-09-24 13:44:41
-> 适用对象：使用本库的开发者（人类阅读；AI 助手请改读 [llms.txt](./llms.txt)）
+> 适用对象：使用本库的开发者（人类阅读；AI 助手请改读 [llms.txt](./code/llms.txt)）
 > 核心目标：帮助开发者快速了解、安装并上手 WorkDesktop AI
 > 文档简述：项目门面说明，覆盖特性、安装、三种引入方式、全局配置、组件总览、请求核心、Hooks 与本地开发指引。当前库版本：v1.1.1
 
@@ -27,7 +27,7 @@ WorkDesktop AI 是一套面向企业后台管理场景的 Vue 3 组件库，在 
 
 | 能力         | 说明                                                                                                   |
 | ---------- | ---------------------------------------------------------------------------------------------------- |
-| 28 个业务组件   | DataGrid / EditableGrid / Viewer / DataForm / SearchPanel / 8 类按钮 / Drawer / Iframe / Station 整页布局 等 |
+| 29 个业务组件   | DataGrid / EditableGrid / Viewer / DataForm / SearchPanel / 8 类按钮 / Drawer / Iframe / Station 整页布局 等 |
 | 三级配置       | 内置默认 → 全局（`app.use` / `window.workDesktopConfig`）→ 组件 props，deep merge                               |
 | 内置 HTTP    | axios 封装：统一封包格式、URL 前缀、Loading、失败/异常提示、请求监听、并发去重、子实例配置；请求核心 `RequestAPI` 公开，支持手动调用 API 请求代码          |
 | 声明式联动      | 属性（`filter` 分组 + `head-refresh-datagrid` 刷新）+ 事件驱动（A+B 混合），无需引入中心化 DSL                               |
@@ -54,7 +54,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
-import WorkDesktop from 'workdesktop-ai' // Vue 插件：全量注册 28 个组件
+import WorkDesktop from 'workdesktop-ai' // Vue 插件：全量注册 29 个组件
 import 'workdesktop-ai/style.css'
 
 const app = createApp(App)
@@ -196,7 +196,7 @@ app.use(WorkDesktop, {
 - 基础控件（按钮、输入框、下拉、表格单元格等）继续使用 ElementPlus，**不重复造轮子**；
 - 本库只做场景化复合与业务约定的封装，宿主对 ElementPlus 的使用方式完全不受影响。
 
-## 组件总览（28 个）
+## 组件总览（29 个）
 
 | 分组       | 组件                                                                                                                                                                          |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -206,8 +206,9 @@ app.use(WorkDesktop, {
 | 容器       | `WdDrawer`（`mode` 切换抽屉/对话框，支持 iframe 宿主）、`WdIframe`（iframe 嵌入与通信）                                                                                                           |
 | 输入选择     | `WdSelect` / `WdAutoComplete` / `WdCheckboxList` / `WdRadioList` / `WdSwitch`（切换即请求，失败自动回滚）                                                                                 |
 | 上传       | `WdUpload`（文件）、`WdImageUpload`（图片，强制 image/\*）                                                                                                                              |
-| 样式       | `WdPanel`（面板）、`WdTips`（提示图标/提示框）                                                                                                                                            |
-| 布局       | `WdStation`（管理台整页布局：菜单分组 / 标签页 / 工具栏 / 页脚）                                                                                                                                  |
+| 布局       | `WdStation`（管理台整页布局：菜单分组 / 标签页 / 工具栏 / 页脚）                                                                                                                                    |
+| 样式       | `WdPanel`（面板）                                                                                                                                                                          |
+| 页面元素    | `WdPath`（导航路径/面包屑：手动路径 / 自动联动 Station 菜单链 + 页面标题链 / 滚动跟随可视区第一个标题）、`WdTips`（提示图标/提示框）                                                                          |
 | 核心       | `WdRequester`（命令式请求触发器，v-model 开关语义）                                                                                                                                        |
 
 ## 手动调用请求（RequestAPI）
@@ -247,7 +248,7 @@ await grid.search({ name: '张' })
 
 ## AI 编码助手
 
-仓库根目录提供 [llms.txt](./llms.txt) —— 面向 AI 的机器可读全量参考（28 个组件 API、配置体系、请求协议、声明式联动、跨 iframe 通信协议、常见陷阱清单）。使用 Copilot / Cursor / Trae 等 AI 助手开发时，让它先阅读该文件，可显著减少组件误用。
+仓库根目录提供 [llms.txt](./llms.txt) —— 面向 AI 的机器可读全量参考（29 个组件 API、配置体系、请求协议、声明式联动、跨 iframe 通信协议、常见陷阱清单）。使用 Copilot / Cursor / Trae 等 AI 助手开发时，让它先阅读该文件，可显著减少组件误用。
 
 ## 本地开发
 

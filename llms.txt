@@ -1,11 +1,11 @@
 # workdesktop-ai — AI 开发参考（LLM-Optimized Component Library Reference）
 
 - 创建时间: 2026-09-16 19:45:30
-- 最后修改时间: 2026-09-24 13:44:41
-- 当前版本: V_1.2
+- 最后修改时间: 2026-09-30 11:30:00
+- 当前版本: V_1.3
 - 适用对象: AI 编码助手（非人类读者；信息密度优先，无修辞）
 - 核心目标: 使 AI 完整认识 workdesktop-ai 组件库，并能正确使用其完成开发任务
-- 文档简略描述: workdesktop-ai@1.1.1 全量事实参考：包结构 / 引入方式 / 全局配置 / 请求体系 / 声明式联动 / 28 组件 API（props/emits/slots/methods）/ 跨 iframe 协议 / 陷阱清单
+- 文档简略描述: workdesktop-ai@1.1.1 全量事实参考：包结构 / 引入方式 / 全局配置 / 请求体系 / 声明式联动 / 29 组件 API（props/emits/slots/methods）/ 跨 iframe 协议 / 陷阱清单
 
 ================================================================================
 ## 0. 如何使用本文档（FOR AI）
@@ -103,8 +103,8 @@ app.use(WorkDesktop, globalConfig?)      // 第二参 = 全局配置，见 §4
 
 ### 2.4 主入口导出面（src/index.ts 逐字）
 ```ts
-export default WorkDesktop                 // Vue 插件（install 注册全部 28 组件 + 初始化配置）
-export * from './components'               // 28 个组件，全部 Wd 前缀
+export default WorkDesktop                 // Vue 插件（install 注册全部 29 组件 + 初始化配置）
+export * from './components'               // 29 个组件，全部 Wd 前缀
 // 配置
 export { initConfig, setGlobalConfig, getGlobalConfig, resetConfig, mergeConfig, getComponentDefault }
 // 预设皮肤（§4.4）
@@ -180,7 +180,7 @@ interface WorkDesktopConfig {
   theme?: ThemeConfig  // 变更后 applyTheme 写入 :root CSS 变量；详见 §4.4
 }
 interface ThemeConfig {
-  skin?: SkinName                        // 预设皮肤（§4.4），11 套
+  skin?: SkinName                        // 预设皮肤（§4.4），10 套
   colors?: Record<string, string>        // 语义色键仅 6 个：primary/success/warning/danger/error/info（error 归一 danger）；非语义键 → --wd-color-{key}
   cssVars?: Record<string, string>       // 任意 CSS 变量直写 :root
 }                                       // 覆盖优先级（低→高）：skin < colors < cssVars
@@ -229,7 +229,7 @@ useConfig(): WorkDesktopConfig
 
 ### 4.4 预设皮肤（SKINS — 1.1.1 新增）
 ```ts
-type SkinName = 'default' | 'fashion' | 'business' | 'tech' | 'cyberpunk' | 'chinese' | 'flat' | 'neumorphism' | 'gradient' | 'cool' | 'governance'  // 11 套
+type SkinName = 'default' | 'fashion' | 'business' | 'tech' | 'cyberpunk' | 'chinese' | 'flat' | 'cool' | 'governance' | 'apple'  // 10 套（v2.5 移除 neumorphism/gradient）
 interface SkinPreset {
   key: SkinName
   label: string         // 中文名
@@ -239,7 +239,7 @@ interface SkinPreset {
 // API（主入口导出，§2.4）
 SKIN_PRESETS: Record<SkinName, SkinPreset>                       // 全部预设映射
 getSkinPreset(key?: string): SkinPreset | undefined              // 无参或未知 key → undefined（由调用方回退）
-listSkins(): SkinPreset[]                                        // 全部 11 套（供皮肤选择器遍历）
+listSkins(): SkinPreset[]                                        // 全部 10 套（供皮肤选择器遍历）
 ```
 - 用法：`app.use(WorkDesktop, { theme: { skin: 'fashion' } })` 或 `setGlobalConfig({ theme: { skin: 'cyberpunk' } })`。
 - 覆盖优先级（低→高）：皮肤预设 < theme.colors < theme.cssVars。
@@ -370,7 +370,7 @@ apiFail({code,message}), apiException({error,message}), apiAfter({data?,error?})
 ```
 
 ================================================================================
-## 8. 组件总览（28 个）
+## 8. 组件总览（29 个）
 ================================================================================
 | # | 组件 | 类 | 一句话职能 |
 |---|---|---|---|
@@ -402,6 +402,7 @@ apiFail({code,message}), apiException({error,message}), apiAfter({data?,error?})
 | 26 | WdPanel | 样式 | 面板容器 |
 | 27 | WdTips | 样式 | 提示图标/提示框 |
 | 28 | WdStation | 布局 | 管理台整页布局（菜单/标签页/工具栏） |
+| 29 | WdPath | 页面元素 | 导航路径/面包屑（手动路径 / 自动联动 Station 菜单链 + 页面标题链 / 滚动跟随可视区第一个标题） |
 
 ================================================================================
 ## 9. 组件详目（props / emits / slots / methods）
@@ -620,6 +621,22 @@ apiFail({code,message}), apiException({error,message}), apiAfter({data?,error?})
 - methods: refresh() / openTab(tab) / closeTab(key)
 - 行为: [陷阱] 父容器必须提供确定高度否则塌陷；affix 标签固定不可关闭；分导台仅 headerMode = 'nav' 且分组数 > 1 时显示；group-change 不触发路由；menuGroups / menus 可直接传 JSON 字符串（HTML 场景）。
 
+### 9.29 WdPath（导航路径 / 面包屑）
+- 类型:
+  ```ts
+  PathItem = { title, path?, icon?, source?: 'menu' | 'heading' | 'home' | 'manual', level? }
+  ```
+- props（7）:
+  ```
+  mode = 'manual' | 'auto'（默认 manual）, items（array | JSON 字符串, 手动模式）,
+  filter（自动模式与同组 WdStation 联动）, home = '首页', showHome = true,
+  separator = '/', container（string 选择器 | HTMLElement, 标题扫描范围）
+  ```
+- emits（2）: change（segments）/ item-click（item）
+- methods: refresh()（重读菜单链 + 重扫标题）
+- 自动模式行为: 菜单段来自同 filter 组 WdStation 的激活菜单链（分组 → 菜单 → 子菜单）；标题段扫描 container 内 h1~h4 按大纲收敛，始终跟随**当前可视范围内第一个标题**（滚动跟随）；container 默认取最近祖先 .wd-station__content，无则整页。
+- [陷阱] 自动模式只显示「首页」时：filter 组无 Station、容器内无 h1~h4、或 container 作用域未覆盖内容区；标题段定位完全由滚动位置决定；tabs 内容模式建议放 Station 插槽并用 container 指向内容容器。
+
 ================================================================================
 ## 10. 跨 iframe 协议（POSTMESSAGE PROTOCOL）
 ================================================================================
@@ -681,8 +698,51 @@ wd-iframe-height              子页 → 宿主(WdIframe)：高度上报 { type,
 ```
 
 ================================================================================
+## 13. 按钮组件选型速查（BUTTON SELECTION — AI 编码优先读）
+================================================================================
+> 8 个按钮全部继承 WdTipsButton（自带 tips/tipsType/placement 悬停提示）。选型从「点击后需要发生什么」出发。
+
+### 13.1 决策矩阵（按业务需求选组件）
+| 业务需求 | 组件 | 关键 props | 发请求 | 开弹层 | 联动刷新 | §9 |
+|---|---|---|---|---|---|---|
+| 纯按钮 + 悬停说明，不发请求不开弹层 | WdTipsButton | tips | ❌ | ❌ | ❌ | 9.6 |
+| 路由跳转（独立详情页 / 新窗口开日志） | WdRouteButton | routeName / routePath / target | ❌ | ❌ | ❌ | 9.5 |
+| 点击直接发 API（高频低风险） | WdApiButton | api / apiMethod / buttonLoading | ✅ | ❌ | ✅ | 9.1 |
+| MessageBox 居中确认后发请求（破坏性操作） | WdConfirmButton | confirmText / cancelText / confirmTitle | ✅ | ❌ | ✅ | 9.2 |
+| Popconfirm 气泡确认后发请求（行内操作首选） | WdPopconfirmButton | title / confirmButtonText | ✅ | ❌ | ✅ | 9.3 |
+| MessageBox.prompt 输入值并入参后发请求 | WdPromptButton | promptTitle / paramKey | ✅ | ❌ | ✅ | 9.4 |
+| 打开 Drawer（4-15 字段表单新增/编辑） | WdDrawerButton | label / title / data / size | ✅（内嵌 DataForm） | ✅ | ✅ | 9.7 |
+| 打开 Dialog（≤3 字段轻量录入 / 弹窗选择器） | WdDialogButton | label / title / data / size | ✅（内嵌 DataForm） | ✅ | ✅ | 9.8 |
+| 以上都不是 | el-button（原生） | — | — | — | — | — |
+
+### 13.2 选型边界规则（避免选错）
+1. **确认强度**：DataGrid 行操作列内 → PopconfirmButton（气泡轻量不打断上下文）；工具栏/批量/不可恢复 → ConfirmButton（MessageBox 强打断明确风险）
+2. **弹层类型**：≥4 字段表单 → DrawerButton（保留列表上下文、右侧滑出）；≤3 字段 / 弹窗选择器 → DialogButton
+3. **跳 vs 弹**：目标是已有路由业务页（需独立 URL / 浏览器前进后退）→ RouteButton；目标是独立小页面（导入、选择器）→ DrawerButton/DialogButton + url 模式
+4. **ConfirmButton prop 语义**：confirmText = MessageBox 提示文字（message），不是按钮文案；确认按钮硬编码「确定」不可配（cancelText 是取消按钮文案）
+5. **DrawerButton/DialogButton prop 名**：源码不带前缀——title（弹层标题）、data（传给内部 DataForm 的数据）、size（弹层宽度 Drawer 默认 50% / Dialog 默认 50%）；按钮文字走 label prop 或 #button 命名插槽，默认插槽留给弹层内容
+6. **DataForm 关闭联动**：DataForm 关闭容器统一用 headCloseDrawer（无 headCloseDialog）；DrawerButton 内部用 WdDrawer mode 切换 drawer/dialog 两种弹层
+
+### 13.3 最小代码片段（§12 未覆盖的按钮）
+```html
+<!-- PopconfirmButton：DataGrid 行内删除（气泡确认 + tooltip 平级共存） -->
+<wd-popconfirm-button title="确认删除？" api="/user/del" :api-param="{id}" tips="删除不可恢复" type="danger" link head-refresh-datagrid>删除</wd-popconfirm-button>
+
+<!-- PromptButton：重置密码需先输入新密码（paramKey 合并入 apiParam） -->
+<wd-prompt-button api="/user/reset-pwd" :api-param="{userId}" param-key="newPassword" prompt-title="重置密码" link head-refresh-datagrid="false">重置密码</wd-prompt-button>
+
+<!-- RouteButton：独立详情页跳转（无 vue-router 环境自动退化 location.href） -->
+<wd-route-button route-path="/user/detail" :query="{id: row.id}" link>查看详情</wd-route-button>
+```
+
+### 13.4 源码验证前置经验
+- **写代码前先读组件源码确认 props**：PRD 可能过时（DrawerButton/DropdownButton 旧文档写 drawerTitle/drawerData，源码事实是 title/data）
+- **DrawerButton/DialogButton 双插槽设计**：按钮内容 → label prop 或 #button 命名插槽；弹层内容 → 默认插槽（旧节错误示例 `<wd-drawer-button>编辑</wd-drawer-button>` 按钮上无文字）
+
+================================================================================
 ## 版本变化
 ================================================================================
+- V_1.3（2026-09-30 11:30:00）：§4.4 皮肤数量 11 → 10（移除 neumorphism/gradient）——SkinName 联合类型修正、ThemeConfig.skin 注释、listSkins 注释三处同步；**新增 §13 按钮组件选型速查**（AI 编码优先读）：13.1 决策矩阵（9 行 × 7 列紧凑表格：业务需求→组件→关键 props→§9 交叉引用）+ 13.2 选型边界规则 6 条（ConfirmButton/PopconfirmButton 确认强度分界、DrawerButton/DialogButton 字段数分界、ConfirmButton prop 语义、双插槽设计、DataForm 关闭联动 headCloseDrawer 统一）+ 13.3 最小代码片段 3 行（PopconfirmButton 行内删除、PromptButton 重置密码、RouteButton 跳详情页——§12 未覆盖的按钮）+ 13.4 源码验证前置经验（PRD 可能过时，写代码前先读源码）
 - V_1.2（2026-09-24 13:44:41）：对齐 workdesktop-ai@1.1.1 —— §1 版本号更新；§2.4 导出面补 SKIN_PRESETS/getSkinPreset/listSkins/SkinPreset；§4.2 theme 扩展为 ThemeConfig（新增 skin 键）；新增 §4.4 预设皮肤（11 套 SkinName、SkinPreset 结构、3 个 API、覆盖优先级、El 派生色阶自动推导、组件级令牌回退链）；§9.19 WdPanel 补 border prop；§11 陷阱清单 20 → 21 条。
 - V_1.1（2026-09-16 22:03:47）：校正 §4.2 配置结构 —— ResponseConfig.props 键名更正为 codeName/messageName/dataName（对齐 src/lib/configs/default-config.ts）；request 配置块补全 urlPrefix/throwException/dedup/loading/axiosConfig/transform；theme 明确 colors/cssVars 结构。
 - V_1.0（2026-09-16 19:45:30）：首版。覆盖 workdesktop-ai@1.0.2 全量事实：包结构、3 种引入方式（27 子路径 + 14 独立样式对照）、WorkDesktopConfig 完整结构与 6 配置 API、统一响应协议、RequestAPI/request/useRequest、声明式联动（6 + 3 函数）、共享 Props/Emits 组、28 组件详目（含 api-meta 缺失的 WdDialogButton，源自源码核对）、跨 iframe 协议、20 条陷阱清单、3 个典型组合模式。

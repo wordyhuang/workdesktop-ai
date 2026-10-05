@@ -40,12 +40,16 @@ export {
   clearLinkageRegistry
 } from './lib/core/linkage'
 
-// Station 联动（底栏信息 / 内容刷新）
+// Station 联动（底栏信息 / 内容刷新 / 菜单链读取 / 变更订阅）
 export {
   registerStation,
   setStationFooter,
-  refreshStationView
+  refreshStationView,
+  getStationMenuChain,
+  subscribeStationChange,
+  notifyStationChange
 } from './lib/core/station-linkage'
+export type { StationInstance, MenuChainItem } from './lib/core/station-linkage'
 
 // 组合式 hooks
 export { useRequest } from './lib/composables/useRequest'

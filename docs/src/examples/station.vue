@@ -124,6 +124,30 @@
     </demo-block>
 
     <demo-block
+      title="分导台 + 系统标题并存"
+      desc="header-mode=both 时顶部显示分导台切换分组，左侧按二级分组标题展示全量菜单（不随分组切换），适合分组较多又想一眼看全所有菜单的系统"
+      :code="code8"
+    >
+      <div class="station-stage">
+        <wd-station
+          title="WorkDesktop"
+          logo="Platform"
+          :menu-groups="menuGroups"
+          header-mode="both"
+          user-name="张管理员"
+          copyright="© 2026 WorkDesktop"
+          router-mode="html"
+          @menu-select="onMenuSelect"
+        >
+          <div class="station-demo-page">
+            <h4>当前菜单</h4>
+            <p>{{ currentMenuText }}</p>
+          </div>
+        </wd-station>
+      </div>
+    </demo-block>
+
+    <demo-block
       title="底栏信息联动"
       desc="setStationFooter / refreshStationView 命令式 API：按 filter 定向更新底栏动态信息、强制重挂载内容区；true 只作用于同 filter 分组"
       :code="code6"
@@ -333,6 +357,16 @@ const code7 = `<wd-station
     <span>自定义底栏：共 8 条待办</span>
     <span>© 2026 WorkDesktop</span>
   </template>
+  <div>内容区</div>
+</wd-station>`
+
+const code8 = `<wd-station
+  title="WorkDesktop" logo="Platform"
+  :menu-groups="menuGroups" header-mode="both"
+  user-name="张管理员" copyright="© 2026 WorkDesktop"
+  router-mode="html"
+  @menu-select="onMenuSelect"
+>
   <div>内容区</div>
 </wd-station>`
 

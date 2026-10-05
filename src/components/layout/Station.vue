@@ -13,7 +13,7 @@
       <slot name="menu-top" :collapsed="collapsedState" />
       <el-scrollbar class="wd-station__menu-scroll">
         <el-menu class="wd-station__menu" :collapse="collapsedState" :default-active="currentKey">
-          <template v-if="headerMode === 'title'">
+          <template v-if="headerMode === 'title' || headerMode === 'both'">
             <template v-if="groups.length > 1">
               <el-menu-item-group v-for="g in groups" :key="g.key" :title="g.title">
                 <station-menu-node :items="g.menus" @select="onMenuSelect" />
@@ -93,7 +93,7 @@
               {{ g.title }}
             </span>
           </nav>
-          <span v-else class="wd-station__header-title">{{ title }}</span>
+          <span v-else-if="showHeaderTitle" class="wd-station__header-title">{{ title }}</span>
           <slot name="header-center" />
         </div>
         <div class="wd-station__header-right">
@@ -196,8 +196,9 @@ import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, type 
 import * as ElIcons from '@element-plus/icons-vue'
 import { Fold, Expand, ArrowUp, ArrowDown, Refresh, Setting, Close } from '@element-plus/icons-vue'
 import { filterProp } from '../common/props'
-import { registerStation } from '../../lib/core/station-linkage'
+import { registerStation, notifyStationChange } from '../../lib/core/station-linkage'
 import StationMenuNode from './StationMenuNode.vue'
+import type { MenuChainItem } from '../../lib/core/station-linkage'
 import type { StationMenuGroup, StationTab, StationToolbarConfig } from './types'
 
 defineOptions({ name: 'WdStation' })
@@ -212,8 +213,10 @@ const props = defineProps({
   menuGroups: { type: [Array, String] as PropType<any[] | string>, default: undefined },
   /** 扁平菜单结构（带 group/groupKey 字段按出现顺序归组），支持 JSON 字符串 */
   menus: { type: [Array, String] as PropType<any[] | string>, default: undefined },
-  /** 头部中央模式：nav=分导台 / title=标题（此时侧边渲染全量菜单并带组标题） */
-  headerMode: { type: String as PropType<'nav' | 'title'>, default: 'nav' },
+  /** 头部中央模式：nav=分导台 / title=标题（此时侧边渲染全量菜单并带组标题）/ both=分导台+标题并存（顶部显示分导台，侧边按分组标题渲染全量菜单） */
+  headerMode: { type: String as PropType<'nav' | 'title' | 'both'>, default: 'nav' },
+  /** 是否显示头部中央标题（headerMode 非 nav 时的 fallback 标题；需自绘 header-center 时可关闭） */
+  showHeaderTitle: { type: Boolean, default: true },
   /** 菜单位置：side=左侧 / top=顶部 / none=不启用 */
   menuMode: { type: String as PropType<'side' | 'top' | 'none'>, default: 'side' },
   /** 内容方式：page=单页 / tabs=多标签 */
@@ -350,7 +353,7 @@ const innerActiveGroup = ref('')
 const activeGroupKey = computed(
   () => props.activeGroup || innerActiveGroup.value || groups.value[0]?.key || ''
 )
-const showNav = computed(() => props.headerMode === 'nav' && groups.value.length > 1)
+const showNav = computed(() => props.headerMode !== 'title' && groups.value.length > 1)
 const currentGroup = computed(
   () => groups.value.find((g) => g.key === activeGroupKey.value) || groups.value[0]
 )
@@ -361,6 +364,7 @@ function setActiveGroup(key: string) {
   emit('update:active-group', key)
   const g = groups.value.find((item) => item.key === key)
   if (g) emit('group-change', { key: g.key, title: g.title })
+  notifyStationChange(props.filter)
 }
 
 /* ---------- 当前菜单 / 标签激活 ---------- */
@@ -376,6 +380,7 @@ const currentKey = computed(() => props.activeMenu || innerActiveMenu.value)
 function setActiveMenu(key: string) {
   innerActiveMenu.value = key
   emit('update:active-menu', key)
+  notifyStationChange(props.filter)
 }
 
 /* ---------- 菜单点击 ---------- */
@@ -570,9 +575,42 @@ function setFooterInfo(info: string) {
 }
 const displayFooterInfo = computed(() => innerFooterInfo.value || props.footerInfo)
 
+/* ---------- 激活菜单路径链（WdPath 自动模式读取） ---------- */
+function findMenuChain(key: string): { chain: MenuChainItem[] } | null {
+  for (const g of groups.value) {
+    const path: any[] = []
+    const walk = (menus: any[], ancestors: any[]): boolean => {
+      for (const m of menus) {
+        if (m._key === key) {
+          path.push(...ancestors, m)
+          return true
+        }
+        if (m.children && m.children.length && walk(m.children, [...ancestors, m])) return true
+      }
+      return false
+    }
+    if (walk(g.menus, [])) {
+      return {
+        chain: [
+          { title: g.title, icon: g.icon },
+          ...path.map((m: any) => ({ title: m.title, path: m.path, icon: m.icon }))
+        ]
+      }
+    }
+  }
+  return null
+}
+
+function getActiveMenuChain(): MenuChainItem[] {
+  if (!currentKey.value) return []
+  return findMenuChain(currentKey.value)?.chain || []
+}
+
 let unregister: (() => void) | null = null
 onMounted(() => {
-  unregister = registerStation({ filter: props.filter, setFooterInfo, refresh })
+  unregister = registerStation({ filter: props.filter, setFooterInfo, refresh, getActiveMenuChain })
+  // 通知同 filter 组的面包屑：本站已就绪，可读取菜单链
+  notifyStationChange(props.filter)
   // tabs 模式：affix 菜单挂载时自动开启
   if (props.contentMode === 'tabs') {
     groups.value.forEach((g) =>

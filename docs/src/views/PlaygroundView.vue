@@ -164,10 +164,13 @@
                 v-bind="previewBind"
               />
 
-              <!-- 辅助组件 -->
+              <!-- 容器组件 -->
               <wd-panel v-else-if="currentKey === 'panel'" v-bind="previewBind">
                 <p style="margin: 0">{{ slotText }}</p>
               </wd-panel>
+
+              <!-- 页面元素 -->
+              <wd-path v-else-if="currentKey === 'path'" v-bind="previewBind" />
 
               <div v-else-if="currentKey === 'tips'" class="playground__center">
                 <wd-tips v-bind="previewBind" />

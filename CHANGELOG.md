@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+新增 `WdPath` 导航路径（面包屑）组件（组件总数 28 → 29）与 Station 菜单链联动能力；并将 `WdPath` 与 `WdTips` 一并归入「页面元素」分组（原「辅助组件」分组移除）。
+
+### Added
+
+- **`WdPath` 导航路径组件**：基于 el-breadcrumb 封装，支持手动与自动双模式。手动模式通过 `items` 填写路径节点（`title` / `icon` / `path`，支持 JSON 字符串）；自动模式与 `WdStation` 按 `filter` 分组联动——自动读取当前激活菜单所在路径（分组 → 菜单 → 子菜单），并扫描内容区 `h1~h4` 标题按大纲收敛为当前章节链，标题段**始终跟随当前可视范围内第一个标题**（滚动跟随）。`container` 限定标题扫描范围（默认最近 `.wd-station__content`，无则整页），`show-home` / `home` / `separator` 可配。新增 `docs/src/examples/path.vue` 3 个示例与 `document/components/path_v1.0.md` 文档。
+- **Station 菜单链联动 API**：`station-linkage.ts` 扩展——`WdStation` 新增 `getActiveMenuChain`（激活菜单路径链：分组 → 菜单 → 子菜单），并新增导出 `getStationMenuChain(target, selfFilter?)`（读取目标组 Station 菜单链）、`subscribeStationChange(filter, cb)` / `notifyStationChange(filter)`（菜单/分组切换时通知同组订阅者，供路径自动刷新）。`src/index.ts` 同步导出并补充类型 `MenuChainItem`。
+- **按需入口**：新增 `workdesktop-ai/path` 子路径入口与 `path/style.css`，`package.json` exports 与 vite 多入口/CSS 归档同步。
+- **分组调整**：原 `WdBreadcrumb` 改名为 `WdPath`，与原 `WdTips` 一并归入「页面元素」分组（docs 侧边栏 / Playground 同步）；`BreadcrumbItem` 类型更名为 `PathItem`。
+- **`WdStation` 新增 `header-mode="both"`**：顶栏中央形态由 `nav` / `title` 扩为 `nav` / `title` / `both`。`both` = 顶部显示分导台（仅切换激活分组）+ 左侧按分组小标题平铺展示**全部**菜单（不随分组变化，复用 `title` 侧边渲染），适合分组多且需一眼看全所有菜单的系统；单分组时分导台自动隐藏退化为普通侧栏。`showNav` 条件由 `headerMode==='nav'` 改为 `headerMode!=='title'`。新增 3 个集成用例（both 顶部分导台 + 侧边全量 / 切分组侧边不变 / 单分组退化），全量 vitest 24 文件 273 用例全绿；文档站新增「分导台 + 系统标题并存」demo（第 8 个），api-meta / FAQ / 设计文档 / 组件文档同步。
+- **`WdPath` 新增 `animation` 属性**：设置路径段（内容）变动时的过渡动画——`none`（默认，零视觉变化）/ `fade`（淡入淡出）/ `slide`（横向滑移+淡入，留存段 FLIP 位移），基于 Vue `TransitionGroup` 实现，时长 0.2s，适用于自动模式滚动跟随章节、菜单链切换与手动 `items` 更新。同步修复自动模式下的自激刷新隐患：Path 位于自身标题观察容器内时，MutationObserver 会把动画产生的段节点增删误判为内容变化触发重扫——现过滤全部落在 `.wd-path` 子树内的变动，并对标题扫描结果做结构签名比对（层级+标题未变则不重建列表），彻底切断「动画改 DOM → 重扫 → 重渲染」循环。新增 6 个用例（动画渲染/切换 3 个 + 自激防护 3 个），全量 vitest 278 用例全绿；文档站自动模式示例增加 none/fade/slide 实时切换演示，api-meta 与 `document/components/path_v1.1.md` 同步。
+- **`WdStation` 新增 `show-header-title` 属性**（Boolean，默认 `true`）：控制 `headerMode` 非 `nav` 时顶栏中央的系统标题 fallback 是否渲染；需要完全自绘 `#header-center`（如文档站改用 `WdPath` 承载吸顶路径）时传 `false` 关闭，组件默认行为与既有 DOM 结构不变。新增 1 个集成用例；文档站框架已启用（去除顶栏中央重复的「WorkDesktop」标题）。
+
 ## [1.1.1] - 2026-09-24
 
 预设皮肤系统与主题能力增强：`theme.skin` 一键套用 11 套预设皮肤，Element Plus 派生色阶自动生成，组件级 CSS 变量回退链全面打通。

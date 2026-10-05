@@ -4,16 +4,20 @@
     <wd-station v-model:active-group="activeGroupKey" v-model:active-menu="activeMenuKey" title="WorkDesktop"
       :logo="BrandMark" :menu-groups="menuGroups" menus="group" header-mode="title" menu-mode="side" content-mode="page"
       router-mode="router" :toolbar-config="toolbarConfig" copyright="© 2026 WorkDesktop"
-      :footer-info="footerInfo" @settings="skinVisible = true" :collapsible="false">
-      <!-- 顶栏吸顶标题：内容页滚到看不到页面标题时，在顶栏标题旁淡入当前页标题；滚过章节标题后按 h2/h3/h4 层级逐级追加 -->
+      :footer-info="footerInfo" @settings="skinVisible = true" :collapsible="false" :show-header-title="false"
+      filter="doc-shell">
+      <!-- 顶栏吸顶路径：自动联动模式（WdPath mode="auto" + WdStation 同 filter=doc-shell）。
+           常驻显示，路径段由 Station 菜单链 + 内容区标题自动驱动。 -->
       <template #header-center>
-        <span v-if="stickyTitle" class="doc-sticky-title" :class="{ 'is-visible': stickyTitleVisible }">
-          <span class="doc-sticky-title__sep">/</span>{{ stickyTitle }}
-          <template v-for="(sec, i) in stickySections" :key="i">
-            <span class="doc-sticky-title__sep">/</span>
-            <span class="doc-sticky-title__section">{{ sec }}</span>
-          </template>
-        </span>
+        <wd-path
+          ref="stickyPathRef"
+          class="doc-sticky-title"
+          mode="auto"
+          filter="doc-shell"
+          :show-home="false"
+          container=".wd-station__content"
+          animation="slide"
+        />
       </template>
       <!-- 顶栏右侧：皮肤切换入口（画刷圆形按钮，点击打开全站换肤抽屉） -->
       <template #header-right>
@@ -52,10 +56,10 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onUnmounted, ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Brush, CircleCheckFilled } from '@element-plus/icons-vue'
-import { useGlobalConfig } from '../../../src'
+import { WdPath, useGlobalConfig } from '../../../src'
 import { componentNav } from '../api-meta'
 import { SITE_SKINS, currentSkinKey, swatchesOf, applySkin } from '../skins'
 import BrandMark from '../components/BrandMark.vue'
@@ -89,6 +93,8 @@ interface DocMenuNode {
 const menuGroups: { key: string; title?: string; menus: DocMenuNode[] }[] = [
   {
     key: 'docs',
+    // 单分组平铺不显示分组头，此 title 仅作为自动联动 Path 的菜单链根节点（“文档 / 分组 / 菜单”链首）
+    title: '文档',
     menus: [
       { title: '首页', path: '/', icon: 'HomeFilled' },
       ...componentNav.map((g) => ({
@@ -155,100 +161,15 @@ watch(
 )
 
 /**
- * 顶栏吸顶标题：观察内容区页面标题（文档页 .doc-page__title / 其他页 .page-header__title），
- * 滚出内容区可视范围时把标题淡入顶栏，滚回可见时隐藏；
- * 同时以内容区 h2 作为章节锚点，滚动经过章节标题后在其后追加当前章节名。路由切换后重新绑定。
+ * 顶栏吸顶路径（WdPath mode=auto 与 WdStation 同 filter=doc-shell 自动联动）。
+ * Path 组件内部已通过 Station 菜单链 + 内容区标题 + 路由自身驱动刷新；
+ * 但受控菜单高亮（本布局 watch route.path 反查同步 activeMenu）与 Path 的 $route
+ * 监听在同一 UE 更新周期存在触发时序先后，为避免地址栏直达 / 前进后退等非点击导航
+ * 读到旧菜单链，这里在路由切换完成（下个 tick）后主动调一次 Path.refresh() 兜底对齐。
  */
-const stickyTitle = ref('')
-const stickyTitleVisible = ref(false)
-/** 当前阅读位置的章节路径（h2/h3/h4 逐级下钻，如 ['Types 数据类型', 'GridColumn']） */
-const stickySections = ref<string[]>([])
-let stickyObserver: IntersectionObserver | null = null
-/** 异步示例挂载后刷新章节锚点的 DOM 观察器 */
-let anchorObserver: MutationObserver | null = null
-let sectionEls: HTMLElement[] = []
-let stickyScrollEl: HTMLElement | null = null
+const stickyPathRef = ref<InstanceType<typeof WdPath>>()
 
-/**
- * 章节标题取显示文本：
- * - 文档页 h2 章节为「01 Props 属性」结构，取正文+中文（排除序号）
- * - Types 章节的 h3 类型头取类型名（不含 ref 引用说明）
- * - 其余（demo 标题 h3、视图裸 h3/h4）取自身文本
- */
-function sectionLabel(el: HTMLElement): string {
-  const main = el.querySelector('.doc-page__section-text')
-  if (main) {
-    const sub = el.querySelector('.doc-page__section-en')?.textContent?.trim()
-    return `${main.textContent?.trim()}${sub ? ' ' + sub : ''}`
-  }
-  const typeName = el.querySelector('.doc-page__type-name')
-  if (typeName) return typeName.textContent?.trim() || ''
-  return el.textContent?.trim() || ''
-}
-
-/** 章节路径 = 各层级最后一个顶部越过阅读线（容器顶 + 4px 容差）的标题；遇到更高层级时截断下级 */
-function updateStickySection() {
-  if (!stickyScrollEl || !sectionEls.length) {
-    stickySections.value = []
-    return
-  }
-  const rootTop = stickyScrollEl.getBoundingClientRect().top
-  const path: string[] = []
-  for (const el of sectionEls) {
-    if (el.getBoundingClientRect().top - rootTop > 4) break
-    const level = el.tagName === 'H2' ? 0 : el.tagName === 'H3' ? 1 : 2
-    path.length = level
-    path[level] = sectionLabel(el)
-  }
-  stickySections.value = path.filter(Boolean)
-}
-
-function bindStickyTitle() {
-  stickyObserver?.disconnect()
-  anchorObserver?.disconnect()
-  stickyScrollEl?.removeEventListener('scroll', updateStickySection)
-  stickyTitleVisible.value = false
-  stickySections.value = []
-  const content = document.querySelector<HTMLElement>('.wd-station__content')
-  const titleEl = content?.querySelector('.page-header__title, .doc-page__title')
-  stickyTitle.value = titleEl?.textContent?.trim() || ''
-  if (!content || !titleEl || !stickyTitle.value) return
-  stickyObserver = new IntersectionObserver(
-    ([entry]) => {
-      stickyTitleVisible.value = !entry.isIntersecting
-    },
-    { root: content, threshold: 0 }
-  )
-  stickyObserver.observe(titleEl)
-  // 章节锚点：内容区 h2/h3/h4 逐级下钻；排除示例预览区内部的 h3/h4（属演示 UI 而非文档章节）
-  const collectAnchors = () => {
-    sectionEls = Array.from(content.querySelectorAll<HTMLElement>('h2, h3, h4')).filter(
-      (el) => !el.closest('.demo-block__preview')
-    )
-  }
-  collectAnchors()
-  // 示例区为异步组件，demo 标题晚于首次绑定挂载；监听 DOM 变化刷新锚点（防抖合并渲染抖动）
-  let anchorTimer: ReturnType<typeof setTimeout> | undefined
-  anchorObserver = new MutationObserver(() => {
-    clearTimeout(anchorTimer)
-    anchorTimer = setTimeout(() => {
-      collectAnchors()
-      updateStickySection()
-    }, 150)
-  })
-  anchorObserver.observe(content, { childList: true, subtree: true })
-  stickyScrollEl = content
-  content.addEventListener('scroll', updateStickySection, { passive: true })
-  updateStickySection()
-}
-
-watch(() => route.path, () => nextTick(bindStickyTitle), { immediate: true, flush: 'post' })
-
-onUnmounted(() => {
-  stickyObserver?.disconnect()
-  anchorObserver?.disconnect()
-  stickyScrollEl?.removeEventListener('scroll', updateStickySection)
-})
+watch(() => route.path, () => nextTick(() => stickyPathRef.value?.refresh()))
 </script>
 
 <style>
@@ -267,34 +188,17 @@ body,
   overflow: hidden;
 }
 
-/* —— 顶栏吸顶标题：默认透明，滚出页面标题时淡入上浮 —— */
+/* —— 顶栏吸顶路径（Path 组件）：常驻显示；约束宽度、单行渲染避免换行 —— */
 .doc-sticky-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
   max-width: 60%;
-  font-size: var(--wd-font-size-base, 14px);
-  color: var(--wd-text-color-regular, #606266);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  pointer-events: none;
 }
 
-.doc-sticky-title.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+/* Path 自动模式更新时的路径变化过渡由组件内 animation="slide" 负责，此处无需额外显隐动画 */
 
-.doc-sticky-title__sep {
-  color: var(--wd-border-color, #dcdfe6);
-}
-
-.doc-sticky-title__section {
-  color: var(--wd-text-color-secondary, #909399);
+/* el-breadcrumb 默认 flex-wrap: wrap，在顶栏有限宽度内改为单行，超长路径由段内省略兜底 */
+.doc-sticky-title :deep(.el-breadcrumb) {
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 /* —— 皮肤抽屉内容 —— */

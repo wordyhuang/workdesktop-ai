@@ -56,3 +56,17 @@ export interface StationToolbarConfig {
   user?: 'left' | 'right' | 'none'
   login?: 'left' | 'right' | 'none'
 }
+
+/** 路径节点（Path 组件手动/自动模式的路径项） */
+export interface PathItem {
+  /** 标题 */
+  title: string
+  /** 路由路径（router 模式下自动以 el-breadcrumb-item 的 to 跳转） */
+  path?: string
+  /** 图标（@element-plus/icons-vue 名称字符串，或直接传组件） */
+  icon?: string | object
+  /** 段来源：menu=Station 菜单链 / heading=页面标题 / home=首页节点 / manual=手动路径 */
+  source?: 'menu' | 'heading' | 'home' | 'manual'
+  /** heading 段：标题级别 1-4 */
+  level?: number
+}

@@ -32,6 +32,7 @@ import {
   WdImageUpload,
   WdPanel,
   WdTips,
+  WdPath,
   WdStation
 } from '../../../src'
 
@@ -114,6 +115,12 @@ const viewerItems = [
   { prop: 'email', label: '邮箱', span: 2 }
 ]
 const viewerRow = { name: '张三', dept: '技术部', job: '前端工程师', email: 'zhangsan@example.com' }
+
+const manualPathItems = [
+  { title: '首页', icon: 'HomeFilled' },
+  { title: '用户管理', icon: 'User' },
+  { title: '用户列表' }
+]
 
 const stationMenus = [
   {
@@ -502,6 +509,21 @@ const pageSrc = 'https://example.com'
 const onLoad = () => console.log('iframe 加载完成')`,
     comment: '支持 postMessage 双向通信（ref.send 下发 / @message 透传）与 refresh-key 重载'
   },
+  {
+    key: 'panel',
+    label: 'Panel',
+    group: '容器组件',
+    comp: markRaw(WdPanel),
+    props: [
+      { name: 'title', label: '标题', type: 'string', default: '面板标题' },
+      { name: 'description', label: '描述', type: 'string', default: '面板描述文字' },
+      { name: 'collapsible', label: '可折叠', type: 'boolean', default: false },
+      { name: 'border', label: '边框', type: 'boolean', default: true },
+      { name: '__slot__', label: '内容文案', type: 'string', default: '面板内容区：可放任意组件。' }
+    ],
+    inner: `<p style="margin: 0">{{slotText}}</p>`,
+    comment: '带标题栏的内容容器；collapsible 开启后可折叠'
+  },
 
   /* ===== 表单元素 ===== */
   {
@@ -623,26 +645,39 @@ const status = ref('1')`,
     comment: '图片专用上传：缩略图墙 + 预览'
   },
 
-  /* ===== 辅助组件 ===== */
+  /* ===== 页面元素 ===== */
   {
-    key: 'panel',
-    label: 'Panel',
-    group: '辅助组件',
-    comp: markRaw(WdPanel),
+    key: 'path',
+    label: 'Path',
+    group: '页面元素',
+    comp: markRaw(WdPath),
     props: [
-      { name: 'title', label: '标题', type: 'string', default: '面板标题' },
-      { name: 'description', label: '描述', type: 'string', default: '面板描述文字' },
-      { name: 'collapsible', label: '可折叠', type: 'boolean', default: false },
-      { name: 'border', label: '边框', type: 'boolean', default: true },
-      { name: '__slot__', label: '内容文案', type: 'string', default: '面板内容区：可放任意组件。' }
+      {
+        name: 'mode',
+        label: '模式',
+        type: 'select',
+        options: [
+          { label: 'manual（手动）', value: 'manual' },
+          { label: 'auto（联动）', value: 'auto' }
+        ],
+        default: 'manual'
+      },
+      { name: 'filter', label: '联动分组', type: 'string', default: '' },
+      { name: 'showHome', label: '显示首页', type: 'boolean', default: true }
     ],
-    inner: `<p style="margin: 0">{{slotText}}</p>`,
-    comment: '带标题栏的内容容器；collapsible 开启后可折叠'
+    extra: { items: manualPathItems },
+    attrs: ':items="items"',
+    setup: `const items = [
+  { title: '首页', icon: 'HomeFilled' },
+  { title: '用户管理', icon: 'User' },
+  { title: '用户列表' }
+]`,
+    comment: '手动模式：items 直接填路径；auto 模式与同 filter 的 WdStation 联动，并补充页面 H1~H4 标题链'
   },
   {
     key: 'tips',
     label: 'Tips',
-    group: '辅助组件',
+    group: '页面元素',
     comp: markRaw(WdTips),
     props: [
       {

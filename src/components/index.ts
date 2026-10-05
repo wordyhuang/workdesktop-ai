@@ -1,5 +1,5 @@
 /**
- * 组件汇总导出（28 个组件）
+ * 组件汇总导出（29 个组件）
  */
 // 数据组件
 export { default as WdDataGrid } from './data/datagrid/DataGrid.vue'
@@ -37,8 +37,11 @@ export { default as WdSwitch } from './inputs/Switch.vue'
 export { default as WdUpload } from './upload/Upload.vue'
 export { default as WdImageUpload } from './upload/ImageUpload.vue'
 
-// 样式组（2 个）
+// 样式组（1 个）
 export { default as WdPanel } from './styles/Panel.vue'
+
+// 页面元素组（2 个）
+export { default as WdPath } from './styles/Path.vue'
 export { default as WdTips } from './styles/Tips.vue'
 
 // 布局组（1 个）

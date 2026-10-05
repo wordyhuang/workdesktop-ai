@@ -16,6 +16,18 @@ export interface StationInstance {
   setFooterInfo: (info: string) => void
   /** 刷新内容区（强制重挂载） */
   refresh: () => void
+  /** 当前激活菜单的路径链（分组标题 → 菜单 → 子菜单），供 WdPath 自动模式读取 */
+  getActiveMenuChain?: () => MenuChainItem[]
+}
+
+/** 菜单链节点（面包屑自动模式的菜单段） */
+export interface MenuChainItem {
+  /** 标题 */
+  title: string
+  /** 路由路径 */
+  path?: string
+  /** 图标（ElementPlus 图标名字符串或组件） */
+  icon?: string | object
 }
 
 /** filter 分组 → Station 实例集合 */
@@ -92,6 +104,66 @@ export function refreshStationView(
     }
   })
   return count
+}
+
+/**
+ * 读取目标 Station 当前激活菜单的路径链（供 WdPath 自动模式使用）
+ * @param target true=同 filter 组；字符串=定向该 filter 组
+ * @param selfFilter 发起方自身 filter
+ * @returns 菜单链节点数组（无匹配实例时为空数组）
+ */
+export function getStationMenuChain(
+  target: boolean | string | undefined,
+  selfFilter?: string
+): MenuChainItem[] {
+  const targets = resolveTargets(target, selfFilter)
+  for (const station of targets) {
+    try {
+      const chain = station.getActiveMenuChain?.()
+      if (chain && chain.length) return chain
+    } catch (e) {
+      console.error('[WorkDesktop] getStationMenuChain error:', e)
+    }
+  }
+  return []
+}
+
+/** filter 分组 → 路径组件刷新回调集合（Station 菜单变化时通知同组 Path 重新读取菜单链） */
+const pathListeners: Map<string, Set<() => void>> = new Map()
+
+/**
+ * 订阅某 filter 组的 Station 变化（菜单/分组切换），返回取消订阅函数
+ */
+export function subscribeStationChange(filter: string, cb: () => void): () => void {
+  const key = groupOf(filter)
+  if (!pathListeners.has(key)) {
+    pathListeners.set(key, new Set())
+  }
+  pathListeners.get(key)!.add(cb)
+  return () => {
+    pathListeners.get(key)?.delete(cb)
+  }
+}
+
+/**
+ * 通知某 filter 组的订阅者：Station 的激活菜单/分组发生了变化
+ * （Station 内部在菜单选中、分组切换、路由反查、挂载时调用）
+ */
+export function notifyStationChange(filter: string): void {
+  pathListeners.get(groupOf(filter))?.forEach((cb) => {
+    try {
+      cb()
+    } catch (e) {
+      console.error('[WorkDesktop] notifyStationChange error:', e)
+    }
+  })
+}
+
+/**
+ * 仅供测试 / 调试：清空路径组件订阅者
+ */
+export function clearPathListeners(): void {
+  pathListeners.clear()
 }
 
 /**

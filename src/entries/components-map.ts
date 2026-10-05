@@ -47,6 +47,9 @@ export const componentMap: Record<string, string> = {
   // 内容查看器
   'viewer': 'data/viewer/Viewer.vue',
 
+  // 页面元素组件
+  'path': 'styles/Path.vue',
+
   // 布局组件
   'station': 'layout/Station.vue',
 

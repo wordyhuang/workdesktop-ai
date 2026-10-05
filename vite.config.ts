@@ -62,7 +62,8 @@ const cssChunkToEntry: Record<string, string> = {
   Drawer: 'drawer',
   Iframe: 'iframe',
   Viewer: 'viewer',
-  Station: 'station'
+  Station: 'station',
+  Path: 'path'
 }
 
 /**
