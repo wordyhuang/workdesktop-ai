@@ -1,6 +1,9 @@
 /**
- * 组件汇总导出（29 个组件）
+ * 组件汇总导出（30 个组件）
  */
+// 指引组件
+export { default as WdGuide } from './guide/Guide.vue'
+
 // 数据组件
 export { default as WdDataGrid } from './data/datagrid/DataGrid.vue'
 export { default as WdEditableGrid } from './data/editable-grid/EditableGrid.vue'

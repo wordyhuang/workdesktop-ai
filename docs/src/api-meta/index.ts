@@ -4,6 +4,7 @@ import { buttonData } from './data-buttons'
 import { containerData, formData, inputData } from './data-containers'
 import { uploadData } from './data-upload'
 import { pageElementData } from './data-page-element'
+import { guideData } from './data-guide'
 import { layoutData } from './data-layout'
 
 /**
@@ -19,7 +20,7 @@ export const componentNav: NavGroup[] = [
   { label: '按钮组件', items: buttonData },
   { label: '容器组件', items: containerData },
   { label: '表单元素', items: [...inputData, ...uploadData] },
-  { label: '页面元素', items: pageElementData },
+  { label: '页面元素', items: [...pageElementData, ...guideData] },
   { label: '布局组件', items: layoutData }
 ]
 

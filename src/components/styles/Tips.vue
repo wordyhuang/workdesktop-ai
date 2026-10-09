@@ -7,7 +7,12 @@
   </el-tooltip>
 
   <!-- box：行内文字模式 -->
-  <span v-else class="wd-tips__box" :style="{ color: color }">
+  <span
+    v-else
+    class="wd-tips__box"
+    :class="{ 'wd-tips__box--filled': hasBg }"
+    :style="boxStyle"
+  >
     <el-icon v-if="iconComp" class="wd-tips__box-icon">
       <component :is="iconComp" />
     </el-icon>
@@ -29,12 +34,32 @@ const props = defineProps({
   /** 图标组件名（InfoFilled/WarningFilled/QuestionFilled） */
   icon: { type: String, default: 'InfoFilled' },
   /** 图标/文字颜色 */
-  color: { type: String, default: '#909399' }
+  color: { type: String, default: '#909399' },
+  /**
+   * box 模式背景：none=不带背景（默认）；primary=主题色浅底（文字取主题色）；
+   * 也可传任意 CSS 颜色值（如 '#FEFEFE'、'rgba(...)'）
+   */
+  bg: { type: String, default: 'none' }
 })
 
 const iconMap: Record<string, any> = { InfoFilled, WarningFilled, QuestionFilled }
 
 const iconComp = computed(() => iconMap[props.icon] || InfoFilled)
+
+const hasBg = computed(() => props.bg && props.bg !== 'none')
+
+const boxStyle = computed(() => {
+  if (props.bg === 'primary') {
+    return {
+      color: 'var(--wd-color-primary)',
+      backgroundColor: 'color-mix(in srgb, var(--wd-color-primary) 10%, transparent)'
+    }
+  }
+  if (hasBg.value) {
+    return { color: props.color, backgroundColor: props.bg }
+  }
+  return { color: props.color }
+})
 </script>
 
 <style scoped>
@@ -47,6 +72,10 @@ const iconComp = computed(() => iconMap[props.icon] || InfoFilled)
   align-items: center;
   gap: 4px;
   font-size: var(--wd-font-size-sm, 12px);
+}
+.wd-tips__box--filled {
+  padding: 6px 12px;
+  border-radius: var(--wd-radius-base, 6px);
 }
 .wd-tips__box-icon {
   flex-shrink: 0;

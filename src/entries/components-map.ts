@@ -6,6 +6,9 @@
  * value: 组件源文件相对路径（相对于 src/components/）
  */
 export const componentMap: Record<string, string> = {
+  // 指引组件
+  'guide': 'guide/Guide.vue',
+
   // 数据组件
   'data-grid': 'data/datagrid/DataGrid.vue',
   'editable-grid': 'data/editable-grid/EditableGrid.vue',

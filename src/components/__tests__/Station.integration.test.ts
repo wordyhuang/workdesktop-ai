@@ -270,7 +270,7 @@ describe('WdStation 集成', () => {
     expect(text).toContain('用户管理')
   })
 
-  it('headerMode=both：顶部显示分导台，侧边按分组标题展示全量菜单', () => {
+  it('headerMode=both：左侧显示当前分组的一级菜单（一级作 title 分组，二级平铺全量）', () => {
     const wrapper = mountStation({
       menuGroups: menuGroupsFixture,
       headerMode: 'both'
@@ -278,26 +278,81 @@ describe('WdStation 集成', () => {
     // 顶部：分导台与 nav 模式一致（多分组显示）
     const navItems = wrapper.findAll('.wd-station__nav-item')
     expect(navItems.map((n) => n.text())).toEqual(['工作区', '系统设置'])
-    // 侧边：按分组标题展示全量菜单（复用 title 模式渲染）
-    const groupTitles = wrapper.findAll('.el-menu-item-group-stub')
-    expect(groupTitles.map((g) => g.attributes('data-title'))).toEqual(['工作区', '系统设置'])
-    const text = wrapper.find('.wd-station__aside').text()
-    expect(text).toContain('工作台')
-    expect(text).toContain('用户管理')
+    // 初始激活「工作区」：取消分组层，以该分组的一级「我的项目」作 title 分组
+    const groupTitles = wrapper
+      .findAll('.el-menu-item-group-stub')
+      .map((g) => g.attributes('data-title'))
+    expect(groupTitles).toEqual(['我的项目'])
+    const aside = wrapper.find('.wd-station__aside')
+    const menuItemTexts = aside.findAll('.el-menu-item-stub').map((i) => i.text())
+    // 一级有 children → 作 title 分组，其二级平铺为可点菜单项
+    expect(menuItemTexts).toContain('项目列表')
+    expect(menuItemTexts).toContain('项目归档')
+    // 叶子级一级直接显示为可点菜单项
+    expect(menuItemTexts).toContain('工作台')
+    // 只显示当前分组，另一分组「系统设置」的菜单不出现
+    expect(menuItemTexts).not.toContain('用户管理')
+    expect(menuItemTexts).not.toContain('角色管理')
+    expect(aside.findAll('.el-sub-menu-stub')).toHaveLength(0)
   })
 
-  it('headerMode=both：切换分组时侧边全量菜单不随分组变化', async () => {
+  it('headerMode=both：二级菜单含三级时才折叠为 sub-menu', () => {
+    const deep = [
+      {
+        key: 'g',
+        title: '组',
+        menus: [
+          {
+            title: '一级',
+            path: '/1',
+            children: [
+              { title: '二级叶子', path: '/2a' },
+              {
+                title: '二级含三级',
+                path: '/2b',
+                children: [{ title: '三级', path: '/3' }]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+    const wrapper = mountStation({ menuGroups: deep, headerMode: 'both' })
+    const groupTitles = wrapper
+      .findAll('.el-menu-item-group-stub')
+      .map((g) => g.attributes('data-title'))
+    expect(groupTitles).toEqual(['一级'])
+    const aside = wrapper.find('.wd-station__aside')
+    expect(aside.text()).toContain('二级叶子')
+    // 仅「二级含三级」折叠为 sub-menu
+    const subTitles = aside.findAll('.el-sub-menu-stub__title').map((s) => s.text())
+    expect(subTitles).toEqual(['二级含三级'])
+    expect(aside.text()).toContain('三级')
+  })
+
+  it('headerMode=both：点击分导台显示对应分组的左侧菜单', async () => {
     const wrapper = mountStation({
       menuGroups: menuGroupsFixture,
       headerMode: 'both'
     })
+    // 初始激活「工作区」，左侧显示其一级菜单
+    let aside = wrapper.find('.wd-station__aside')
+    expect(aside.text()).toContain('工作台')
+    // 「我的项目」作当前分组一级 title 分组
+    expect(
+      wrapper.findAll('.el-menu-item-group-stub').map((g) => g.attributes('data-title'))
+    ).toEqual(['我的项目'])
+    // 点击分导台「系统设置」→ 左侧切换到对应分组
     const navItems = wrapper.findAll('.wd-station__nav-item')
     await navItems[1].trigger('click')
     expect(wrapper.emitted('update:active-group')![0]).toEqual(['system'])
-    // 全量菜单保持不变
-    const text = wrapper.find('.wd-station__aside').text()
-    expect(text).toContain('工作台')
+    aside = wrapper.find('.wd-station__aside')
+    const text = aside.text()
     expect(text).toContain('用户管理')
+    expect(text).toContain('角色管理')
+    expect(text).not.toContain('工作台')
+    // 系统设置的菜单均为叶子一级，点击后已无一级 group title
+    expect(wrapper.findAll('.el-menu-item-group-stub')).toHaveLength(0)
   })
 
   it('headerMode=both：仅单分组时顶部退化为系统标题、侧边平铺菜单', () => {

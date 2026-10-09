@@ -12,6 +12,18 @@
       <wd-tips type="box" icon="QuestionFilled" tips="带图标的行内提示" color="#409eff" />
     </demo-block>
 
+    <demo-block
+      title="背景样式（bg）"
+      desc="默认 none 不带背景；primary=主题色浅底；也可传任意 CSS 颜色值"
+      :code="code3"
+      layout="row"
+    >
+      <wd-tips type="box" tips="默认不带背景" />
+      <wd-tips type="box" bg="primary" tips="主题色浅底（primary）" />
+      <wd-tips type="box" bg="#FEFEFE" color="#606266" tips="自定义底色 #FEFEFE" />
+      <wd-tips type="box" icon="WarningFilled" bg="#fdf6ec" color="#e6a23c" tips="警告色底" />
+    </demo-block>
+
     <demo-block title="表格列提示" desc="常用于表头/字段说明" :code="code2" layout="row">
       <el-table :data="rows" border size="small" style="width: 420px">
         <el-table-column label="字段">
@@ -31,6 +43,9 @@
 const code1 = `<wd-tips tips="悬停提示" />
 <wd-tips type="box" tips="行内文字提示" />
 <wd-tips type="box" icon="WarningFilled" tips="带图标" color="#e6a23c" />`
+const code3 = `<wd-tips type="box" bg="primary" tips="主题色浅底" />
+<wd-tips type="box" bg="#FEFEFE" color="#606266" tips="自定义底色" />
+<wd-tips type="box" icon="WarningFilled" bg="#fdf6ec" color="#e6a23c" tips="警告色底" />`
 const code2 = `<el-table-column label="优惠比例">
   <template #header>
     <span>优惠比例</span>

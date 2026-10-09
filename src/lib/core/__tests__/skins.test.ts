@@ -262,6 +262,9 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-station-aside-bg: #071a15')
     expect(css).toContain('--el-fill-color-blank: #123128')
     expect(css).toContain('--el-color-white: #0d231c')
+    // 中文字体：行楷优先（STXingkai 华文行楷 → KaiTi 楷体 → STKaiti 华文楷体 → 思源宋体 serif 回退）
+    expect(css).toContain('--el-font-family:')
+    expect(css).toContain('STXingkai')
     // 背景素材（内联 SVG data URI）：侧栏山水 + 页头祥云 + 面板贴底淡山水
     expect(css).toContain('--wd-station-aside-bg-image: url("data:image/svg+xml')
     expect(css).toContain('--wd-station-header-bg-image: url("data:image/svg+xml')
@@ -295,6 +298,10 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     // 面板头右侧小祥云（header 无背景令牌，image 挂 cssRules）
     expect(css).toContain('div.wd-panel .wd-panel__header {')
     expect(css).toContain('background-position: right 14px center')
+    // 中文字体：正文/组件继承体（body 全局）同步行楷优先
+    expect(css).toContain('body {')
+    expect(css).toContain('font-family:')
+    expect(css).toContain('STXingkai')
   })
 
   it('cool 霓虹紫点缀：面板泛紫描边 + 紫光标题 + 导航区压黑', () => {

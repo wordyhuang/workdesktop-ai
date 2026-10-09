@@ -141,6 +141,11 @@
       "import": "./dist/viewer/index.mjs"
     },
     "./viewer/style.css": "./dist/viewer/style.css",
+    "./guide": {
+      "types": "./dist/types/src/entries/guide.d.ts",
+      "import": "./dist/guide/index.mjs"
+    },
+    "./guide/style.css": "./dist/guide/style.css",
     "./package.json": "./package.json"
   },
   "sideEffects": [

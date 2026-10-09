@@ -1,5 +1,8 @@
 import type { SkinPreset } from './types'
 
+/** 中文字体栈：行楷优先，依次回退楷体 / 宋体类系统书法字体（零外部资源，随系统字体库可用性取最优） */
+const FONT_STACK = `'STXingkai', '华文行楷', 'KaiTi', '楷体', 'STKaiti', 'Kaiti SC', 'Kaiti', 'Noto Serif CJK SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif`
+
 /** 中式：墨绿山水 + 金箔描边，暗夜国风（深色皮肤，含 El 深色联动；金底按钮配深绿字对比度 ≈8:1 达 WCAG AAA） */
 export const chineseSkin: SkinPreset = {
   key: 'chinese',
@@ -62,6 +65,8 @@ export const chineseSkin: SkinPreset = {
       '--el-fill-color-darker': '#265040',
       // 仅作按钮文字色（EP 深色皮肤标准做法）；注意 EP 内凡以 --el-color-white 作背景的场景会同步变深，实测无异常，改动需回归
       '--el-color-white': '#0d231c',
+      // 中文书法字体：行楷优先（EP 组件字体走 --el-font-family，:root 定义，cssVars 同层覆盖生效）
+      '--el-font-family': FONT_STACK,
       '--el-mask-color': 'rgba(4, 12, 9, 0.72)',
       '--el-box-shadow': '0 4px 16px rgba(0, 0, 0, 0.5)',
       '--el-box-shadow-light': '0 2px 8px rgba(0, 0, 0, 0.4)'
@@ -70,6 +75,10 @@ export const chineseSkin: SkinPreset = {
   // 皮肤专属 CSS 规则：金箔渐变主按钮 + ghost 金默认按钮 + 深金 primary 标签 + 表格烫金线
   // （EP 变量只能纯色填充，渐变/外发光必须 rule 级覆盖；描边金与面板描边 rgba(201,162,75) 同源）
   cssRules: `
+/* 正文 / 非 EP 组件继承体：应用中文书法字体（wd 组件未单独设字体，继承 body） */
+body {
+  font-family: ${FONT_STACK};
+}
 /* 表格边框烫金：el-table 外框/竖线/单元格横线统一同源金 0.45（弱于卡片实色外框拉开层次）。
    EP 在 .el-table 元素规则上自定义 --el-table-border-color，cssVars :root 注入会被盖住，
    必须同选择器级覆盖——本规则与 EP .el-table 规则同 specificity (0,1,0)，皮肤样式注入在后胜出 */

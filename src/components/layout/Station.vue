@@ -13,7 +13,7 @@
       <slot name="menu-top" :collapsed="collapsedState" />
       <el-scrollbar class="wd-station__menu-scroll">
         <el-menu class="wd-station__menu" :collapse="collapsedState" :default-active="currentKey">
-          <template v-if="headerMode === 'title' || headerMode === 'both'">
+          <template v-if="headerMode === 'title'">
             <template v-if="groups.length > 1">
               <el-menu-item-group v-for="g in groups" :key="g.key" :title="g.title">
                 <station-menu-node :items="g.menus" @select="onMenuSelect" />
@@ -21,6 +21,19 @@
             </template>
             <!-- 单分组无分组语义，直接平铺菜单项（不渲染组标题） -->
             <station-menu-node v-else :items="groups[0]?.menus || []" @select="onMenuSelect" />
+          </template>
+          <template v-else-if="headerMode === 'both'">
+            <!-- both：左侧跟随激活分组，一级菜单作 title 分组，二级平铺全量；二级含三级才折叠；叶子一级直接为菜单项 -->
+            <template v-for="one in currentGroupMenus" :key="one._key">
+              <el-menu-item-group v-if="one.children && one.children.length" :title="one.title">
+                <station-menu-node :items="one.children" @select="onMenuSelect" />
+              </el-menu-item-group>
+              <el-menu-item v-else :index="one._key" :disabled="one.disabled" @click="onMenuSelect(one)">
+                <el-icon v-if="resolveIcon(one.icon)"><component :is="resolveIcon(one.icon)" /></el-icon>
+                <span>{{ one.title }}</span>
+                <el-badge v-if="one.badge !== undefined && one.badge !== ''" :value="one.badge" class="wd-station__menu-badge" />
+              </el-menu-item>
+            </template>
           </template>
           <station-menu-node v-else :items="currentGroupMenus" @select="onMenuSelect" />
         </el-menu>

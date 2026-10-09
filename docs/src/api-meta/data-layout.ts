@@ -21,7 +21,7 @@ export const layoutData: ComponentMeta[] = [
       notes: [
         '`menuGroups` 与 `menus` 二选一，`menuGroups` 优先；两者均可传 JSON 字符串（UMD 属性式写法），JSON 解析失败会在控制台报错并回退默认值。',
         '菜单层级建议不超过两层；超过两层时控制台会给出警告（仍按原样渲染）。',
-        '分导台（顶部中央分组切换条）在 `headerMode=nav` 或 `both` 且分组数大于 1 时显示；只有一个分组时顶部自动退化为系统标题。`both` 模式下顶部分导台仅负责切换激活分组，左侧仍按分组标题平铺展示全量菜单（不随分组变化）。',
+        '分导台（顶部中央分组切换条）在 `headerMode=nav` 或 `both` 且分组数大于 1 时显示；只有一个分组时顶部自动退化为系统标题。`both` 模式下顶部分导台负责切换激活分组，左侧联动显示该分组的一级菜单：一级菜单作为分组 title 展示，其二级菜单平铺全量显示，仅当二级菜单下再含三级时该二级才折叠为子菜单；一级为叶子菜单时直接显示为可点击菜单项。点击分导台中的分组，左侧即切换为该分组的一级菜单。',
         '菜单 key 规则为 ``分组key:name||path||title``（内部统一分配 `_key`），受控 `activeMenu` / `openTabs` 的 key 需按此规则书写；`menu-select` 事件的 `item` 上带有 `_key` 可直接使用。',
         'tabs 模式：`affix: true` 的菜单为固定标签，挂载时自动开启、不可关闭；关闭当前激活标签后自动跳转相邻标签（先右后左）；标签栏右侧下拉支持关闭当前/左侧/其他/全部的批量操作。传入 `openTabs` 即为受控模式，需自行维护标签列表。',
         '`group-change`（切分组）不触发路由跳转，路由跳转只发生在菜单选中（`menu-select`）时。',
@@ -33,7 +33,7 @@ export const layoutData: ComponentMeta[] = [
       faq: [
         { q: 'html 模式和 router 模式怎么选？', a: '项目已用 vue-router 管理页面时用 `auto`/`router`，菜单 `path` 直接对接路由；静态站点、多页嵌入或想完全自管内容时用 `html`，通过 `menu-select` 事件自行切换默认插槽内容。' },
         { q: '只有一个分组，为什么顶部不显示分导台？', a: '分导台的显示条件是 `headerMode=nav`（或 `both`）且分组数大于 1，单分组时顶部显示系统标题，属预期行为。' },
-        { q: '`both` 模式侧边菜单会随顶部分导台切换分组而变化吗？', a: '不会。`both` 模式下顶部分导台仅切换激活分组，左侧始终按分组标题平铺展示全量菜单，便于一眼看全所有菜单；想「切分组联动侧边单组菜单」用 `nav` 模式即可。' },
+        { q: '`both` 模式侧边菜单会随顶部分导台切换分组而变化吗？', a: '会。`both` 模式下顶部分导台负责切换激活分组，左侧跟随激活分组联动显示该分组的一级菜单：一级菜单作 title 分组，二级菜单平铺全量展示，仅当二级含三级时才折叠为子菜单，一级为叶子菜单时直接显示为菜单项。点击分导台中的哪个分组，左侧就显示该分组的一级菜单；菜单相对少、想一眼看全所有一级菜单时用 `title` 模式即可。' },
         { q: '`menus` 扁平菜单里没有写 group 的项去哪了？', a: '自动归入 key 为 `default`、标题为「默认」的分组。' },
         { q: 'affix 固定标签为什么关不掉？', a: '`affix` 是设计行为：固定标签挂载即自动开启、不渲染关闭图标，`closeTab` 与批量关闭也会跳过它。需要可关闭就不要设 `affix`。' },
         { q: '受控 `activeMenu` 该传什么值？', a: '传菜单项的统一标识 `_key`，规则为 ``分组key:name||path||title``（如 `system:/sys/user`）；也可直接消费 `menu-select` 事件回调里 `item._key`。' }
@@ -94,7 +94,7 @@ export const layoutData: ComponentMeta[] = [
       { name: 'logo', type: 'string | Component', default: "''", desc: 'logo 图标（ElementPlus 图标名字符串或图标组件）' },
       { name: 'menuGroups', type: 'array | string', default: '—', desc: '分组菜单（优先）：[{ key, title, icon?, menus: 菜单项[] }]；传字符串按 JSON 解析' },
       { name: 'menus', type: 'array | string', default: '—', desc: '扁平菜单：按 groupKey / group 自动聚合分组，无组项归「默认」组；与 menuGroups 二选一' },
-      { name: 'headerMode', type: "'nav' | 'title' | 'both'", default: "'nav'", desc: '顶栏中央：nav=分导台（多分组时显示），title=系统标题（左侧展示全量分组菜单），both=并存（顶部分导台 + 左侧按分组标题展示全量菜单）' },
+      { name: 'headerMode', type: "'nav' | 'title' | 'both'", default: "'nav'", desc: '顶栏中央：nav=分导台（多分组时显示，左侧随分组切换），title=系统标题（左侧展示全量分组菜单），both=并存（顶部显示分导台 + 左侧联动跟随激活分组，显示该分组一级菜单作 title 分组、二级平铺全量、二级含三级才折叠）' },
       { name: 'menuMode', type: "'side' | 'top' | 'none'", default: "'side'", desc: '菜单位置：side=左侧栏，top=顶部横排，none=不启用菜单' },
       { name: 'contentMode', type: "'page' | 'tabs'", default: "'page'", desc: '内容方式：page=单页，tabs=多标签页（affix 菜单为固定标签）' },
       { name: 'routerMode', type: "'auto' | 'router' | 'html'", default: "'auto'", desc: '路由模式：auto=检测到 vue-router 即用；router=点菜单 push + RouterView；html=仅抛事件 + 默认插槽' },

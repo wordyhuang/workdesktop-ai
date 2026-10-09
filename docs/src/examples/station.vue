@@ -125,14 +125,14 @@
 
     <demo-block
       title="分导台 + 系统标题并存"
-      desc="header-mode=both 时顶部显示分导台切换分组，左侧按二级分组标题展示全量菜单（不随分组切换），适合分组较多又想一眼看全所有菜单的系统"
+      desc="header-mode=both 时顶部显示分导台切换分组，左侧取消分组层、以一级菜单作 title 分组，二级菜单平铺全量展示，二级含三级时才折叠为 sub-menu；一级为叶子菜单时直接显示为可点击菜单项"
       :code="code8"
     >
       <div class="station-stage">
         <wd-station
           title="WorkDesktop"
           logo="Platform"
-          :menu-groups="menuGroups"
+          :menu-groups="menuGroupsDeep"
           header-mode="both"
           user-name="张管理员"
           copyright="© 2026 WorkDesktop"
@@ -362,7 +362,7 @@ const code7 = `<wd-station
 
 const code8 = `<wd-station
   title="WorkDesktop" logo="Platform"
-  :menu-groups="menuGroups" header-mode="both"
+  :menu-groups="menuGroupsDeep" header-mode="both"
   user-name="张管理员" copyright="© 2026 WorkDesktop"
   router-mode="html"
   @menu-select="onMenuSelect"
@@ -383,6 +383,49 @@ const menuGroups = [
         children: [
           { title: '任务列表', path: '/work/tasks' },
           { title: '任务日历', path: '/work/calendar' }
+        ]
+      },
+      { title: '消息中心', path: '/work/messages', icon: 'Bell', badge: 5 }
+    ]
+  },
+  {
+    key: 'system',
+    title: '系统设置',
+    icon: 'Setting',
+    menus: [
+      {
+        title: '用户管理',
+        icon: 'User',
+        children: [
+          { title: '用户列表', path: '/sys/user' },
+          { title: '角色管理', path: '/sys/role' }
+        ]
+      },
+      { title: '系统参数', path: '/sys/config', icon: 'Tools' }
+    ]
+  }
+]
+
+// both 模式独立演示数据：在共享 menuGroups 基础上加深一组三级，用于可视化「二级含三级才折叠为 sub-menu」
+const menuGroupsDeep = [
+  {
+    key: 'workspace',
+    title: '工作区',
+    icon: 'Monitor',
+    menus: [
+      { title: '工作台', path: '/work/dashboard', icon: 'Odometer', affix: true },
+      {
+        title: '我的任务',
+        icon: 'Tickets',
+        children: [
+          {
+            title: '任务看板',
+            children: [
+              { title: '进行中', path: '/work/board/active' },
+              { title: '已完成', path: '/work/board/done' }
+            ]
+          },
+          { title: '任务列表', path: '/work/tasks' }
         ]
       },
       { title: '消息中心', path: '/work/messages', icon: 'Bell', badge: 5 }

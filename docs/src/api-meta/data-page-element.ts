@@ -85,7 +85,9 @@ export const pageElementData: ComponentMeta[] = [
         '默认插槽仅在 `box` 模式下生效，用于覆盖 `tips` 文字；`word` 模式的提示内容只能来自 `tips` 属性。',
         '`color` 同时作用于图标与文字：word 模式染色图标，box 模式染色整行（图标 + 文字）。',
         'box 模式文字使用小号字号（`--wd-font-size-sm`，默认 12px），适合作为辅助说明而非正文。',
-        '表头中使用时建议加 `margin-left` 小间距（如示例中的 `style="margin-left: 6px"`），避免图标紧贴文字。'
+        '表头中使用时建议加 `margin-left` 小间距（如示例中的 `style="margin-left: 6px"`），避免图标紧贴文字。',
+        '`bg` 仅对 box 模式生效：默认 `none` 不带背景；传 `primary` 使用主题色 10% 浅底、文字取主题色；传任意 CSS 颜色值（如 `#FEFEFE`、`rgba(...)`）时以其为底色，文字颜色仍由 `color` 控制。',
+        '带背景时会自动增加内边距与圆角，使其成为一个可点击区域样式的标签块。'
       ],
       faq: [
         { q: '传了 `icon="SuccessFilled"` 为什么显示的还是 InfoFilled？', a: '组件内置图标映射表只包含 InfoFilled / WarningFilled / QuestionFilled 三个，未命中的名称会回退到 InfoFilled。' },
@@ -98,7 +100,8 @@ export const pageElementData: ComponentMeta[] = [
       { name: 'tips', type: 'string', default: "''", desc: '提示内容' },
       { name: 'type', type: "'word' | 'box'", default: "'word'", desc: '展示模式' },
       { name: 'icon', type: "'InfoFilled' | 'WarningFilled' | 'QuestionFilled'", default: "'InfoFilled'", desc: '图标名' },
-      { name: 'color', type: 'string', default: "'#909399'", desc: '图标/文字颜色' }
+      { name: 'color', type: 'string', default: "'#909399'", desc: '图标/文字颜色' },
+      { name: 'bg', type: 'string', default: "'none'", desc: "box 模式背景：none=无背景；primary=主题色浅底（文字取主题色）；也可传任意 CSS 颜色值（如 '#FEFEFE'）" }
     ],
     slots: [{ name: 'default', params: '—', desc: 'box 模式文字（覆盖 tips）' }]
   }
