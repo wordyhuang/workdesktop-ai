@@ -24,7 +24,8 @@ export const containerData: ComponentMeta[] = [
         '`url` 模式下 iframe 高度由组件接管：抽屉模式为容器高度的 100%（最小 400px），对话框模式为 60vh；默认插槽内容在 `url` 设置时不渲染。',
         '`reloadOnOpen` 默认 `false`，iframe 在关闭后保留上次内容；需要每次打开都是全新状态时显式开启。',
         '`origin` 缺省时取 `url` 的 origin（无 `url` 时用当前页 origin）；示例中的 `origin="*"` 仅用于演示，生产环境请指定具体子页面 origin。',
-        '`confirmMessage` 与脏状态守卫可叠加：子页未上报脏状态时走 `confirmMessage` 确认；已上报脏状态时优先走 `wd-container:dirty-confirm` 子页确认流程。'
+        '`confirmMessage` 与脏状态守卫可叠加：子页未上报脏状态时走 `confirmMessage` 确认；已上报脏状态时优先走 `wd-container:dirty-confirm` 子页确认流程。',
+        '抽屉模式提供非空 `title` 后，标题区高度自适应，上下 padding 为 12px，标题文字与关闭按钮垂直居中（左右内边距保留默认）；不提供 `title` 时保持原生标题区样式。dialog 模式不受影响。'
       ],
       faq: [
         { q: '`confirm` 事件和 `close` 事件有什么区别？', a: '`close` 表示弹层关闭完成；`confirm` 在关闭流程完成后触发并携带 `{ reason }`（如 `submit`、`close` 等关闭原因），适合做「关闭后处理」的统一入口。' },
@@ -63,10 +64,10 @@ export const containerData: ComponentMeta[] = [
     path: 'iframe',
     name: 'WdIframe',
     title: 'Iframe 内嵌框架',
-    desc: '内嵌 iframe 子页面：固定/自适应高度，与子页面基于 postMessage 双向通信。通信约定：子页面通过 parent.postMessage 上报，父组件经 message 事件透传；内置约定 { type:"wd-iframe-height", height } 可驱动高度自适应；如需与弹层容器（WdDrawer）深度联动，参见 WdDrawer 的跨 iframe 联动',
+    desc: '内嵌 iframe 子页面：固定/自适应高度，与子页面基于 postMessage 双向通信。自动检测子页面加载：加载完成前在容器内显示 loading 遮罩（文案/背景跟随全局配置 request.loading），加载完成触发 complete 事件；支持超时自动关闭遮罩（timeout），开发人员可用 loading=false 关闭遮罩。通信约定：子页面通过 parent.postMessage 上报，父组件经 message 事件透传；内置约定 { type:"wd-iframe-height", height } 可驱动高度自适应；如需与弹层容器（WdDrawer）深度联动，参见 WdDrawer 的跨 iframe 联动',
     group: '容器',
     intro: {
-      overview: 'WdIframe 在页面内嵌 iframe 子页面，宽度占满父容器，高度支持固定值或按约定自适应。组件与子页面基于 postMessage 双向通信：子页面通过 `parent.postMessage` 上报，父组件经 `message` 事件透传；父组件通过 `send()` 方法主动下发，子页面用 `window.addEventListener(\'message\')` 接收。内置约定 `{ type: "wd-iframe-height", height }` 可驱动高度自适应；`refreshKey` 或 `refresh()` 可强制重新加载 iframe 内容。如需与弹层容器（WdDrawer）深度联动（提交成功自动关闭、未保存守卫等），请参见 WdDrawer 的跨 iframe 联动。',
+      overview: 'WdIframe 在页面内嵌 iframe 子页面，宽度占满父容器，高度支持固定值或按约定自适应。组件自动检测子页面加载状态：从开始加载（或 src 变化、刷新）到子页面 `load` 完成之前，在容器内显示 loading 遮罩；遮罩的启用与否、文案与背景外观跟随全局配置 `request.loading`，加载完成后触发 `complete` 事件。可通过 `timeout` 设置超时，超时后自动关闭遮罩并触发 `timeout`；开发人员传 `loading=false` 可彻底关闭遮罩。组件与子页面基于 postMessage 双向通信：子页面通过 `parent.postMessage` 上报，父组件经 `message` 事件透传；父组件通过 `send()` 方法主动下发。内置约定 `{ type: "wd-iframe-height", height }` 可驱动高度自适应；`refreshKey` 或 `refresh()` 可强制重新加载 iframe 内容。如需与弹层容器（WdDrawer）深度联动（提交成功自动关闭、未保存守卫等），请参见 WdDrawer 的跨 iframe 联动。',
       whenToUse: [
         '需要在当前页面内嵌一个独立子页面（报表页、第三方页、遗留系统页面）时。',
         '需要父子页面之间做轻量双向通信（下发数据、接收子页状态）时。',
@@ -76,6 +77,11 @@ export const containerData: ComponentMeta[] = [
       ],
       notes: [
         'iframe 宽度固定占满父容器（100%）；`height` 传数字时按 px 处理，也可传任意 CSS 长度。',
+        'loading 遮罩显示在 iframe 容器内部（不是全屏），覆盖在 iframe 之上；是否显示的默认值取全局 `request.loading.enable`，文案/背景/spinner 取全局 `request.loading.props`，因此改一处全局配置即可统一所有 iframe 的加载外观。',
+        '`loading` 三态：不传跟随全局；`true` 强制显示；`false` 关闭遮罩（开发人员自主接管加载呈现）。',
+        '`timeout` 为毫秒数，超时后自动关闭遮罩并触发 `timeout` 事件（回调 `{ timeout }`）；默认 `0` 表示永不超时。子页面在超时前正常加载完成则不会触发。',
+        '`complete` 在子页面 `load` 完成、遮罩关闭时触发；`load` 事件保留原生语义，两者同时触发，可按需选用。',
+        '`src` 变化、`refreshKey` 变化或调用 `refresh()` 都会重新进入 loading；组件卸载时会清理超时计时器，不会残留。',
         '`autoHeight` 依赖子页面主动上报 `{ type: \'wd-iframe-height\', height }`；`height` 会转为数字，无法解析时不调整高度。子页内容高度变化后需再次上报。',
         '`send()` 的 targetOrigin 取 `origin` 属性，缺省为当前页 origin；跨域子页面必须显式设置 `origin`（如 `https://child.example.com`），演示场景才使用 `\'*`。',
         '刷新有两种等价方式：`refreshKey` 值变化（声明式，适合「每次显示时自增」）与 `ref.refresh()`（命令式）。二者都是重建 iframe 元素，子页状态不会保留。',
@@ -83,6 +89,9 @@ export const containerData: ComponentMeta[] = [
         '消息监听挂在 `window` 上并在组件卸载时移除，不会泄漏；`message` 事件对子页所有 postMessage 原始透传，建议子页消息统一带 `type` 字段以便父级分拣。'
       ],
       faq: [
+        { q: '`complete` 和 `load` 有什么区别？', a: '两者在同一时机（子页面 load 完成）触发，参数都为空。`load` 保留原生语义与向后兼容，`complete` 语义上明确表示「加载完成、loading 已关闭」，新代码监听 `complete` 即可。' },
+        { q: '不想显示 iframe 的 loading 遮罩怎么办？', a: '设置 `:loading="false"` 可关闭该 iframe 的遮罩；想全局统一关闭可配置全局 `request.loading.enable=false`。' },
+        { q: '子页面一直打不开，遮罩会一直转吗？', a: '默认不超时（timeout=0）。建议给慢页面设置 `:timeout="5000"`，到时自动关闭遮罩并触发 `timeout` 事件，便于兜底提示。' },
         { q: '子页面发了消息，父组件 `@message` 没收到？', a: '请确认子页面使用的是 `parent.postMessage(...)` 且 iframe 未嵌套多层；跨域场景下子页面 postMessage 的 targetOrigin 需与父页 origin 匹配（或按演示方式用 `\'*`）。' },
         { q: '调用了 `send()`，子页面没反应？', a: '先确认 iframe 已加载完成（`load` 事件后再发送）；跨域时检查 `origin` 是否配置为子页面的真实 origin；子页面需用 `window.addEventListener(\'message\', ...)` 接收。' },
         { q: '开启了 `autoHeight`，但高度不变化？', a: '确认子页面按约定上报了 `{ type: \'wd-iframe-height\', height }`，且 `height` 为可解析的数字；内容后续变化时需要子页再次上报新高度。' },
@@ -94,10 +103,14 @@ export const containerData: ComponentMeta[] = [
       { name: 'height', type: 'string | number', default: "'480px'", desc: '固定高度（数字按 px）' },
       { name: 'autoHeight', type: 'boolean', default: 'false', desc: '高度自适应：子页面上报 { type:"wd-iframe-height", height } 后自动调整' },
       { name: 'origin', type: 'string', default: "''", desc: 'send 发送时的 targetOrigin（默认同源；跨域时显式指定子页面 origin）' },
-      { name: 'refreshKey', type: 'string | number', default: '0', desc: '刷新信号：值变化时强制重新加载 iframe 内容（适合每次显示时自增触发刷新）' }
+      { name: 'refreshKey', type: 'string | number', default: '0', desc: '刷新信号：值变化时强制重新加载 iframe 内容（适合每次显示时自增触发刷新）' },
+      { name: 'loading', type: 'boolean', default: 'undefined', desc: '是否显示加载遮罩：不传跟随全局 request.loading.enable；true 强制显示；false 关闭 loading' },
+      { name: 'timeout', type: 'number', default: '0', desc: '加载超时（毫秒），超时自动关闭遮罩并触发 timeout；0 表示不限制' }
     ],
     emits: [
-      { name: 'load', payload: '—', desc: 'iframe 加载完成' },
+      { name: 'load', payload: '—', desc: 'iframe 原生 load 完成' },
+      { name: 'complete', payload: '—', desc: '子页面加载完成、loading 关闭时触发' },
+      { name: 'timeout', payload: '{ timeout }', desc: '加载超时（遮罩已自动关闭）' },
       { name: 'message', payload: 'data', desc: '收到子页面 postMessage（任意消息透传）' }
     ],
     methods: [

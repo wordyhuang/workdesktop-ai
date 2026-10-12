@@ -8,6 +8,7 @@
     :direction="direction"
     :before-close="handleBeforeClose"
     v-bind="$attrs"
+    :class="drawerClass"
     @closed="onClosed"
   >
     <iframe
@@ -121,6 +122,12 @@ watch(iframeRef, (newRef) => {
 
 const resolvedSize = computed(() => (typeof props.size === 'number' ? `${props.size}px` : props.size))
 
+/** 抽屉样式类：有标题时套用标题区样式；iframe 模式让内容占满 body */
+const drawerClass = computed(() => ({
+  'wd-drawer--titled': props.title.trim().length > 0,
+  'wd-drawer--iframe': !!props.url
+}))
+
 /** iframe 地址：data 作为 query 追加（保持兼容现有实现） */
 const resolvedUrl = computed(() => {
   if (!props.url) return ''
@@ -150,9 +157,29 @@ defineExpose({
 }
 .wd-container__iframe--drawer {
   height: 100%;
-  min-height: 400px;
 }
 .wd-container__iframe--dialog {
   height: 60vh;
+}
+</style>
+
+<!-- el-drawer 内容 append-to-body，scoped 无法作用，故标题区用全局样式 -->
+<style>
+.wd-drawer--titled .el-drawer__header {
+  box-sizing: border-box;
+  height: auto;
+  margin-bottom: 0;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  align-items: center;
+}
+.wd-drawer--titled .el-drawer__header > :first-child {
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+/* iframe 模式：清空 body 内边距，让 iframe 占满标题以下的剩余空间 */
+.wd-drawer--iframe .el-drawer__body {
+  padding: 0;
 }
 </style>

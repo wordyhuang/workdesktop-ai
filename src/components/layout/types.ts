@@ -45,6 +45,8 @@ export interface StationMenuGroup {
 export interface StationTab {
   key: string
   title: string
+  /** 标签图标（菜单项打开时自动携带；tab-icon=false 可关闭渲染） */
+  icon?: string | object
   path?: string
   affix?: boolean
 }

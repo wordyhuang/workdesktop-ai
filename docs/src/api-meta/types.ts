@@ -199,7 +199,7 @@ export const optionsProps: PropMeta[] = [
 /** 共享：容器 props */
 export const containerProps: PropMeta[] = [
   { name: 'modelValue', type: 'boolean', default: 'false', desc: '显隐（v-model）' },
-  { name: 'title', type: 'string', default: "''", desc: '标题' },
+  { name: 'title', type: 'string', default: "''", desc: '标题（drawer 模式提供后，标题区高度自适应、上下 padding 12px、垂直居中）' },
   { name: 'url', type: 'string', default: "''", desc: 'iframe 地址（设置后容器内以 iframe 加载）' },
   { name: 'size', type: 'string | number', default: "'50%'", desc: '尺寸（数字按 px）' },
   { name: 'confirmMessage', type: 'string', default: "''", desc: '关闭前确认文案（设置后关闭弹确认）' },

@@ -27,6 +27,20 @@
       </wd-drawer>
     </demo-block>
 
+    <demo-block title="标题区" desc="提供 title 后，抽屉上方显示标题，标题区高度自适应、上下 padding 12px、垂直居中；不传 title 时保持原生标题区" :code="code5"
+      layout="row">
+      <el-button type="primary" @click="titledVisible = true">带标题抽屉</el-button>
+      <el-button @click="plainVisible = true">无标题抽屉（原生）</el-button>
+
+      <wd-drawer v-model="titledVisible" title="这是一个高度自适应、垂直居中的标题" size="42%">
+        <p class="content-line">标题文字与关闭按钮在标题区内垂直居中。</p>
+      </wd-drawer>
+
+      <wd-drawer v-model="plainVisible" size="42%">
+        <p class="content-line">未设置 title，标题区保持原生样式。</p>
+      </wd-drawer>
+    </demo-block>
+
     <demo-block title="iframe 模式" desc="设置 url 属性后，容器内部自动渲染填充满整个容器的 iframe，data 参数会拼为 query 参数传递给 iframe" :code="code3"
       layout="row">
       <el-button type="primary" @click="iframeDrawerVisible = true">iframe 抽屉</el-button>
@@ -67,6 +81,16 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
+
+const code5 = `<!-- 有 title：标题区高度自适应、上下 padding 12px、垂直居中 -->
+<wd-drawer v-model="visible" title="标题" size="42%">
+  <p>内容</p>
+</wd-drawer>
+
+<!-- 无 title：保持原生标题区 -->
+<wd-drawer v-model="visible" size="42%">
+  <p>内容</p>
+</wd-drawer>`
 
 const code1 = `<wd-drawer v-model="visible" title="基础抽屉" size="40%">
   <p>抽屉内容</p>
@@ -155,6 +179,8 @@ function submitFromFooter() {
 
 const visible = ref(false)
 const topVisible = ref(false)
+const titledVisible = ref(false)
+const plainVisible = ref(false)
 const dialogVisible = ref(false)
 const confirmVisible = ref(false)
 const iframeDrawerVisible = ref(false)

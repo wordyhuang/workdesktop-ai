@@ -52,6 +52,45 @@
         @load="onReloadLoad"
       />
     </demo-block>
+
+    <demo-block
+      title="加载状态 / complete / 超时"
+      desc="加载完成前 iframe 容器内自动出现 loading 遮罩（跟随全局 request.loading），完成触发 complete；timeout 超时自动关闭遮罩；:loading=&quot;false&quot; 可由开发者关闭遮罩"
+      :code="code5"
+    >
+      <div class="row">
+        <el-tag size="small" :type="completeFired ? 'success' : 'warning'">
+          {{ completeFired ? '子页面加载完成（complete）' : '加载中（容器内遮罩）' }}
+        </el-tag>
+        <el-tag size="small" :type="loadingOn ? 'info' : 'danger'">
+          {{ loadingOn ? 'loading 跟随全局' : 'loading 已被开发者关闭' }}
+        </el-tag>
+        <el-button size="small" @click="toggleLoading">
+          {{ loadingOn ? '关闭 loading' : '恢复 loading' }}
+        </el-button>
+      </div>
+      <wd-iframe
+        :key="loadingToggleKey"
+        :src="demoSrc"
+        height="180px"
+        :loading="loadingOn ? undefined : false"
+        @complete="onComplete"
+      />
+
+      <div class="row" style="margin-top: 16px">
+        <el-tag size="small" :type="timeoutFired ? 'danger' : 'warning'">
+          {{ timeoutFired ? `已超时 ${demoTimeout}ms，遮罩自动关闭` : '加载中，3 秒内不完成将超时（src 不可达）' }}
+        </el-tag>
+        <el-button size="small" @click="retryTimeout">重新演示超时</el-button>
+      </div>
+      <wd-iframe
+        :key="timeoutKey"
+        :src="timeoutSrc"
+        :timeout="demoTimeout"
+        height="120px"
+        @timeout="onTimeout"
+      />
+    </demo-block>
   </div>
 </template>
 
@@ -126,9 +165,50 @@ function onShow() {
 iframeRef.value.refresh()
 <\/script>`
 
+const code5 = `<!-- 不传 loading：跟随全局 request.loading；:loading="false"：开发者关闭遮罩 -->
+<wd-iframe :src="src" @complete="onComplete" />
+<wd-iframe :src="src" :loading="false" />
+<!-- timeout：3000ms 内未加载完成则自动关闭遮罩并触发 timeout -->
+<wd-iframe :src="slowOrUnreachableSrc" :timeout="3000" @timeout="onTimeout" />
+<script>
+function onComplete() {
+  // 子页面加载完成、loading 遮罩关闭时触发
+}
+function onTimeout({ timeout }) {
+  // 超时后遮罩已自动关闭
+}
+<\/script>`
+
 const demoSrc = `data:text/html;charset=utf-8,${demoHtml}`
 const demoMsgSrc = `data:text/html;charset=utf-8,${demoMsgHtml}`
 const demoAutoHeightSrc = `data:text/html;charset=utf-8,${demoAutoHeightHtml}`
+
+/** 加载状态 / complete / timeout 示例 */
+const demoTimeout = 3000
+// 协议相对地址指向保留不可达测试网段，确保加载不会成功，从而触发超时
+const timeoutSrc = '//192.0.2.1/?t=slow'
+const completeFired = ref(false)
+const loadingOn = ref(true)
+const loadingToggleKey = ref(0)
+const timeoutFired = ref(false)
+const timeoutKey = ref(0)
+
+function onComplete() {
+  completeFired.value = true
+}
+function toggleLoading() {
+  loadingOn.value = !loadingOn.value
+  completeFired.value = false
+  loadingToggleKey.value += 1
+}
+function onTimeout(payload: { timeout: number }) {
+  timeoutFired.value = true
+  ElMessage.warning(`加载超时 ${payload.timeout}ms，遮罩已自动关闭`)
+}
+function retryTimeout() {
+  timeoutFired.value = false
+  timeoutKey.value += 1
+}
 
 /** 重新加载示例 */
 const reloadKey = ref(0)

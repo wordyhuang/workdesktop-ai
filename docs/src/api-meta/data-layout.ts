@@ -74,6 +74,7 @@ export const layoutData: ComponentMeta[] = [
         fields: [
           { name: 'key', type: 'string', required: '是', default: '—', desc: '标签唯一标识（openTab 按 key 去重并激活）' },
           { name: 'title', type: 'string', required: '是', default: '—', desc: '标签标题' },
+          { name: 'icon', type: 'string | Component', required: '否', default: '—', desc: '标签图标（菜单项打开时自动携带；tab-icon=false 可关闭渲染）' },
           { name: 'path', type: 'string', required: '否', default: '—', desc: '关联路由路径' },
           { name: 'affix', type: 'boolean', required: '否', default: 'false', desc: '固定标签（不可关闭）' },
         ],
@@ -102,7 +103,8 @@ export const layoutData: ComponentMeta[] = [
       { name: 'collapsed', type: 'boolean', default: 'false', desc: '菜单折叠状态（v-model:collapsed）；side 收缩时 logo 跟随收缩' },
       { name: 'activeGroup', type: 'string', default: "''", desc: '激活分组 key（v-model:active-group）' },
       { name: 'activeMenu', type: 'string', default: "''", desc: '激活菜单 key（v-model:active-menu）；菜单 key 规则 `分组key:name||path||title`' },
-      { name: 'openTabs', type: 'array', default: '—', desc: '标签页列表 [{ key, title, path?, affix? }]（v-model:open-tabs，传入即受控）' },
+      { name: 'openTabs', type: 'array', default: '—', desc: '标签页列表 [{ key, title, icon?, path?, affix? }]（v-model:open-tabs，传入即受控）' },
+      { name: 'tabIcon', type: 'boolean', default: 'true', desc: 'tabs 标签标题是否显示菜单图标（true 时菜单项 icon 随 tab 显示在标题前）' },
       { name: 'userName', type: 'string', default: "''", desc: '用户名（非空显示用户下拉含退出登录；为空显示登录按钮）' },
       { name: 'userAvatar', type: 'string', default: "''", desc: '用户头像 URL（空显示用户名首字）' },
       { name: 'copyright', type: 'string', default: "''", desc: '底部版权信息' },

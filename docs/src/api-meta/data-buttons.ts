@@ -26,7 +26,8 @@ export const buttonData: ComponentMeta[] = [
         '不建议：删除等需要二次确认的危险操作，请使用 WdConfirmButton / WdPopconfirmButton；纯页面跳转请使用 WdRouteButton。'
       ],
       notes: [
-        '**外部 `loading` 透传会被覆盖**：组件内部已显式绑定 `:loading`（由 `buttonLoading` 控制），因此 Props 表未列出 el-button 的 `loading`，透传也不会生效；想关闭按钮转圈请用 `:button-loading="false"`。',
+        '**loading 图标只替换原有 icon 位**：请求中的旋转图标只出现在按钮自身配置的图标位置（el-button `icon` 属性或 `#icon` 插槽），原图标被 Loading 动画替换、结束后恢复；**按钮没有配置 icon 时，请求中不显示任何 loading 图标**，仅自动禁用按钮防止重复点击。',
+        '**外部 `loading` 透传不生效**：组件内部自行管理 loading（由 `buttonLoading` 控制），透传 el-button 的 `loading` 不会生效；想关闭按钮 loading 反馈请用 `:button-loading="false"`。',
         '`api` 为空时不发起请求，仅触发 `click`，可直接当普通按钮使用。',
         '请求参数提交位置随方法变化：`get` / `delete` 拼到 query，`post` / `put` 放入请求体。',
         '统一请求协议：响应按 `{ code, data, message }` 解封（字段名可在全局配置修改）；默认 `code >= successCode`（默认 0）视为成功。业务失败走 `apiFail`（Promise 正常 resolve，不抛异常），网络异常走 `apiException`。',
@@ -35,7 +36,8 @@ export const buttonData: ComponentMeta[] = [
       ],
       faq: [
         { q: '如何拿到后端返回的业务数据？', a: '监听 `api-success`，回调参数为 `{ data, code, message }`，其中 `data` 即后端返回的业务数据本体，组件不对其做字段提取。' },
-        { q: '不想让按钮转圈？', a: '设 `:button-loading="false"`；如需全局遮罩，改用 `:page-loading="true"`。' },
+        { q: '为什么点击后看不到 loading 图标？', a: 'loading 图标只渲染在按钮原有的 icon 位。若按钮没有配置 `icon`（或 `#icon` 插槽），请求中不会出现 loading 图标，但按钮仍会自动禁用防重复提交；给按钮配上 `icon` 即可看到图标旋转。' },
+        { q: '不想让按钮出现 loading 反馈？', a: '设 `:button-loading="false"`；如需全局遮罩，改用 `:page-loading="true"`。' },
         { q: '业务失败会抛异常吗？', a: '不会。业务失败（code 未达成功码）触发 `api-fail` 并正常结束，只有网络异常才触发 `api-exception`。' },
         { q: '点击后自动刷新了页面上的表格，是什么原因？', a: '检查 `head-refresh-datagrid`：`true` 会刷新同 `filter` 组的全部 DataGrid；字符串值会定向刷新对应 filter 组。' }
       ]
@@ -84,6 +86,59 @@ export const buttonData: ComponentMeta[] = [
     ],
     emits: [...buttonApiEmits, { name: 'confirm', payload: '—', desc: '确认后' }, { name: 'cancel', payload: '—', desc: '取消' }],
     slots: [{ name: 'default', params: '—', desc: '按钮内容（未设 label 时）' }]
+  },
+  {
+    path: 'dialog-button',
+    name: 'WdDialogButton',
+    title: 'DialogButton 对话框按钮',
+    desc: '点击打开对话框（mode=dialog 固定），支持 iframe 嵌入或内部插槽表单，关闭后声明式联动刷新',
+    group: '按钮',
+    intro: {
+      overview: 'WdDialogButton 点击打开对话框弹层（固定 `mode="dialog"`，即 WdDrawer 的 dialog 模式）。弹层内容支持两种方式：配置 `url` 后以 iframe 内嵌页面，或通过默认插槽放置任意内容（通常为 DataForm 表单）；弹层关闭后可按 `headRefreshDatagrid` 声明式刷新目标 DataGrid。组件内部组合 WdDrawer，弹层内容懒挂载——首次点击打开才渲染，避免内部 DataForm 提前发起请求。组件同时继承 TipsButton 的悬停提示能力与 el-button 的全部属性（经 `$attrs` 透传）。',
+      whenToUse: [
+        '「新增 / 编辑」入口：点击按钮打开对话框表单，内部 DataForm 提交成功后自动关闭并刷新表格。',
+        '需要 iframe 内嵌页面（外部系统、独立页面）的对话框弹层场景。',
+        '弹层内容体量不大、居中弹窗展示比抽屉更合适的场景。',
+        '对比：内容较长、需要更大编辑空间时用 WdDrawerButton 的 `mode="drawer"` 抽屉；单字段 / 极简输入用 WdPromptButton 更轻。'
+      ],
+      notes: [
+        '**`size` 属性冲突**：本组件的 `size` 被「弹层尺寸（对话框宽度）」占用，el-button 的按钮尺寸请改用 `buttonSize`（`\'large\' | \'default\' | \'small\'`），否则两属性冲突。',
+        '**弹层内容懒挂载**：首次点击打开才渲染弹层内容（`v-if="rendered"`），避免内部 DataForm 在页面加载时提前发起请求。',
+        '**`url` 模式**：设置 `url` 后弹层内以 iframe 加载，`data` 会拼为 iframe 地址的 query；此时默认插槽内容不再渲染。',
+        '**关闭后联动刷新**：`headRefreshDatagrid` 在弹层关闭后触发刷新（`true` = 同 `filter` 组 / 字符串 = 定向 filter 组）。',
+        '**插槽参数**：默认插槽参数为 `{ data, close }`，可在弹层内容内调用 `close()` 主动关闭；`footer` 插槽参数（footerProps）内含 `close`，可用于自定义底部按钮。',
+        '**与 DrawerButton 的差异**：本组件固定对话框形态（无 `mode` / `direction` / `reloadOnOpen`），按钮 `type` 默认 `primary`；需要抽屉形态时使用 WdDrawerButton。',
+        '`confirm` 事件为内部 confirm 透传，在弹层完成关闭后触发，回调参数携带关闭相关信息。'
+      ],
+      faq: [
+        { q: '给按钮设置 `size` 为什么不生效？', a: '`size` 被「弹层尺寸（对话框宽度）」占用；调整按钮尺寸请用 `button-size`，调整弹层宽度才用 `size`。' },
+        { q: '如何在弹层内容里主动关闭弹层？', a: '默认插槽参数提供 `close`，例如 `<template #default="{ data, close }">` 中调用 `close()`；`footer` 插槽参数同样内含 `close`。' },
+        { q: '与 DrawerButton 怎么选？', a: '本组件固定弹出对话框（居中）；内容较长、需要更大编辑空间时用 WdDrawerButton 的抽屉模式。' },
+        { q: 'iframe 模式每次打开都会重新加载吗？', a: '默认保留上次内容。对话框场景如需每次全新加载，可给内部 iframe 地址变化（如拼时间戳）或在父级控制弹层重建。' }
+      ]
+    },
+    props: [
+      buttonLabelProp,
+      ...elButtonProps,
+      ...tipsProp,
+      { name: 'title', type: 'string', default: "''", desc: '弹层标题' },
+      { name: 'url', type: 'string', default: "''", desc: 'iframe 地址（设置后弹层内以 iframe 加载）' },
+      { name: 'data', type: 'object', default: '{}', desc: '传给内部表单/iframe 的数据' },
+      { name: 'size', type: 'string | number', default: "'50%'", desc: '弹层尺寸（对话框宽度）' },
+      { name: 'buttonSize', type: "'large' | 'default' | 'small'", default: "'default'", desc: '按钮尺寸（el-button size；本组件 size 为弹层尺寸，按钮尺寸请用 buttonSize）' },
+      { name: 'headRefreshDatagrid', type: 'boolean | string', default: 'false', desc: '关闭后刷新目标 DataGrid' },
+      { name: 'filter', type: 'string', default: "''", desc: '联动分组标识' }
+    ],
+    emits: [
+      { name: 'open', payload: '—', desc: '弹层打开' },
+      { name: 'close', payload: '—', desc: '弹层关闭' },
+      { name: 'confirm', payload: 'payload', desc: '内部 confirm 透传' }
+    ],
+    slots: [
+      { name: 'button', params: '—', desc: '触发按钮内容（未设 label 时）' },
+      { name: 'default', params: '{ data, close }', desc: '弹层内容（通常为 DataForm）' },
+      { name: 'footer', params: 'footerProps', desc: '弹层底部' }
+    ]
   },
   {
     path: 'popconfirm-button',
@@ -270,7 +325,7 @@ export const buttonData: ComponentMeta[] = [
         '对比：单字段 / 极简输入用 WdPromptButton 更轻；字段多、需要完整表单空间时用本组件。'
       ],
       notes: [
-        '**`size` 属性冲突**：本组件的 `size` 被「弹层尺寸」占用，el-button 的按钮尺寸请改用 `buttonSize`（`\'large\' | \'default\' | \'small\'`），否则两属性冲突。',
+        '**两个尺寸各管各的**：`size` 是触发按钮的尺寸（el-button 原生：`\'large\' | \'default\' | \'small\'`）；弹层宽高用 `drawerSize`（默认 `50%`，数字按 px 处理），两者不再冲突。',
         '**弹层内容懒挂载**：首次点击打开才渲染弹层内容（`v-if="rendered"`），避免内部 DataForm 在页面加载时提前发起请求。',
         '**`url` 模式**：设置 `url` 后弹层内以 iframe 加载，`data` 会拼为 iframe 地址的 query；此时默认插槽内容不再渲染。',
         '**关闭后联动刷新**：`headRefreshDatagrid` 在弹层关闭后触发刷新（`true` = 同 `filter` 组 / 字符串 = 定向 filter 组）。',
@@ -278,7 +333,7 @@ export const buttonData: ComponentMeta[] = [
         '`confirm` 事件为内部 confirm 透传，在弹层完成关闭后触发，回调参数携带关闭相关信息。'
       ],
       faq: [
-        { q: '给按钮设置 `size` 为什么不生效？', a: '`size` 被「弹层尺寸」占用；调整按钮尺寸请用 `button-size`，调整弹层尺寸才用 `size`。' },
+        { q: '怎么分别控制按钮大小和抽屉宽度？', a: '按钮大小用 `size`（el-button 原生 large/default/small）；抽屉宽高用 `drawer-size`（默认 50%，可传像素数字或 CSS 长度）。' },
         { q: '如何在弹层内容里主动关闭弹层？', a: '默认插槽参数提供 `close`，例如 `<template #default="{ data, close }">` 中调用 `close()`；`footer` 插槽参数同样内含 `close`。' },
         { q: '`direction` 在 `mode="dialog"` 时生效吗？', a: '不生效。`direction` 仅 `mode="drawer"` 时控制抽屉弹出方向。' },
         { q: 'iframe 模式每次打开都会重新加载吗？', a: '默认保留上次内容；组件提供 `reload-on-open` 属性，开启后每次打开弹层都会重新加载 iframe 内容（仅 `url` 模式生效）。' }
@@ -292,7 +347,7 @@ export const buttonData: ComponentMeta[] = [
       { name: 'title', type: 'string', default: "''", desc: '弹层标题' },
       { name: 'url', type: 'string', default: "''", desc: 'iframe 地址（设置后弹层内以 iframe 加载）' },
       { name: 'data', type: 'object', default: '{}', desc: '传给内部表单/iframe 的数据' },
-      { name: 'size', type: 'string | number', default: "'50%'", desc: '弹层尺寸（抽屉宽/高，对话框宽度）' },
+      { name: 'drawerSize', type: 'string | number', default: "'50%'", desc: '弹层尺寸（抽屉宽/高，对话框宽度；数字按 px）。按钮尺寸用 size' },
       { name: 'direction', type: "'rtl' | 'ltr' | 'ttb' | 'btt'", default: "'rtl'", desc: '抽屉弹出方向（仅 mode=drawer 生效）' },
       { name: 'headRefreshDatagrid', type: 'boolean | string', default: 'false', desc: '关闭后刷新目标 DataGrid' },
       { name: 'filter', type: 'string', default: "''", desc: '联动分组标识' }

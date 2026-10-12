@@ -502,6 +502,61 @@ describe('WdStation 集成', () => {
     expect(wrapper.emitted('update:active-menu')!.pop()![0]).toBe('system:/sys/user')
   })
 
+  it('tabs 模式：菜单带 icon 时 tab 标题渲染该 icon，open-tabs 回传 tab.icon', async () => {
+    const iconGroups = [
+      {
+        key: 'workspace',
+        title: '工作区',
+        menus: [
+          { title: '工作台', path: '/work/dashboard', icon: 'Odometer', affix: true },
+          { title: '任务列表', path: '/work/tasks', icon: 'Tickets' }
+        ]
+      }
+    ]
+    const wrapper = mountStation({ menuGroups: iconGroups, contentMode: 'tabs', routerMode: 'html' })
+    await nextTick()
+    // affix 工作台自动开启，tab 标题渲染其 icon
+    expect(wrapper.find('.wd-station__tabs-bar .wd-station__tab-icon').exists()).toBe(true)
+    const opened = wrapper.emitted('update:open-tabs')!.pop()![0] as any[]
+    expect(opened[0]).toMatchObject({ key: 'workspace:/work/dashboard', icon: 'Odometer' })
+
+    // 点击左侧菜单「任务列表」→ 新 tab 同样携带并渲染 icon
+    await wrapper
+      .findAll('.wd-station__menu .el-menu-item-stub')
+      .find((m) => m.text().includes('任务列表'))!
+      .trigger('click')
+    await nextTick()
+    expect(wrapper.findAll('.el-tab-pane-stub')).toHaveLength(2)
+    expect(wrapper.findAll('.wd-station__tab-icon')).toHaveLength(2)
+    const last = wrapper.emitted('update:open-tabs')!.pop()![0] as any[]
+    expect(last.find((t: any) => t.title === '任务列表')).toMatchObject({
+      key: 'workspace:/work/tasks',
+      icon: 'Tickets'
+    })
+  })
+
+  it('tabs 模式：tab-icon=false 关闭 tab 标题的图标渲染', async () => {
+    const iconGroups = [
+      {
+        key: 'workspace',
+        title: '工作区',
+        menus: [{ title: '工作台', path: '/work/dashboard', icon: 'Odometer', affix: true }]
+      }
+    ]
+    const wrapper = mountStation({
+      menuGroups: iconGroups,
+      contentMode: 'tabs',
+      routerMode: 'html',
+      tabIcon: false
+    })
+    await nextTick()
+    // affix 自动开启但 tabs-bar 内不再渲染 tab 图标（tab-icon=false 仅关闭渲染）
+    expect(wrapper.find('.wd-station__tab-icon').exists()).toBe(false)
+    // open-tabs 仍回传 icon（仅影响渲染）
+    const opened = wrapper.emitted('update:open-tabs')!.pop()![0] as any[]
+    expect(opened[0]).toMatchObject({ icon: 'Odometer' })
+  })
+
   it('tabs 右侧下拉：关闭当前/左侧/其他/所有（affix 保留）与禁用态', async () => {
     const wrapper = mountStation({
       menuGroups: menuGroupsFixture,

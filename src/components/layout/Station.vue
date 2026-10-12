@@ -159,6 +159,9 @@
         >
           <el-tab-pane v-for="tab in tabs" :key="tab.key" :name="tab.key">
             <template #label>
+              <el-icon v-if="tabIcon && tab.icon" class="wd-station__tab-icon">
+                <component :is="resolveIcon(tab.icon)" />
+              </el-icon>
               <span class="wd-station__tab-label" @click="onTabClick(tab)">{{ tab.title }}</span>
               <el-icon v-if="!tab.affix" class="wd-station__tab-close" @click.stop="closeTab(tab.key)">
                 <Close />
@@ -246,6 +249,8 @@ const props = defineProps({
   activeMenu: { type: String, default: '' },
   /** 已开启标签（v-model:open-tabs，受控） */
   openTabs: { type: Array as PropType<StationTab[]>, default: undefined },
+  /** tabs 标签标题是否显示菜单图标（true 时菜单项 icon 随 tab 显示在标题前） */
+  tabIcon: { type: Boolean, default: true },
   /** 用户名（有值显示用户下拉，无值显示登录按钮） */
   userName: { type: String, default: '' },
   /** 用户头像地址 */
@@ -452,7 +457,7 @@ function openTab(tab: any) {
   const key = tab._key || tab.key
   if (!key) return
   if (!tabs.value.find((t) => t.key === key)) {
-    commitTabs([...tabs.value, { key, title: tab.title, path: tab.path, affix: tab.affix }])
+    commitTabs([...tabs.value, { key, title: tab.title, path: tab.path, affix: tab.affix, icon: tab.icon }])
   }
   setActiveMenu(key)
 }
@@ -849,6 +854,13 @@ defineExpose({ refresh, openTab, closeTab })
   border-left: none;
   border-right: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
 }
+/* 激活 tab 增强：顶部主色指示条 + 浅主色背景 + 主色加粗文字，强化激活辨识 */
+.wd-station__tabs-bar :deep(.el-tabs--card > .el-tabs__header .el-tabs__nav .el-tabs__item.is-active) {
+  color: var(--wd-color-primary, var(--el-color-primary));
+  background: var(--el-color-primary-light-9, var(--wd-bg-color-page));
+  font-weight: 600;
+  box-shadow: inset 0 3px 0 0 var(--wd-color-primary, var(--el-color-primary));
+}
 .wd-station__tabs-actions {
   flex-shrink: 0;
   margin: 0 var(--wd-spacing-large);
@@ -865,6 +877,10 @@ defineExpose({ refresh, openTab, closeTab })
 }
 .wd-station__tab-label {
   cursor: pointer;
+}
+.wd-station__tab-icon {
+  margin-right: 4px;
+  vertical-align: -2px;
 }
 .wd-station__tab-close {
   margin-left: 4px;

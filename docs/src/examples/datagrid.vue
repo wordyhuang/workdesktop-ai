@@ -121,10 +121,10 @@
                 <wd-drawer-button
                   label="详情"
                   type="primary"
-                  button-size="small"
+                  size="small"
+                  drawer-size="60%"
                   :title="`${row.name} - 详情`"
                   :data="row"
-                  size="60%"
                 >
                   <template #default="{ data }">
                     <div class="detail-content">
@@ -177,10 +177,10 @@
                 <wd-drawer-button
                   label="编辑"
                   type="warning"
-                  button-size="small"
+                  size="small"
+                  drawer-size="50%"
                   :title="`${row.name} - 编辑`"
                   :data="row"
-                  size="50%"
                   @open="fillEditForm(row)"
                 >
                   <template #default>
@@ -680,14 +680,14 @@ const code1 = `<div>
     <el-table-column label="操作" width="230" fixed="right">
       <template #default="{ row }">
         <el-button-group>
-          <!-- size 是抽屉尺寸；按钮尺寸走 button-size（与弹层尺寸解耦） -->
+          <!-- size 是按钮尺寸（el-button 原生）；抽屉尺寸走 drawer-size -->
           <wd-drawer-button
             label="详情"
             type="primary"
-            button-size="small"
+            size="small"
+            drawer-size="60%"
             :title="\`\${row.name} - 详情\`"
             :data="row"
-            size="60%"
           >
             <template #default="{ data }">
               <el-descriptions :column="2" border>
@@ -706,10 +706,10 @@ const code1 = `<div>
           <wd-drawer-button
             label="编辑"
             type="warning"
-            button-size="small"
+            size="small"
+            drawer-size="50%"
             :title="\`\${row.name} - 编辑\`"
             :data="row"
-            size="50%"
             @open="fillEditForm(row)"
           >
             <template #default>

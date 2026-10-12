@@ -3,9 +3,14 @@
     <unpack-note>
       该组件点击后发起 API 请求，对返回数据中的 <code>data</code> 不做字段提取，而是把请求结果通过事件抛出：成功 <code>api-success</code> 携带 <code>{ data, code, message }</code>、业务失败 <code>api-fail</code> 携带 <code>{ code, message }</code>、异常 <code>api-exception</code> 携带 <code>{ error, message }</code>；其中 <code>data</code> 即后端返回的业务数据本体。
     </unpack-note>
-    <demo-block title="基础用法" desc="点击发起请求，自动 loading 与成功提示；无 api 时仅触发 click。指定 icon 后，请求期间按钮自动变为 loading 加载形式（icon 被 loading 动画替换），请求结束恢复" :code="code1" layout="row">
+    <demo-block
+      title="基础用法"
+      desc="点击发起请求，自动 loading 与成功提示；无 api 时仅触发 click。请求中的 loading 图标只出现在按钮原有的 icon 位（图标被旋转动画替换，结束恢复）；按钮没有配置 icon 时，请求中不显示任何 loading 图标，仅禁用防重复点击"
+      :code="code1"
+      layout="row"
+    >
       <wd-api-button type="primary" label="保存配置" :icon="Edit" api="/user/save" :api-param="{ id: 1 }" />
-      <wd-api-button type="success" label="触发导出" api="/user/export" />
+      <wd-api-button type="success" label="触发导出（无 icon）" api="/user/export" />
       <wd-api-button label="无接口按钮（仅事件）" @click="onClick" />
     </demo-block>
 
@@ -20,7 +25,7 @@
         <wd-confirm-button label="删除" confirm-text="确认删除该用户？" api="/user" api-method="delete" :api-param="{ id: 2 }" />
         <wd-popconfirm-button label="气泡删除" title="确定删除该用户？" api="/user" api-method="delete" :api-param="{ id: 3 }" />
         <wd-tips-button label="提示" tips="基于 el-tooltip 的提示按钮" />
-        <wd-drawer-button label="详情" title="用户详情" size="60%">
+        <wd-drawer-button label="详情" title="用户详情" drawer-size="60%">
           <div>详情内容（抽屉 / 对话框内渲染）</div>
         </wd-drawer-button>
       </el-button-group>
@@ -46,7 +51,7 @@ const code3 = `<el-button-group>
   <wd-popconfirm-button label="气泡删除" title="确定删除该用户？"
     api="/user" api-method="delete" :api-param="{ id: 3 }" />
   <wd-tips-button label="提示" tips="基于 el-tooltip 的提示按钮" />
-  <wd-drawer-button label="详情" title="用户详情" size="60%">
+  <wd-drawer-button label="详情" title="用户详情" drawer-size="60%">
     详情内容（抽屉 / 对话框内渲染）
   </wd-drawer-button>
 </el-button-group>`
