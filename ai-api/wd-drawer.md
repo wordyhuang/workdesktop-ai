@@ -82,10 +82,10 @@ WdDrawer 基于 `el-drawer` / `el-dialog` 封装，通过 `mode` 切换抽屉（
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 内容（url 未设置时） |
-| footer | { close } | 底部 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 内容（url 未设置时） |
+| footer | — | { close } | 底部 |
 
 ### 暴露方法（通过 ref 调用）
 

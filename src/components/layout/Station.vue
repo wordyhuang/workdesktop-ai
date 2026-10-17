@@ -2,7 +2,7 @@
   <div class="wd-station" :class="{ 'is-collapsed': collapsedState }">
     <!-- 左侧菜单栏（menuMode=side）：logo 与菜单同列，菜单紧贴 logo -->
     <aside v-if="menuMode === 'side'" class="wd-station__aside" :class="{ 'is-collapsed': collapsedState }">
-      <div class="wd-station__logo" :class="{ 'is-collapsed': collapsedState }">
+      <div id="wd-station__logo" class="wd-station__logo" :class="{ 'is-collapsed': collapsedState }">
         <slot name="logo" :collapsed="collapsedState">
           <el-icon v-if="resolveIcon(logo)" class="wd-station__logo-icon">
             <component :is="resolveIcon(logo)" />
@@ -10,7 +10,9 @@
           <span v-show="!collapsedState" class="wd-station__logo-title">{{ title }}</span>
         </slot>
       </div>
-      <slot name="menu-top" :collapsed="collapsedState" />
+      <div id="wd-station__menu-top" class="wd-station__menu-top">
+        <slot name="menu-top" :collapsed="collapsedState" />
+      </div>
       <el-scrollbar class="wd-station__menu-scroll">
         <el-menu class="wd-station__menu" :collapse="collapsedState" :default-active="currentKey">
           <template v-if="headerMode === 'title'">
@@ -38,12 +40,14 @@
           <station-menu-node v-else :items="currentGroupMenus" @select="onMenuSelect" />
         </el-menu>
       </el-scrollbar>
-      <slot name="menu-bottom" :collapsed="collapsedState" />
+      <div id="wd-station__menu-bottom" class="wd-station__menu-bottom">
+        <slot name="menu-bottom" :collapsed="collapsedState" />
+      </div>
     </aside>
 
     <div class="wd-station__main">
       <header class="wd-station__header">
-        <div class="wd-station__header-left">
+        <div id="wd-station__header-left" class="wd-station__header-left">
           <!-- 折叠按钮：分导台左侧。side 用左右折叠图标，top 用向上折叠图标 -->
           <el-icon
             v-if="collapsible && menuMode !== 'none'"
@@ -56,7 +60,7 @@
             <ArrowDown v-else />
           </el-icon>
           <!-- top / none 模式 logo 进 header -->
-          <div v-if="menuMode !== 'side'" class="wd-station__logo wd-station__logo--header">
+          <div v-if="menuMode !== 'side'" id="wd-station__logo-header" class="wd-station__logo wd-station__logo--header">
             <slot name="logo" :collapsed="collapsedState">
               <el-icon v-if="resolveIcon(logo)" class="wd-station__logo-icon">
                 <component :is="resolveIcon(logo)" />
@@ -68,9 +72,17 @@
             <el-icon
               v-if="tool === 'refresh'"
               data-tool="refresh"
+              title="刷新内容"
               class="wd-station__tool"
               @click="refresh"
             ><Refresh /></el-icon>
+            <el-icon
+              v-else-if="tool === 'fullscreen'"
+              data-tool="fullscreen"
+              :title="isFullscreen ? '退出全屏' : '全屏显示'"
+              class="wd-station__tool"
+              @click="toggleFullscreen"
+            ><FullScreen /></el-icon>
             <el-icon
               v-else-if="tool === 'settings'"
               data-tool="settings"
@@ -92,7 +104,7 @@
           </template>
           <slot name="header-left" />
         </div>
-        <div class="wd-station__header-center">
+        <div id="wd-station__header-center" class="wd-station__header-center">
           <!-- 分导台：流式块状分组切换条，仅多分组且 headerMode=nav 时显示 -->
           <nav v-if="showNav" class="wd-station__nav">
             <span
@@ -109,15 +121,23 @@
           <span v-else-if="showHeaderTitle" class="wd-station__header-title">{{ title }}</span>
           <slot name="header-center" />
         </div>
-        <div class="wd-station__header-right">
+        <div id="wd-station__header-right" class="wd-station__header-right">
           <slot name="header-right" />
           <template v-for="tool in toolbarRight" :key="tool">
             <el-icon
               v-if="tool === 'refresh'"
               data-tool="refresh"
+              title="刷新内容"
               class="wd-station__tool"
               @click="refresh"
             ><Refresh /></el-icon>
+            <el-icon
+              v-else-if="tool === 'fullscreen'"
+              data-tool="fullscreen"
+              :title="isFullscreen ? '退出全屏' : '全屏显示'"
+              class="wd-station__tool"
+              @click="toggleFullscreen"
+            ><FullScreen /></el-icon>
             <el-icon
               v-else-if="tool === 'settings'"
               data-tool="settings"
@@ -142,16 +162,22 @@
 
       <!-- 顶部菜单（menuMode=top），向上折叠时隐藏 -->
       <div v-if="menuMode === 'top'" v-show="!collapsedState" class="wd-station__top-menu">
-        <slot name="top-menu-left" />
+        <div id="wd-station__top-menu-left" class="wd-station__top-menu-left">
+          <slot name="top-menu-left" />
+        </div>
         <el-menu mode="horizontal" :default-active="currentKey">
           <station-menu-node :items="currentGroupMenus" @select="onMenuSelect" />
         </el-menu>
-        <slot name="top-menu-right" />
+        <div id="wd-station__top-menu-right" class="wd-station__top-menu-right">
+          <slot name="top-menu-right" />
+        </div>
       </div>
 
       <!-- tabs 导航（contentMode=tabs）：整宽撑满，右侧下拉批量关闭；自绘 label 插槽，affix 无关闭图标 -->
       <div v-if="contentMode === 'tabs'" class="wd-station__tabs-bar">
-        <slot name="tabs-left" />
+        <div id="wd-station__tabs-left" class="wd-station__tabs-left">
+          <slot name="tabs-left" />
+        </div>
         <el-tabs
           :model-value="currentKey"
           type="card"
@@ -182,11 +208,13 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <slot name="tabs-right" />
+        <div id="wd-station__tabs-right" class="wd-station__tabs-right">
+          <slot name="tabs-right" />
+        </div>
       </div>
 
       <!-- 内容区：router 模式渲染 RouterView，html 模式渲染默认插槽；contentKey 强制重挂载 -->
-      <main class="wd-station__content">
+      <main id="wd-station__content" class="wd-station__content">
         <div :key="contentKey" class="wd-station__content-inner">
           <template v-if="isRouterMode && RouterViewComp">
             <keep-alive v-if="keepAlive"><component :is="RouterViewComp" /></keep-alive>
@@ -197,7 +225,7 @@
       </main>
 
       <!-- 底部信息栏：动态信息 + 版权（footer 插槽可整体替换） -->
-      <footer class="wd-station__footer">
+      <footer id="wd-station__footer" class="wd-station__footer">
         <slot name="footer">
           <span v-if="displayFooterInfo" class="wd-station__footer-info">{{ displayFooterInfo }}</span>
           <span v-if="copyright" class="wd-station__footer-copyright">{{ copyright }}</span>
@@ -210,7 +238,7 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, type PropType } from 'vue'
 import * as ElIcons from '@element-plus/icons-vue'
-import { Fold, Expand, ArrowUp, ArrowDown, Refresh, Setting, Close } from '@element-plus/icons-vue'
+import { Fold, Expand, ArrowUp, ArrowDown, Refresh, Setting, Close, FullScreen } from '@element-plus/icons-vue'
 import { filterProp } from '../common/props'
 import { registerStation, notifyStationChange } from '../../lib/core/station-linkage'
 import StationMenuNode from './StationMenuNode.vue'
@@ -263,7 +291,7 @@ const props = defineProps({
   footerInfo: { type: String, default: '' },
   /** router 模式内容区 keep-alive */
   keepAlive: { type: Boolean, default: false },
-  /** 工具栏点位配置：refresh/settings/user/login 各自 left/right/none，支持 JSON 字符串 */
+  /** 工具栏点位配置：refresh/fullscreen/settings/user/login 各自 left/right/none，支持 JSON 字符串；settings 默认 none（默认不渲染） */
   toolbarConfig: { type: [Object, String] as PropType<StationToolbarConfig | string>, default: undefined }
 })
 
@@ -565,7 +593,8 @@ const toolbarCfg = computed<Required<StationToolbarConfig>>(() => {
   const raw = parseMaybeJson(props.toolbarConfig, {}) || {}
   return {
     refresh: raw.refresh || 'right',
-    settings: raw.settings || 'right',
+    settings: raw.settings || 'none',
+    fullscreen: raw.fullscreen || 'right',
     user: raw.user || 'right',
     login: raw.login || 'right'
   }
@@ -575,6 +604,7 @@ const toolbarLeft = computed(() => {
   const list: string[] = []
   const cfg = toolbarCfg.value
   if (cfg.refresh === 'left') list.push('refresh')
+  if (cfg.fullscreen === 'left') list.push('fullscreen')
   if (cfg.settings === 'left') list.push('settings')
   if (cfg[accountTool.value as keyof StationToolbarConfig] === 'left') list.push(accountTool.value)
   return list
@@ -583,6 +613,7 @@ const toolbarRight = computed(() => {
   const list: string[] = []
   const cfg = toolbarCfg.value
   if (cfg.refresh === 'right') list.push('refresh')
+  if (cfg.fullscreen === 'right') list.push('fullscreen')
   if (cfg.settings === 'right') list.push('settings')
   if (cfg[accountTool.value as keyof StationToolbarConfig] === 'right') list.push(accountTool.value)
   return list
@@ -614,6 +645,19 @@ const contentKey = ref(0)
 function refresh() {
   contentKey.value += 1
   emit('refresh')
+}
+
+/* ---------- 全屏切换（document Fullscreen API） ---------- */
+const isFullscreen = ref(false)
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.()
+  } else {
+    document.exitFullscreen?.()
+  }
+}
+function syncFullscreenState() {
+  isFullscreen.value = !!document.fullscreenElement
 }
 
 /* ---------- 底部动态信息 + 联动注册 ---------- */
@@ -668,9 +712,11 @@ onMounted(() => {
       })
     )
   }
+  document.addEventListener('fullscreenchange', syncFullscreenState)
 })
 onUnmounted(() => {
   unregister?.()
+  document.removeEventListener('fullscreenchange', syncFullscreenState)
 })
 
 /* ---------- 图标归一 ---------- */

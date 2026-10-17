@@ -106,13 +106,13 @@ WdDataGrid 是 WorkDesktop 组件库的旗舰组件，内部封装 el-table + el
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | el-table-column 集合（业务列） |
-| toolbar | { selection, list } | 左区补充按钮：渲染在内置「新增/导出」的最左侧 |
-| empty | — | 空数据插槽 |
-| card-item | { row, index } | 卡片模式单项 |
-| cart-content | { list, remove, clear } | 购物车面板主体自定义（list 为暂存数组；remove(row)/clear() 逐条移除/一键清空），默认内容为逐条列表 + 移除按钮 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | el-table-column 集合（业务列） |
+| toolbar | — | { selection, list } | 左区补充按钮：渲染在内置「新增/导出」的最左侧 |
+| empty | — | — | 空数据插槽 |
+| card-item | — | { row, index } | 卡片模式单项 |
+| cart-content | — | { list, remove, clear } | 购物车面板主体自定义（list 为暂存数组；remove(row)/clear() 逐条移除/一键清空），默认内容为逐条列表 + 移除按钮 |
 
 ### 暴露方法（通过 ref 调用）
 

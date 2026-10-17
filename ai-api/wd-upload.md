@@ -91,10 +91,10 @@ WdUpload 基于 el-upload 封装，提供通用文件上传能力：选择即上
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 触发按钮（默认 el-button） |
-| tip | — | 提示区（auto-upload=false 时含提交按钮） |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 触发按钮（默认 el-button） |
+| tip | — | — | 提示区（auto-upload=false 时含提交按钮） |
 
 ### 暴露方法（通过 ref 调用）
 

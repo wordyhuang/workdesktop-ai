@@ -77,6 +77,6 @@ WdTipsButton 是基于 el-tooltip 的悬停提示按钮：`tips` 属性非空时
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 按钮内容（未设 label 时） |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 按钮内容（未设 label 时） |

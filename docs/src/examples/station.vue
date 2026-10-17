@@ -2,7 +2,7 @@
   <div class="example-page">
     <demo-block
       title="基础用法"
-      desc="menuGroups 传入分组菜单，顶部分导台切换分组、左侧菜单联动更换；工具栏含刷新/设置/用户，toolbarConfig 可把工具调到左侧点位；html 模式内容走默认插槽"
+      desc="menuGroups 传入分组菜单，顶部分导台切换分组、左侧菜单联动更换；工具栏默认含刷新/全屏/用户（设置图标默认关闭、可通过 toolbarConfig 开启），toolbarConfig 可把工具调到左侧点位；html 模式内容走默认插槽"
       :code="code1"
     >
       <div class="station-stage">

@@ -77,9 +77,9 @@ WdRadioList 基于 el-radio-group 封装，以平铺单选框（或按钮组）�
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | { option, text, value } | 选项内容 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | { option, text, value } | 选项内容 |
 
 ### 数据类型
 

@@ -82,9 +82,9 @@ WdSelect 基于 el-select 封装，在保留原生能力的基础上内置了选
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | { option, text, value } | 选项内容 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | { option, text, value } | 选项内容 |
 
 ### 数据类型
 

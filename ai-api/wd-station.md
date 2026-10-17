@@ -26,7 +26,7 @@ WdStation 是一站式中后台外框架组件：顶部「分导台」按业务�
 - tabs 模式：`affix: true` 的菜单为固定标签，挂载时自动开启、不可关闭；关闭当前激活标签后自动跳转相邻标签（先右后左）；标签栏右侧下拉支持关闭当前/左侧/其他/全部的批量操作。传入 `openTabs` 即为受控模式，需自行维护标签列表。
 - `group-change`（切分组）不触发路由跳转，路由跳转只发生在菜单选中（`menu-select`）时。
 - `userName` 非空时顶栏显示用户下拉（含退出登录），为空时显示登录按钮；`userAvatar` 为空时头像显示用户名首字。
-- `toolbarConfig` 中 `refresh` / `settings` / `user` / `login` 各点位默认全部在右侧（right），可设为 left / none；`user` 与 `login` 按 `userName` 是否为空二选一出现。
+- `toolbarConfig` 中 `refresh` / `fullscreen` / `user` / `login` 默认在右侧（right），`settings` 默认 `none`（不渲染）；各点位均可设为 left / right / none。`user` 与 `login` 按 `userName` 是否为空二选一出现。刷新与全屏图标带原生 `title` 悬浮提示（全屏态下自动切换为「退出全屏」）。
 - Station 自身高度为 100%，父容器必须提供确定高度（示例中用 `height: 440px` 的舞台 div），否则布局会塌陷。
 - `refresh()` / `refreshStationView` 通过自增 key 强制重挂载内容区，适用于「保存后整页重取数据」类场景；局部刷新请走 DataGrid 等组件自身的刷新机制。
 
@@ -85,7 +85,7 @@ WdStation 是一站式中后台外框架组件：顶部「分导台」按业务�
 | copyright | `string` | '' | 底部版权信息 |
 | footerInfo | `string` | '' | 底部动态信息（v-model:footer-info；也可由 setStationFooter 联动更新） |
 | keepAlive | `boolean` | false | router 模式下 RouterView 包 keep-alive |
-| toolbarConfig | `object \| string` | — | 工具点位 { refresh?, settings?, user?, login? }，各取 left / right / none（默认全 right）；传字符串按 JSON 解析 |
+| toolbarConfig | `object \| string` | — | 工具点位 { refresh?, fullscreen?, settings?, user?, login? }，各取 left / right / none；refresh/fullscreen/user/login 默认 right，settings 默认 none（默认不渲染）；传字符串按 JSON 解析 |
 | filter | `string` | '' | 联动分组标识（setStationFooter / refreshStationView 定向目标） |
 
 ### Events
@@ -108,20 +108,20 @@ WdStation 是一站式中后台外框架组件：顶部「分导台」按业务�
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 内容区（html 模式渲染；router 模式渲染 RouterView） |
-| logo | { collapsed } | 品牌区（side 模式在侧栏顶部，top/none 模式在顶栏左侧）；传入后替换默认图标+标题 |
-| menu-top | { collapsed } | 侧栏菜单滚动区上方扩展位（仅 side 模式） |
-| menu-bottom | { collapsed } | 侧栏菜单滚动区下方扩展位（仅 side 模式） |
-| header-left | — | 顶栏左侧扩展位（工具栏左侧点位之后） |
-| header-center | — | 顶栏中部扩展位（标题/分导台之后） |
-| header-right | — | 顶栏右侧扩展位（位于工具栏右侧点位之前）；建议放置 el-icon 类轻量图标（如通知铃铛、画刷入口），不建议放置 el-button 类按钮组件 |
-| top-menu-left | — | 顶部菜单行左侧扩展位（仅 top 模式） |
-| top-menu-right | — | 顶部菜单行右侧扩展位（仅 top 模式） |
-| tabs-left | — | tabs 条左侧扩展位（el-tabs 之前，仅 tabs 内容模式） |
-| tabs-right | — | tabs 条右侧扩展位（批量关闭按钮之后，仅 tabs 内容模式） |
-| footer | — | 底栏整区；传入后替换默认 footer-info / copyright |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | wd-station__content | — | 内容区（html 模式渲染；router 模式渲染 RouterView） |
+| logo | wd-station__logo | { collapsed } | 品牌区（side 模式在侧栏顶部 id=wd-station__logo，top/none 模式在顶栏左侧 id=wd-station__logo-header，两处共用同一插槽）；传入后替换默认图标+标题 |
+| menu-top | wd-station__menu-top | { collapsed } | 侧栏菜单滚动区上方扩展位（仅 side 模式） |
+| menu-bottom | wd-station__menu-bottom | { collapsed } | 侧栏菜单滚动区下方扩展位（仅 side 模式） |
+| header-left | wd-station__header-left | — | 顶栏左侧扩展位（工具栏左侧点位之后） |
+| header-center | wd-station__header-center | — | 顶栏中部扩展位（标题/分导台之后） |
+| header-right | wd-station__header-right | — | 顶栏右侧扩展位（位于工具栏右侧点位之前）；建议放置 el-icon 类轻量图标（如通知铃铛、画刷入口），不建议放置 el-button 类按钮组件 |
+| top-menu-left | wd-station__top-menu-left | — | 顶部菜单行左侧扩展位（仅 top 模式） |
+| top-menu-right | wd-station__top-menu-right | — | 顶部菜单行右侧扩展位（仅 top 模式） |
+| tabs-left | wd-station__tabs-left | — | tabs 条左侧扩展位（el-tabs 之前，仅 tabs 内容模式） |
+| tabs-right | wd-station__tabs-right | — | tabs 条右侧扩展位（批量关闭按钮之后，仅 tabs 内容模式） |
+| footer | wd-station__footer | — | 底栏整区；传入后替换默认 footer-info / copyright |
 
 ### 暴露方法（通过 ref 调用）
 
@@ -181,7 +181,8 @@ WdStation 是一站式中后台外框架组件：顶部「分导台」按业务�
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | --- | --- | --- |
-| refresh | 'left' \| 'right' \| 'none' | 否 | 'right' | 「刷新」工具位置，none 为不显示 |
-| settings | 'left' \| 'right' \| 'none' | 否 | 'right' | 「系统设置」工具位置 |
+| refresh | 'left' \| 'right' \| 'none' | 否 | 'right' | 「刷新内容」图标（带 title 悬浮提示）位置，none 为不显示 |
+| fullscreen | 'left' \| 'right' \| 'none' | 否 | 'right' | 「全屏显示」图标（带 title 悬浮提示，Fullscreen API 切换整页全屏）位置 |
+| settings | 'left' \| 'right' \| 'none' | 否 | 'none' | 「系统设置」工具位置；默认不渲染，需显式开启 |
 | user | 'left' \| 'right' \| 'none' | 否 | 'right' | 用户区（用户名 / 头像 / 退出）位置 |
 | login | 'left' \| 'right' \| 'none' | 否 | 'right' | 「登录」按钮位置（userName 为空时显示） |

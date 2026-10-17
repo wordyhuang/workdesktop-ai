@@ -136,8 +136,8 @@ function renderComponentBody(c) {
       '### Slots',
       '',
       table(
-        ['插槽', '插槽参数', '说明'],
-        c.slots.map((s) => [s.name, s.params, s.desc])
+        ['插槽', '容器 id', '插槽参数', '说明'],
+        c.slots.map((s) => [s.name, s.id || '—', s.params, s.desc])
       ),
       ''
     )

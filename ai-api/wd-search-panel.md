@@ -76,11 +76,11 @@ WdSearchPanel 是列表页顶部的搜索表单容器：内部基于 `el-form`�
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | { model } | 默认可见搜索字段（第一行，el-form-item 或 wd-search-item + v-model="model.xxx"） |
-| more | { model } | 隐藏搜索项目（第二行，收起时仅视觉隐藏；展开后整行平顺滑出；collapsible=false 恒展开） |
-| actions | { search, reset } | 自定义右侧操作列 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | { model } | 默认可见搜索字段（第一行，el-form-item 或 wd-search-item + v-model="model.xxx"） |
+| more | — | { model } | 隐藏搜索项目（第二行，收起时仅视觉隐藏；展开后整行平顺滑出；collapsible=false 恒展开） |
+| actions | — | { search, reset } | 自定义右侧操作列 |
 
 ### 暴露方法（通过 ref 调用）
 

@@ -89,10 +89,10 @@ WdDataForm 是一个基于 el-form 的自动表单组件：通过 `mode`（creat
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | { model, form } | 表单字段（el-form-item + v-model="model.xxx"） |
-| footer | { submit, reset, loading } | 底部操作区 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | { model, form } | 表单字段（el-form-item + v-model="model.xxx"） |
+| footer | — | { submit, reset, loading } | 底部操作区 |
 
 ### 暴露方法（通过 ref 调用）
 

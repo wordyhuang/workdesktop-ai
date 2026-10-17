@@ -15,6 +15,8 @@ export interface EventMeta {
 
 export interface SlotMeta {
   name: string
+  /** 插槽内容承载容器的 DOM id（便于自动化定位）；无固定承载容器则为空 */
+  id?: string
   params: string
   desc: string
 }

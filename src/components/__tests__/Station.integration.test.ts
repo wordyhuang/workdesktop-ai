@@ -201,9 +201,12 @@ describe('WdStation 集成', () => {
     const items = wrapper.findAll('.wd-station__aside .el-menu-item-stub')
     expect(items.map((i) => i.text())).toContain('工作台')
     expect(wrapper.find('.wd-station__aside').text()).not.toContain('用户管理')
-    // 工具栏：刷新 / 设置 / 用户
+    // 工具栏：刷新 / 全屏 / 用户（settings 默认关闭）
     expect(wrapper.find('[data-tool="refresh"]').exists()).toBe(true)
-    expect(wrapper.find('[data-tool="settings"]').exists()).toBe(true)
+    expect(wrapper.find('[data-tool="refresh"]').attributes('title')).toBe('刷新内容')
+    expect(wrapper.find('[data-tool="fullscreen"]').exists()).toBe(true)
+    expect(wrapper.find('[data-tool="fullscreen"]').attributes('title')).toBe('全屏显示')
+    expect(wrapper.find('[data-tool="settings"]').exists()).toBe(false)
     expect(wrapper.find('[data-tool="user"]').exists()).toBe(true)
     // 底部
     expect(wrapper.find('.wd-station__footer').text()).toContain('© 2026 ACME')
@@ -213,12 +216,14 @@ describe('WdStation 集成', () => {
     const wrapper = mountStation({
       menuGroups: menuGroupsFixture,
       userName: '张三',
-      toolbarConfig: { refresh: 'left', settings: 'none', user: 'right' }
+      toolbarConfig: { refresh: 'left', fullscreen: 'none', settings: 'right', user: 'right' }
     })
     // refresh 挪到 header-left
     expect(wrapper.find('.wd-station__header-left [data-tool="refresh"]').exists()).toBe(true)
-    // settings 关闭
-    expect(wrapper.find('[data-tool="settings"]').exists()).toBe(false)
+    // fullscreen 关闭
+    expect(wrapper.find('[data-tool="fullscreen"]').exists()).toBe(false)
+    // settings 通过配置开启后渲染在右侧
+    expect(wrapper.find('.wd-station__header-right [data-tool="settings"]').exists()).toBe(true)
     // user 留在右侧
     expect(wrapper.find('.wd-station__header-right [data-tool="user"]').exists()).toBe(true)
   })
@@ -856,8 +861,12 @@ describe('WdStation 集成', () => {
     expect(w2.emitted('refresh')).toBeFalsy()
   })
 
-  it('用户下拉点击「退出登录」触发 logout，设置图标触发 settings', async () => {
-    const wrapper = mountStation({ menuGroups: menuGroupsFixture, userName: '张三' })
+  it('用户下拉点击「退出登录」触发 logout，设置图标（需显式开启）触发 settings', async () => {
+    const wrapper = mountStation({
+      menuGroups: menuGroupsFixture,
+      userName: '张三',
+      toolbarConfig: { settings: 'right' }
+    })
     const items = wrapper.findAll('.el-dropdown-item-stub')
     const logoutItem = items.find((i) => i.text().includes('退出登录'))!
     await logoutItem.trigger('click')
@@ -919,18 +928,49 @@ describe('WdStation 集成', () => {
     expect(hrUserIdx).toBeGreaterThan(hrSlotIdx)
     // tabs-left / tabs-right：el-tabs 之前、批量关闭下拉之后
     const barChildren = Array.from(wrapper.find('.wd-station__tabs-bar').element.children)
-    const tlIdx = barChildren.findIndex((c) => c.classList.contains('slot-tl'))
+    const tlIdx = barChildren.findIndex((c) => c.id === 'wd-station__tabs-left')
     const tabsIdx = barChildren.findIndex((c) => c.classList.contains('el-tabs-stub'))
     const actionsIdx = barChildren.findIndex((c) => c.classList.contains('wd-station__tabs-actions'))
-    const trIdx = barChildren.findIndex((c) => c.classList.contains('slot-tr'))
+    const trIdx = barChildren.findIndex((c) => c.id === 'wd-station__tabs-right')
     expect(tlIdx).toBeGreaterThanOrEqual(0)
     expect(tlIdx).toBeLessThan(tabsIdx)
     expect(actionsIdx).toBeGreaterThanOrEqual(0)
     expect(trIdx).toBeGreaterThan(actionsIdx)
+    // 插槽内容落在带固定 id 的承载容器内
+    expect(wrapper.find('#wd-station__tabs-left .slot-tl').exists()).toBe(true)
+    expect(wrapper.find('#wd-station__tabs-right .slot-tr').exists()).toBe(true)
     // footer：默认 info/copyright 被替换
     expect(wrapper.find('.wd-station__footer .slot-f').exists()).toBe(true)
     expect(wrapper.find('.wd-station__footer-info').exists()).toBe(false)
     expect(wrapper.find('.wd-station__footer-copyright').exists()).toBe(false)
+  })
+
+  it('slots：每个插槽承载容器都有固定 id 便于 DOM 定位（side 与 top 双挂载点）', () => {
+    // top 模式：顶栏 logo 挂载点 + 顶菜单左右 + 顶栏点位 + 内容区/底栏 + tabs 左右
+    const wTop = mountStation({
+      menuGroups: menuGroupsFixture,
+      menuMode: 'top',
+      contentMode: 'tabs',
+      title: 'T',
+      copyright: '©X'
+    })
+    expect(wTop.find('#wd-station__logo-header').exists()).toBe(true)
+    expect(wTop.find('#wd-station__logo').exists()).toBe(false) // top 模式不渲染 side 挂载点
+    expect(wTop.find('#wd-station__header-left').exists()).toBe(true)
+    expect(wTop.find('#wd-station__header-center').exists()).toBe(true)
+    expect(wTop.find('#wd-station__header-right').exists()).toBe(true)
+    expect(wTop.find('#wd-station__top-menu-left').exists()).toBe(true)
+    expect(wTop.find('#wd-station__top-menu-right').exists()).toBe(true)
+    expect(wTop.find('#wd-station__tabs-left').exists()).toBe(true)
+    expect(wTop.find('#wd-station__tabs-right').exists()).toBe(true)
+    expect(wTop.find('#wd-station__content').exists()).toBe(true)
+    expect(wTop.find('#wd-station__footer').exists()).toBe(true)
+    // side 模式：侧栏 logo 挂载点 + menu-top / menu-bottom
+    const wSide = mountStation({ menuGroups: menuGroupsFixture, contentMode: 'tabs' })
+    expect(wSide.find('#wd-station__logo').exists()).toBe(true)
+    expect(wSide.find('#wd-station__logo-header').exists()).toBe(false) // side 模式不渲染 header 挂载点
+    expect(wSide.find('#wd-station__menu-top').exists()).toBe(true)
+    expect(wSide.find('#wd-station__menu-bottom').exists()).toBe(true)
   })
 
   it('slots：top 菜单模式渲染 top-menu-left / top-menu-right，未传点位保持默认内容', () => {
@@ -944,13 +984,16 @@ describe('WdStation 集成', () => {
       }
     )
     const topChildren = Array.from(wrapper.find('.wd-station__top-menu').element.children)
-    const lIdx = topChildren.findIndex((c) => c.classList.contains('slot-tml'))
+    const lIdx = topChildren.findIndex((c) => c.id === 'wd-station__top-menu-left')
     const menuIdx = topChildren.findIndex((c) => c.classList.contains('el-menu-stub'))
-    const rIdx = topChildren.findIndex((c) => c.classList.contains('slot-tmr'))
+    const rIdx = topChildren.findIndex((c) => c.id === 'wd-station__top-menu-right')
     expect(lIdx).toBeGreaterThanOrEqual(0)
     expect(menuIdx).toBeGreaterThanOrEqual(0)
     expect(lIdx).toBeLessThan(menuIdx)
     expect(rIdx).toBeGreaterThan(menuIdx)
+    // 插槽内容落在带固定 id 的承载容器内
+    expect(wrapper.find('#wd-station__top-menu-left .slot-tml').exists()).toBe(true)
+    expect(wrapper.find('#wd-station__top-menu-right .slot-tmr').exists()).toBe(true)
     // 未传 logo / footer：默认渲染（header 内 logo 显示标题，footer 显示版权）
     expect(wrapper.find('.wd-station__logo--header .wd-station__logo-title').text()).toBe('运营中台')
     expect(wrapper.find('.wd-station__footer-copyright').text()).toBe('©X')

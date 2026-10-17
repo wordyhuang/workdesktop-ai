@@ -81,12 +81,12 @@ active 自动请求有两个前提：配置了 `api` 且未传 `data`。二者�
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 追加额外的 el-descriptions-item（与 items 配置并存） |
-| content | { row, data } | 整体内容插槽：提供后完全接管内容布局（脱离描述列表栅格，自由排版），不再渲染描述列表与大小/字段工具；仍自动装载 data/api 数据并透传，无数据显示空态 |
-| {prop}-cell | { row, value } | 自定义某个字段的内容渲染（如 #status-cell="{ row }"，描述列表模式） |
-| empty | — | 无数据时的空状态内容 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 追加额外的 el-descriptions-item（与 items 配置并存） |
+| content | — | { row, data } | 整体内容插槽：提供后完全接管内容布局（脱离描述列表栅格，自由排版），不再渲染描述列表与大小/字段工具；仍自动装载 data/api 数据并透传，无数据显示空态 |
+| {prop}-cell | — | { row, value } | 自定义某个字段的内容渲染（如 #status-cell="{ row }"，描述列表模式） |
+| empty | — | — | 无数据时的空状态内容 |
 
 ### 暴露方法（通过 ref 调用）
 

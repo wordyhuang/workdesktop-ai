@@ -90,8 +90,8 @@ WdDialogButton 点击打开对话框弹层（固定 `mode="dialog"`，即 WdDraw
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| button | — | 触发按钮内容（未设 label 时） |
-| default | { data, close } | 弹层内容（通常为 DataForm） |
-| footer | footerProps | 弹层底部 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| button | — | — | 触发按钮内容（未设 label 时） |
+| default | — | { data, close } | 弹层内容（通常为 DataForm） |
+| footer | — | footerProps | 弹层底部 |

@@ -51,9 +51,10 @@ export interface StationTab {
   affix?: boolean
 }
 
-/** 工具栏点位配置：refresh/settings/user/login 各自可放 left / right / none */
+/** 工具栏点位配置：refresh/fullscreen/settings/user/login 各自可放 left / right / none */
 export interface StationToolbarConfig {
   refresh?: 'left' | 'right' | 'none'
+  fullscreen?: 'left' | 'right' | 'none'
   settings?: 'left' | 'right' | 'none'
   user?: 'left' | 'right' | 'none'
   login?: 'left' | 'right' | 'none'

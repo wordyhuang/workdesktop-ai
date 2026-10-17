@@ -57,7 +57,7 @@ WdSearchItem 是专为 WdSearchPanel 定制的表单项容器，继承 WdFormIte
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 表单控件内容区域（el-input / el-select 等） |
-| label | — | 自定义 label 文字 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 表单控件内容区域（el-input / el-select 等） |
+| label | — | — | 自定义 label 文字 |

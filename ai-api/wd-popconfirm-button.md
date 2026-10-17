@@ -113,6 +113,6 @@ WdPopconfirmButton 基于 ApiButton 与 el-popconfirm：点击按钮先就地弹
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 按钮内容（未设 label 时） |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 按钮内容（未设 label 时） |

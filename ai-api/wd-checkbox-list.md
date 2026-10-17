@@ -77,9 +77,9 @@ el-checkbox-group 的 max / min 属性经 $attrs 透传，直接写 `:max="2"` �
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | { option, text, value } | 选项内容 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | { option, text, value } | 选项内容 |
 
 ### 数据类型
 

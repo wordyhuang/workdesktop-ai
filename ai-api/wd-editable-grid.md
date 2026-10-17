@@ -120,15 +120,15 @@ WdEditableGrid 是 DataGrid 的可编辑版本：完整继承 DataGrid 全部能
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 额外 el-table-column 业务列（与 columns 配置列并存，受动态列设置控制） |
-| toolbar | { dirtyRows, rows, selection } | 工具栏左侧（覆盖内置新增按钮） |
-| actions | { dirtyRows, rows, selection } | 工具栏右侧（批量保存按钮之后） |
-| edit-{prop} | { row, index, column } | 自定义某列编辑器 |
-| row-actions | { row, index } | 可编辑操作列追加按钮 |
-| empty | — | 空数据 |
-| card-item | { row, index } | 卡片模式单项 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 额外 el-table-column 业务列（与 columns 配置列并存，受动态列设置控制） |
+| toolbar | — | { dirtyRows, rows, selection } | 工具栏左侧（覆盖内置新增按钮） |
+| actions | — | { dirtyRows, rows, selection } | 工具栏右侧（批量保存按钮之后） |
+| edit-{prop} | — | { row, index, column } | 自定义某列编辑器 |
+| row-actions | — | { row, index } | 可编辑操作列追加按钮 |
+| empty | — | — | 空数据 |
+| card-item | — | { row, index } | 卡片模式单项 |
 
 ### 暴露方法（通过 ref 调用）
 

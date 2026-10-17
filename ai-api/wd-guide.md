@@ -76,9 +76,9 @@ target 选择器对应的元素必须已经渲染在页面中。若是 v-if / �
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| panel | { step, index, current, total, prev, next, close } | 完全自定义指引面板内容 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| panel | — | { step, index, current, total, prev, next, close } | 完全自定义指引面板内容 |
 
 ### 暴露方法（通过 ref 调用）
 

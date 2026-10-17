@@ -80,9 +80,9 @@ WdAutoComplete 基于 el-autocomplete 封装，提供输入即建议的自动补
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | { option, text, value } | 建议项内容 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | { option, text, value } | 建议项内容 |
 
 ### 数据类型
 

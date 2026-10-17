@@ -65,6 +65,9 @@
         <div class="doc-page__table-card">
           <el-table :data="meta.slots" size="default" class="doc-page__table">
             <el-table-column prop="name" label="插槽" width="200" />
+            <el-table-column prop="id" label="容器 id" min-width="160">
+              <template #default="{ row }">{{ row.id || '—' }}</template>
+            </el-table-column>
             <el-table-column prop="desc" label="说明" min-width="220" />
             <el-table-column prop="params" label="作用域参数" min-width="200" />
           </el-table>

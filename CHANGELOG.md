@@ -17,6 +17,7 @@
 - **`WdStation` 新增 `show-header-title` 属性**（Boolean，默认 `true`）：控制 `headerMode` 非 `nav` 时顶栏中央的系统标题 fallback 是否渲染；需要完全自绘 `#header-center`（如文档站改用 `WdPath` 承载吸顶路径）时传 `false` 关闭，组件默认行为与既有 DOM 结构不变。新增 1 个集成用例；文档站框架已启用（去除顶栏中央重复的「WorkDesktop」标题）。
 - **`WdStation` tabs 标签支持显示菜单图标**：菜单项打开 tab 时自动携带其 `icon`，标签标题前渲染该图标（与菜单一致的图标）；新增 `tabIcon` prop（Boolean，默认 `true`）可关闭此渲染，无 icon 的菜单项标签不显示图标。`StationTab` 类型新增 `icon` 字段（受控 `openTabs` 也可直接携带）。新增 2 个集成用例（带 icon 渲染与 open-tabs 回传 / tab-icon=false 关闭渲染），全量 vitest 306 用例全绿；Playwright 实测 7 项断言全过，截图 `temp/station_tab_icon.png`；api-meta 与组件文档同步。
 - **`WdStation` 关闭当前标签默认跳回上一次激活的标签（MRU）**：tabs 模式下关闭当前激活标签时，由原「固定跳相邻（先右后左）」改为按内部 MRU 激活历史栈跳回**上一次激活且仍打开**的标签（开标签 `openTab`、含 affix 自动开启，与点击已开标签切换都会记录激活顺序；历史无可用项时回退相邻策略）。新增 `activatePreviousTab` prop（Boolean，默认 `true`），设为 `false` 恢复原相邻跳转；右侧下拉的批量关闭（当前/左侧/其他/全部）不受影响。新增 2 个集成用例（默认 MRU 回跳 / prop=false 回退相邻），全量 vitest 308 用例全绿；Playwright MRU 实测 10 项断言全过；api-meta 与组件文档 V_1.7 同步。
+- **`WdStation` 工具栏点位默认渲染调整**：「设置」图标默认关闭（`toolbarConfig.settings` 默认值由 `right` 改为 `none`，需显式配置才渲染）；新增「全屏」图标（`toolbarConfig.fullscreen`，默认 `right`），点击调用浏览器 Fullscreen API 切换整页全屏，通过监听 `fullscreenchange` 自动同步状态；刷新与全屏图标均加原生 `title` 悬浮提示（刷新「刷新内容」；全屏未全屏「全屏显示」、已全屏「退出全屏」）。`StationToolbarConfig` 类型新增 `fullscreen` 字段；`settings` 事件保留（由显式开启的设置图标触发）。同步更新 api-meta、文档站示例 desc、组件文档 V_1.11、设计文档 V_1.5；全量 vitest 311 用例全绿。
 
 ### Fixed
 

@@ -57,7 +57,7 @@ WdFormItem 在 `el-form-item` 的基础上集成了 `tip` 帮助提示能力：�
 
 ### Slots
 
-| 插槽 | 插槽参数 | 说明 |
-| --- | --- | --- |
-| default | — | 表单控件内容区域（el-input / el-select 等） |
-| label | — | 自定义 label 文字 |
+| 插槽 | 容器 id | 插槽参数 | 说明 |
+| --- | --- | --- | --- |
+| default | — | — | 表单控件内容区域（el-input / el-select 等） |
+| label | — | — | 自定义 label 文字 |
