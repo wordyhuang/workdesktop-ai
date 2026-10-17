@@ -3,10 +3,10 @@
   <span>企业级 Vue 3 组件库 · 基于 ElementPlus · HTML 模板友好 / AI 编码友好</span>
 </p>
 
-> 文档版本：V\_1.1 ｜ 创建时间：2026-09-16 22:03:47 ｜ 最后修改时间：2026-09-24 13:44:41
-> 适用对象：使用本库的开发者（人类阅读；AI 助手请改读 [llms.txt](./code/llms.txt)）
+> 文档版本：V\_1.5 ｜ 创建时间：2026-09-16 22:03:47 ｜ 最后修改时间：2026-10-14
+> 适用对象：使用本库的开发者（人类阅读；AI 助手每次开发前请先阅读 [ai-router.md](./ai-router.md)）
 > 核心目标：帮助开发者快速了解、安装并上手 WorkDesktop AI
-> 文档简述：项目门面说明，覆盖特性、安装、三种引入方式、全局配置、组件总览、请求核心、Hooks 与本地开发指引。当前库版本：v1.1.1
+> 文档简述：项目门面说明，覆盖特性、安装、三种引入方式、全局配置、组件总览、请求核心、Hooks 与本地开发指引。当前库版本：v1.2.6
 
 ***
 
@@ -20,14 +20,14 @@ WorkDesktop AI 是一套面向企业后台管理场景的 Vue 3 组件库，在 
 
 - **列表一体化**：`DataGrid` 一个组件完成「查询 + 分页 + 工具栏 + 表格 + 列设置 + 卡片/表格切换」；
 - **请求一体化**：内置 axios 封装，自动完成 `{ code, message, data }` 解封包、Loading、错误提示；
-- **AI 编码友好**：`HTML 模板渲染优先`，组件用标签即所得，TypeScript 类型完整；仓库根目录附带面向 AI 的 [llms.txt](./llms.txt)；
+- **AI 编码友好**：`HTML 模板渲染优先`，组件用标签即所得，TypeScript 类型完整；仓库根目录附带面向 AI 的 [ai-router.md](./ai-router.md) 场景路由与 [ai-api/](./ai-api/) 路由化 API 参考（主路由 [README.md](./ai-api/README.md) + 每组件一个子文件，自动生成、随包发布，AI 按组件名定位只读一个文件，无需翻源码）；
 - **双入口**：既支持 npm 工程化使用，也支持浏览器 `<script>` 直引（UMD），无需构建。
 
 ## 特性
 
 | 能力         | 说明                                                                                                   |
 | ---------- | ---------------------------------------------------------------------------------------------------- |
-| 29 个业务组件   | DataGrid / EditableGrid / Viewer / DataForm / SearchPanel / 8 类按钮 / Drawer / Iframe / Station 整页布局 等 |
+| 30 个业务组件   | DataGrid / EditableGrid / Viewer / DataForm / SearchPanel / 8 类按钮 / Drawer / Iframe / Station 整页布局 等 |
 | 三级配置       | 内置默认 → 全局（`app.use` / `window.workDesktopConfig`）→ 组件 props，deep merge                               |
 | 内置 HTTP    | axios 封装：统一封包格式、URL 前缀、Loading、失败/异常提示、请求监听、并发去重、子实例配置；请求核心 `RequestAPI` 公开，支持手动调用 API 请求代码          |
 | 声明式联动      | 属性（`filter` 分组 + `head-refresh-datagrid` 刷新）+ 事件驱动（A+B 混合），无需引入中心化 DSL                               |
@@ -206,9 +206,9 @@ app.use(WorkDesktop, {
 | 容器       | `WdDrawer`（`mode` 切换抽屉/对话框，支持 iframe 宿主）、`WdIframe`（iframe 嵌入与通信）                                                                                                           |
 | 输入选择     | `WdSelect` / `WdAutoComplete` / `WdCheckboxList` / `WdRadioList` / `WdSwitch`（切换即请求，失败自动回滚）                                                                                 |
 | 上传       | `WdUpload`（文件）、`WdImageUpload`（图片，强制 image/\*）                                                                                                                              |
-| 布局       | `WdStation`（管理台整页布局：菜单分组 / 标签页 / 工具栏 / 页脚）                                                                                                                                    |
-| 样式       | `WdPanel`（面板）                                                                                                                                                                          |
-| 页面元素    | `WdPath`（导航路径/面包屑：手动路径 / 自动联动 Station 菜单链 + 页面标题链 / 滚动跟随可视区第一个标题）、`WdTips`（提示图标/提示框）                                                                          |
+| 布局       | `WdStation`（管理台整页布局：菜单分组 / 标签页 / 工具栏 / 页脚）                                                                                                                                  |
+| 样式       | `WdPanel`（面板）                                                                                                                                                               |
+| 页面元素     | `WdPath`（导航路径/面包屑：手动路径 / 自动联动 Station 菜单链 + 页面标题链 / 滚动跟随可视区第一个标题）、`WdTips`（提示图标/提示框）                                                                                        |
 | 核心       | `WdRequester`（命令式请求触发器，v-model 开关语义）                                                                                                                                        |
 
 ## 手动调用请求（RequestAPI）
@@ -248,7 +248,7 @@ await grid.search({ name: '张' })
 
 ## AI 编码助手
 
-仓库根目录提供 [llms.txt](./llms.txt) —— 面向 AI 的机器可读全量参考（29 个组件 API、配置体系、请求协议、声明式联动、跨 iframe 通信协议、常见陷阱清单）。使用 Copilot / Cursor / Trae 等 AI 助手开发时，让它先阅读该文件，可显著减少组件误用。
+使用 Copilot / Cursor / Trae 等 AI 助手开发时，让它**每次开发前先阅读** **[ai-router.md](./ai-router.md)**——编码场景指导的路由索引，按任务命中场景（分页列表 / 表单 / 详情 / 树 / 批量 / 弹窗选择器 / 导入导出）定位到 `scenarios/` 目录下对应子文件阅读，避免通读全篇。需要组件的精确 API（props/emits/slots/方法签名/自定义类型）时查 [ai-api/](./ai-api/) 路由——主路由 [README.md](./ai-api/README.md) 按组件名在索引中定位，**只打开对应子文件**（如 [wd-select.md](./ai-api/wd-select.md)），不要通读整个目录。它由文档站元数据 `docs/src/api-meta/` 经 `npm run gen:ai-api` 自动生成（`prepack` 钩子保证发版前自动重生成），覆盖全部 30 个组件与全局配置 / HTTP 请求核心 / 皮肤主题 3 个基础设施 API，无需逐个翻组件源码。
 
 ## 本地开发
 
@@ -309,6 +309,26 @@ python -m http.server 8000
 
 ## 版本变化
 
+- **V\_1.6**（2026-10-14）：相对 V\_1.5 的变化：
+  1. ai-api 从单文件改为**路由目录** **[ai-api/](./ai-api/)**：主路由 [README.md](./ai-api/README.md)（阅读约定 + Element Plus 透传规则 + 按 8 分组列出的组件索引）+ 30 个组件与 3 个基础设施页各一个子文件（如 `wd-select.md` / `use-config.md`），AI 按组件名定位只读一个子文件，不再通读 227.5kB 的单文件；
+  2. `package.json` 的 `files` 由 `ai-api.md` 改为 `ai-api`（目录随包发布），`prepack` 钩子逻辑不变；
+  3. 删除单文件 `ai-api.md`；特性列表、「AI 编码助手」章节改指 ai-api/ 路由。
+- **V\_1.5**（2026-10-14）：相对 V\_1.4 的变化：
+  1. 新增 [ai-api.md](./ai-api.md) 聚合 API 参考：由 `docs/src/api-meta/` 元数据经 `scripts/gen-ai-api.mjs`（`npm run gen:ai-api`）自动生成，覆盖 30 个组件的 Props/Events/Slots/暴露方法/数据类型与 3 个基础设施 API，AI 查精确 API 不再需要读组件源码；
+  2. `package.json` 的 `files` 新增 `ai-api.md`，`scripts` 新增 `gen:ai-api` 与 `prepack` 钩子（npm pack/publish 前自动重生成，保证与源码同步）；
+  3. 特性列表、「AI 编码助手」章节改指 ai-api.md；顺手修正特性表组件数 29 → 30、头部库版本号对齐当前 package.json v1.2.6。
+- **V\_1.4**（2026-10-14）：相对 V\_1.3 的变化：
+  1. 删除 `llms.txt`，AI 阅读完全由 [ai-router.md](./ai-router.md) + `scenarios/` 场景子路由承担（原 llms.txt 承载的"精确 API 查阅"改道组件源码 `src/components/**/*.vue` 与随包类型声明 `dist/types/`）；
+  2. 特性列表与「AI 编码助手」章节移除 llms.txt 链接；
+  3. `package.json` 的 `files` 移除 `llms.txt`。
+- **V\_1.3**（2026-10-14）：相对 V\_1.2 的变化：
+  1. AI 路由文件由 `scenarios/README.md` 调整为包根目录独立文件 [ai-router.md](./ai-router.md)（主路由不再写在 README 里，README 仅告知 AI 每次开发前先阅读该文件）；
+  2. 头部适用对象与「AI 编码助手」章节链接同步指向 ai-router.md；
+  3. `package.json` 的 `files` 新增 `ai-router.md`。
+- **V\_1.2**（2026-10-14）：相对 V\_1.1 的变化：
+  1. 「AI 编码助手」章节重写：AI 第一阅读入口由 llms.txt 改为 [scenarios/README.md](./scenarios/README.md) 路由文件（编码场景指导按场景拆分为 9 个子路由，AI 按任务命中场景定位阅读）；llms.txt 保留为组件 API 全量事实参考；
+  2. 头部适用对象同步更新；
+  3. `package.json` 的 `files` 新增 `scenarios` 目录，npm 发布时随包分发。
 - **V\_1.1**（2026-09-24 13:44:41）：对齐库版本 v1.1.1。相对 V\_1.0 的变化：
   1. 头部库版本 v1.0.2 → v1.1.1；
   2. 特性表「开箱主题」补充 1.1.1 新增的 11 套预设皮肤（`theme.skin`）与 El 派生色阶自动推导；

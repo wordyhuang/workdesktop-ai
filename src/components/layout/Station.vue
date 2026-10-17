@@ -251,6 +251,8 @@ const props = defineProps({
   openTabs: { type: Array as PropType<StationTab[]>, default: undefined },
   /** tabs 标签标题是否显示菜单图标（true 时菜单项 icon 随 tab 显示在标题前） */
   tabIcon: { type: Boolean, default: true },
+  /** 关闭当前激活标签后是否跳回上一次激活的标签（true=MRU 历史；false=相邻，先右后左） */
+  activatePreviousTab: { type: Boolean, default: true },
   /** 用户名（有值显示用户下拉，无值显示登录按钮） */
   userName: { type: String, default: '' },
   /** 用户头像地址 */
@@ -447,10 +449,18 @@ const isTabsControlled = computed(() => props.openTabs !== undefined)
 const tabs = computed<StationTab[]>(() =>
   isTabsControlled.value ? (props.openTabs as StationTab[]) : innerTabs.value
 )
+// 标签激活历史（MRU）：末尾为最近激活的 key，供关闭当前标签时回跳
+const tabHistory = ref<string[]>([])
 
 function commitTabs(newTabs: StationTab[]) {
   if (!isTabsControlled.value) innerTabs.value = newTabs
   emit('update:open-tabs', newTabs)
+}
+
+/** 记录一次标签激活：移到历史末尾（去重），仅保留当前仍打开的 key */
+function pushTabHistory(key: string) {
+  const rest = tabHistory.value.filter((k) => k !== key)
+  tabHistory.value = [...rest, key]
 }
 
 function openTab(tab: any) {
@@ -459,7 +469,20 @@ function openTab(tab: any) {
   if (!tabs.value.find((t) => t.key === key)) {
     commitTabs([...tabs.value, { key, title: tab.title, path: tab.path, affix: tab.affix, icon: tab.icon }])
   }
+  pushTabHistory(key)
   setActiveMenu(key)
+}
+
+/** 关闭当前激活标签后的回跳目标：MRU 历史优先，历史无可用时回退相邻（先右后左） */
+function resolveTabAfterClose(key: string, newTabs: StationTab[], idx: number): StationTab | undefined {
+  if (props.activatePreviousTab) {
+    const openKeys = new Set(newTabs.map((t) => t.key))
+    for (let i = tabHistory.value.length - 1; i >= 0; i--) {
+      const k = tabHistory.value[i]
+      if (k !== key && openKeys.has(k)) return newTabs.find((t) => t.key === k)
+    }
+  }
+  return newTabs[idx] || newTabs[idx - 1]
 }
 
 function closeTab(key: string) {
@@ -471,14 +494,19 @@ function closeTab(key: string) {
   const newTabs = list.filter((t) => t.key !== key)
   commitTabs(newTabs)
   emit('tab-close', { ...tab })
-  // 关闭激活标签 → 跳到相邻（先右后左）
+  tabHistory.value = tabHistory.value.filter((k) => k !== key)
+  // 关闭激活标签 → 跳回上次激活标签（可配），无历史则回退相邻（先右后左）；router 模式同步路由
   if (currentKey.value === key) {
-    const next = newTabs[idx] || newTabs[idx - 1]
-    if (next) setActiveMenu(next.key)
+    const next = resolveTabAfterClose(key, newTabs, idx)
+    if (next) {
+      setActiveMenu(next.key)
+      if (isRouterMode.value && next.path) router.push(next.path)
+    }
   }
 }
 
 function onTabClick(tab: StationTab) {
+  pushTabHistory(tab.key)
   setActiveMenu(tab.key)
   emit('tab-click', { ...tab })
   if (isRouterMode.value && tab.path) router.push(tab.path)
@@ -493,11 +521,14 @@ function closeTabsBy(shouldClose: (t: StationTab, i: number) => boolean) {
   const kept = list.filter((t) => !removedKeys.has(t.key))
   commitTabs(kept)
   removed.forEach((t) => emit('tab-close', { ...t }))
-  // 激活标签被关掉 → 跳到原位置附近（先右后左）
+  // 激活标签被关掉 → 跳到原位置附近（先右后左）；router 模式同步路由
   if (!kept.find((t) => t.key === currentKey.value)) {
     const idx = list.findIndex((t) => t.key === currentKey.value)
     const next = kept[Math.min(idx, kept.length - 1)]
-    if (next) setActiveMenu(next.key)
+    if (next) {
+      setActiveMenu(next.key)
+      if (isRouterMode.value && next.path) router.push(next.path)
+    }
   }
 }
 

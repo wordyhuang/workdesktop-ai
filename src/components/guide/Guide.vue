@@ -531,6 +531,9 @@ defineExpose({
   position: absolute;
   width: 320px;
   max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
   padding: 18px 18px 14px;
   background: var(--wd-bg-color-overlay, #fff);
   border-radius: 10px;
@@ -556,19 +559,26 @@ defineExpose({
 }
 
 .wd-guide__title {
+  flex: none;
   font-size: 15px;
   font-weight: 600;
   color: var(--wd-text-color-primary, #24272c);
   padding-right: 20px;
 }
 .wd-guide__desc {
+  flex: 1 1 auto;
+  min-height: 0;
   margin-top: 8px;
   font-size: 13px;
   line-height: 1.7;
   color: var(--wd-text-color-regular, #555b63);
+  overflow-y: auto;
+  /* 描述过长时在面板内部滚动，避免把底部按钮挤出可视区 */
+  overscroll-behavior: contain;
 }
 
 .wd-guide__footer {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;

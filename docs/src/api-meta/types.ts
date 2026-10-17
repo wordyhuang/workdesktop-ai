@@ -67,6 +67,16 @@ export interface DataTypeMeta {
   after?: string[]
 }
 
+/** Element Plus 原生属性/事件透传说明（供 AI 判断 el 原生 API 在本组件上是否可用） */
+export interface PassthroughMeta {
+  /** 透传目标 el 组件，如 'el-select'；多目标用 ' / ' 分隔；不透传写 '—（不透传）' */
+  target: string
+  /** 被组件截获后重新 emit 的同名事件（监听器不进 $attrs，载荷以本组件文档为准） */
+  intercept?: string[]
+  /** 特殊说明（部分透传、属性改名、$attrs 落点限制等） */
+  note?: string
+}
+
 export interface ComponentMeta {
   /** 路由/示例文件键（examples/{path}.vue） */
   path: string
@@ -87,6 +97,8 @@ export interface ComponentMeta {
   slots?: SlotMeta[]
   /** 通过 ref 暴露的方法（defineExpose） */
   methods?: MethodMeta[]
+  /** Element Plus 原生属性/事件透传说明 */
+  passthrough?: PassthroughMeta
 }
 
 export interface NavGroup {

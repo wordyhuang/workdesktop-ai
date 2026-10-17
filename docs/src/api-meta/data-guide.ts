@@ -5,6 +5,10 @@ export const guideData: ComponentMeta[] = [
   {
     path: 'guide',
     name: 'WdGuide',
+    passthrough: {
+      target: '—（不透传）',
+      note: '组件通过 Teleport 渲染自研遮罩与高亮层，内部仅使用 el-icon，外部属性/事件不会透传到任何 Element Plus 组件。',
+    },
     title: 'Guide 指引',
     desc: '新手操作指引：全屏蒙版 + 指定元素/区域高亮挖洞 + 指引面板（自动避让翻转、步骤导航）',
     group: '页面元素',

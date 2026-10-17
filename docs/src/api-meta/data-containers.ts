@@ -6,6 +6,11 @@ export const containerData: ComponentMeta[] = [
   {
     path: 'drawer',
     name: 'WdDrawer',
+    passthrough: {
+      target: 'el-drawer / el-dialog（按 mode 切换）',
+      intercept: ['close'],
+      note: '两种模式的内部弹层均绑定 $attrs；append-to-body、before-close 由组件显式接管。组件重新 emit 的 close 在弹层关闭动画结束后触发，外部监听 el 原生事件时以本文档 Events 为准。',
+    },
     title: 'Drawer 抽屉 / 对话框容器',
     desc: '基于 el-drawer / el-dialog：通过 mode 切换抽屉（drawer，默认）与对话框（dialog）；iframe 嵌入、关闭前确认、内容守卫（未保存拦截）、关闭后联动刷新；跨 iframe 联动：url 模式下自动与 iframe 内页面建立 postMessage 桥接，子页面上报事件透传为 iframe-* emit，可驱动关闭+刷新',
     group: '容器',
@@ -63,6 +68,10 @@ export const containerData: ComponentMeta[] = [
   {
     path: 'iframe',
     name: 'WdIframe',
+    passthrough: {
+      target: '—（不透传）',
+      note: '内部为原生 iframe（非 Element Plus 组件）；根节点上的 loading 相关绑定来自 v-loading 指令而非 $attrs，外部属性/事件不会透传。',
+    },
     title: 'Iframe 内嵌框架',
     desc: '内嵌 iframe 子页面：固定/自适应高度，与子页面基于 postMessage 双向通信。自动检测子页面加载：加载完成前在容器内显示 loading 遮罩（文案/背景跟随全局配置 request.loading），加载完成触发 complete 事件；支持超时自动关闭遮罩（timeout），开发人员可用 loading=false 关闭遮罩。通信约定：子页面通过 parent.postMessage 上报，父组件经 message 事件透传；内置约定 { type:"wd-iframe-height", height } 可驱动高度自适应；如需与弹层容器（WdDrawer）深度联动，参见 WdDrawer 的跨 iframe 联动',
     group: '容器',
@@ -121,6 +130,10 @@ export const containerData: ComponentMeta[] = [
   {
     path: 'panel',
     name: 'WdPanel',
+    passthrough: {
+      target: '—（不透传）',
+      note: '纯自研卡片容器（根节点 div.wd-panel，内部仅使用 el-icon），没有可透传的 Element Plus 组件。',
+    },
     title: 'Panel 面板',
     desc: '带标题/描述的内容面板，作为表单分组与详情分区容器；支持折叠、标题右侧操作区与阴影策略',
     group: '容器',
@@ -175,6 +188,10 @@ export const formData: ComponentMeta[] = [
   {
     path: 'search-panel',
     name: 'WdSearchPanel',
+    passthrough: {
+      target: 'el-form',
+      note: '$attrs 透传到内部 el-form（含 @submit 被组件 .prevent 接管）；表单提交/重置/展开收起请使用组件的 search、reset、expand-change 事件。',
+    },
     title: 'SearchPanel 搜索表单面板',
     desc: '本质是一个完整表单，搜索条件分两行布局：第一行默认搜索项 + 右侧操作按钮（横排一行不换行），第二行 more 插槽承载的隐藏项目在「展开」时作为整行平顺滑出/收起；所有搜索项都在同一个 el-form 作用域内；第一行布局不受第二行展开/收起影响；子项可以用 WdSearchItem / WdFormItem / el-form-item；声明式联动同 filter 组 DataGrid（查询重置到第一页、异组不刷新）',
     group: '表单',
@@ -237,6 +254,10 @@ export const formData: ComponentMeta[] = [
   {
     path: 'form-item',
     name: 'WdFormItem',
+    passthrough: {
+      target: 'el-form-item',
+      note: '组件未声明自定义 emits，未声明的属性与事件经 $attrs 全量透传给 el-form-item。',
+    },
     title: 'FormItem 通用表单项',
     desc: '集成 el-form-item，支持 tip 帮助提示：提供 tip 属性时 label 右侧自动出现问号图标，鼠标悬停显示解释说明；不传 tip 和普通 el-form-item 一致',
     group: '表单',
@@ -276,6 +297,10 @@ export const formData: ComponentMeta[] = [
   {
     path: 'search-item',
     name: 'WdSearchItem',
+    passthrough: {
+      target: 'el-form-item',
+      note: '组件未声明自定义 emits，未声明的属性与事件经 $attrs 全量透传给 el-form-item；展开/收起由父级 WdSearchPanel 控制。',
+    },
     title: 'SearchItem 搜索面板专用表单项',
     desc: '专为 SearchPanel 定制的表单项，继承 WdFormItem 全部能力，后续可添加搜索场景专属特性',
     group: '表单',
@@ -319,6 +344,11 @@ export const inputData: ComponentMeta[] = [
   {
     path: 'select',
     name: 'WdSelect',
+    passthrough: {
+      target: 'el-select',
+      intercept: ['change'],
+      note: '未声明的 el-select 属性与事件经 $attrs 全量透传；change 被组件接管重发（完成选项标准化后触发，载荷以本文档为准）。注意 filterable 默认为 true，与 Element Plus 默认值不同。',
+    },
     title: 'Select 下拉选择',
     desc: '基于 el-select：API 自动加载选项、远程搜索、前插/后追加固定项，自定义选项模板',
     group: '表单元素',
@@ -385,6 +415,11 @@ export const inputData: ComponentMeta[] = [
   {
     path: 'auto-complete',
     name: 'WdAutoComplete',
+    passthrough: {
+      target: 'el-autocomplete',
+      intercept: ['change', 'select'],
+      note: '根节点为自研 div.wd-auto-complete，$attrs 透传到内部 el-autocomplete；change、select 被组件接管重发（选项标准化后触发，载荷以本文档为准）。',
+    },
     title: 'AutoComplete 自动完成',
     desc: '基于 el-autocomplete：远程搜索、valueKey/labelKey 字段映射、自定义建议模板',
     group: '表单元素',
@@ -448,6 +483,11 @@ export const inputData: ComponentMeta[] = [
   {
     path: 'checkbox-list',
     name: 'WdCheckboxList',
+    passthrough: {
+      target: 'el-checkbox-group',
+      intercept: ['change'],
+      note: '未声明的属性与事件经 $attrs 全量透传给 el-checkbox-group（内部 el-checkbox 按 options 生成，不接受外部透传）；change 被组件接管重发，载荷以本文档为准。',
+    },
     title: 'CheckboxList 多选列表',
     desc: '基于 el-checkbox-group：API 自动加载选项、按钮样式切换、前插/后追加固定项',
     group: '表单元素',
@@ -498,6 +538,11 @@ export const inputData: ComponentMeta[] = [
   {
     path: 'radio-list',
     name: 'WdRadioList',
+    passthrough: {
+      target: 'el-radio-group',
+      intercept: ['change'],
+      note: '未声明的属性与事件经 $attrs 全量透传给 el-radio-group（内部 el-radio 按 options 生成，不接受外部透传）；change 被组件接管重发，载荷以本文档为准。',
+    },
     title: 'RadioList 单选列表',
     desc: '基于 el-radio-group：API 自动加载选项、按钮样式切换、前插/后追加固定项',
     group: '表单元素',
@@ -548,6 +593,11 @@ export const inputData: ComponentMeta[] = [
   {
     path: 'switch',
     name: 'WdSwitch',
+    passthrough: {
+      target: 'el-switch',
+      intercept: ['change'],
+      note: '带/不带 tooltip 的两个渲染分支均把 $attrs 透传给 el-switch；change 被组件接管（API 请求成功后才提交值，失败回滚），载荷以本文档为准。',
+    },
     title: 'Switch 状态开关',
     desc: '基于 el-switch：切换即请求、自定义开/关值、失败自动回滚、悬停提示、联动刷新',
     group: '表单元素',

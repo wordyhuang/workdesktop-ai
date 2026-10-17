@@ -71,7 +71,9 @@ const boxStyle = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 2px 6px;
   font-size: var(--wd-font-size-sm, 12px);
+  box-sizing: border-box;
 }
 .wd-tips__box--filled {
   padding: 6px 12px;

@@ -5,6 +5,10 @@ export const pageElementData: ComponentMeta[] = [
   {
     path: 'path',
     name: 'WdPath',
+    passthrough: {
+      target: '—（不透传）',
+      note: '内部 el-breadcrumb / el-breadcrumb-item 均为显式绑定（separator、to、click），外部属性/事件不会透传；节点配置与事件以本文档为准。',
+    },
     title: 'Path 路径（面包屑）',
     desc: '导航路径（面包屑）：手动填写路径，或自动模式联动 WdStation 读取菜单所在路径、补充页面 H1~H4 标题链；标题段始终跟随当前可视范围内第一个标题',
     group: '页面元素',
@@ -67,6 +71,10 @@ export const pageElementData: ComponentMeta[] = [
   {
     path: 'tips',
     name: 'WdTips',
+    passthrough: {
+      target: '—（不透传）',
+      note: 'word 模式内部 el-tooltip 仅显式绑定 content / effect / placement，box 模式为原生 span；未做 $attrs 透传，el-tooltip 其他属性不可用。',
+    },
     title: 'Tips 提示',
     desc: '文字/响应式提示：word=悬停图标模式，box=行内文字模式，颜色图标可配',
     group: '页面元素',

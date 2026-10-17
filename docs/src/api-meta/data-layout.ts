@@ -5,6 +5,10 @@ export const layoutData: ComponentMeta[] = [
   {
     path: 'station',
     name: 'WdStation',
+    passthrough: {
+      target: '—（不透传）',
+      note: '厚封装布局组件，内部菜单、标签页等均为自研结构，el-container / el-menu 等 Element Plus 属性事件不可用。',
+    },
     title: 'Station 中后台外框架',
     desc: '一站式中后台外框架：分导台按域分组菜单（适配 100+ 菜单）、左侧/顶部导航、page/tabs 内容、工具栏、底部信息栏，router 与 html 双模式',
     group: '布局组件',
@@ -105,6 +109,7 @@ export const layoutData: ComponentMeta[] = [
       { name: 'activeMenu', type: 'string', default: "''", desc: '激活菜单 key（v-model:active-menu）；菜单 key 规则 `分组key:name||path||title`' },
       { name: 'openTabs', type: 'array', default: '—', desc: '标签页列表 [{ key, title, icon?, path?, affix? }]（v-model:open-tabs，传入即受控）' },
       { name: 'tabIcon', type: 'boolean', default: 'true', desc: 'tabs 标签标题是否显示菜单图标（true 时菜单项 icon 随 tab 显示在标题前）' },
+      { name: 'activatePreviousTab', type: 'boolean', default: 'true', desc: '关闭当前激活标签后是否跳回上一次激活的标签（true=按 MRU 激活历史回跳；false=跳相邻标签，先右后左）' },
       { name: 'userName', type: 'string', default: "''", desc: '用户名（非空显示用户下拉含退出登录；为空显示登录按钮）' },
       { name: 'userAvatar', type: 'string', default: "''", desc: '用户头像 URL（空显示用户名首字）' },
       { name: 'copyright', type: 'string', default: "''", desc: '底部版权信息' },
@@ -135,7 +140,7 @@ export const layoutData: ComponentMeta[] = [
       { name: 'menu-bottom', params: '{ collapsed }', desc: '侧栏菜单滚动区下方扩展位（仅 side 模式）' },
       { name: 'header-left', params: '—', desc: '顶栏左侧扩展位（工具栏左侧点位之后）' },
       { name: 'header-center', params: '—', desc: '顶栏中部扩展位（标题/分导台之后）' },
-      { name: 'header-right', params: '—', desc: '顶栏右侧扩展位（位于工具栏右侧点位之前）' },
+      { name: 'header-right', params: '—', desc: '顶栏右侧扩展位（位于工具栏右侧点位之前）；建议放置 el-icon 类轻量图标（如通知铃铛、画刷入口），不建议放置 el-button 类按钮组件' },
       { name: 'top-menu-left', params: '—', desc: '顶部菜单行左侧扩展位（仅 top 模式）' },
       { name: 'top-menu-right', params: '—', desc: '顶部菜单行右侧扩展位（仅 top 模式）' },
       { name: 'tabs-left', params: '—', desc: 'tabs 条左侧扩展位（el-tabs 之前，仅 tabs 内容模式）' },

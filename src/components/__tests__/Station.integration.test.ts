@@ -557,6 +557,108 @@ describe('WdStation 集成', () => {
     expect(opened[0]).toMatchObject({ icon: 'Odometer' })
   })
 
+  it('tabs 模式：关闭当前标签跳到上一次激活标签（MRU，默认开启）', async () => {
+    const wrapper = mountStation({
+      menuGroups: menuGroupsFixture,
+      contentMode: 'tabs',
+      routerMode: 'html'
+    })
+    await nextTick()
+    const vm = wrapper.vm as any
+    // 初始仅 affix（用户管理，U）；依次打开 工作台 W → 角色管理 R
+    vm.openTab({ title: '工作台', path: '/work/dashboard', _key: 'workspace:/work/dashboard' })
+    await nextTick()
+    vm.openTab({ title: '角色管理', path: '/sys/role', _key: 'system:/sys/role' })
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('system:/sys/role')
+    // 标签顺序 [U, W, R]，最近激活历史 [U, W, R]
+    // 切回 affix U（历史变 [W, R, U]），再点 R（历史变 [W, U, R]）：此时上次激活是 U 而非相邻 W
+    const labels = wrapper.findAll('.wd-station__tab-label')
+    await labels.find((l) => l.text().includes('用户管理'))!.trigger('click')
+    await nextTick()
+    await labels.find((l) => l.text().includes('角色管理'))!.trigger('click')
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('system:/sys/role')
+    // 关闭当前 R → 应跳到上次激活的 U（位置 0），而非相邻 W（位置 1）
+    vm.closeTab('system:/sys/role')
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('system:/sys/user')
+  })
+
+  it('tabs 模式 router：关闭当前标签回跳时同步推送路由（MRU 目标）', async () => {
+    const { wrapper, push } = mountWithRouter({
+      menuGroups: menuGroupsFixture,
+      contentMode: 'tabs'
+    })
+    await nextTick()
+    const vm = wrapper.vm as any
+    // affix U 自动开启；开 W → R，历史 [U,W,R]，当前 R
+    vm.openTab({ title: '工作台', path: '/work/dashboard', _key: 'workspace:/work/dashboard' })
+    await nextTick()
+    vm.openTab({ title: '角色管理', path: '/sys/role', _key: 'system:/sys/role' })
+    await nextTick()
+    // 切 U → 点 R（历史 [W,U,R]，上次激活 U）；点 tab 会 push，先清空
+    const labels = wrapper.findAll('.wd-station__tab-label')
+    await labels.find((l) => l.text().includes('用户管理'))!.trigger('click')
+    await nextTick()
+    await labels.find((l) => l.text().includes('角色管理'))!.trigger('click')
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('system:/sys/role')
+    push.mockClear()
+    // 关闭当前 R → MRU 回跳 U；router 模式应同步 push 到 U 的 path
+    vm.closeTab('system:/sys/role')
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('system:/sys/user')
+    expect(push).toHaveBeenCalledWith('/sys/user')
+  })
+
+  it('tabs 模式 router：批量关闭导致当前标签被关时，回跳同步推送路由', async () => {
+    const { wrapper, push } = mountWithRouter({
+      menuGroups: menuGroupsFixture,
+      contentMode: 'tabs'
+    })
+    await nextTick()
+    const vm = wrapper.vm as any
+    // affix U；开 W → R，当前 R
+    vm.openTab({ title: '工作台', path: '/work/dashboard', _key: 'workspace:/work/dashboard' })
+    await nextTick()
+    vm.openTab({ title: '角色管理', path: '/sys/role', _key: 'system:/sys/role' })
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('system:/sys/role')
+    push.mockClear()
+    // 「关闭所有标签」→ 仅保留 affix U，当前 R 被关回跳 U
+    const items = wrapper.findAll('.el-dropdown-item-stub')
+    await items.find((i) => i.text().includes('关闭所有标签'))!.trigger('click')
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('system:/sys/user')
+    expect(push).toHaveBeenCalledWith('/sys/user')
+  })
+
+  it('tabs 模式：activate-previous-tab=false 时关闭当前标签回退相邻（先右后左）', async () => {
+    const wrapper = mountStation({
+      menuGroups: menuGroupsFixture,
+      contentMode: 'tabs',
+      routerMode: 'html',
+      activatePreviousTab: false
+    })
+    await nextTick()
+    const vm = wrapper.vm as any
+    // [U(affix), W, R]，切 U → R 使「上次激活」为 U
+    vm.openTab({ title: '工作台', path: '/work/dashboard', _key: 'workspace:/work/dashboard' })
+    await nextTick()
+    vm.openTab({ title: '角色管理', path: '/sys/role', _key: 'system:/sys/role' })
+    await nextTick()
+    const labels = wrapper.findAll('.wd-station__tab-label')
+    await labels.find((l) => l.text().includes('用户管理'))!.trigger('click')
+    await nextTick()
+    await labels.find((l) => l.text().includes('角色管理'))!.trigger('click')
+    await nextTick()
+    // 关闭当前 R：关闭 MRU → 应走相邻（R 在末尾，无右侧，取左侧 W），而非历史的 U
+    vm.closeTab('system:/sys/role')
+    await nextTick()
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('workspace:/work/dashboard')
+  })
+
   it('tabs 右侧下拉：关闭当前/左侧/其他/所有（affix 保留）与禁用态', async () => {
     const wrapper = mountStation({
       menuGroups: menuGroupsFixture,

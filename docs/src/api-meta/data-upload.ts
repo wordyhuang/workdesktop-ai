@@ -5,6 +5,11 @@ export const uploadData: ComponentMeta[] = [
   {
     path: 'upload',
     name: 'WdUpload',
+    passthrough: {
+      target: 'el-upload',
+      intercept: ['success', 'error', 'preview', 'exceed'],
+      note: '与声明事件同名的 el-upload 回调（on-success/on-error/on-preview/on-exceed）被组件接管重发，外部监听器不生效，载荷以本文档为准；文件选择变化的 change 由组件内部逻辑发出，载荷为文件列表。其余 el-upload 属性经 $attrs 透传。',
+    },
     title: 'Upload 文件上传',
     desc: '基于 el-upload：上传 + 后端删除（二次确认）+ 预览确认 + 尺寸限制，auto-upload=false 时手动提交',
     group: '表单元素',
@@ -105,6 +110,11 @@ export const uploadData: ComponentMeta[] = [
   {
     path: 'image-upload',
     name: 'WdImageUpload',
+    passthrough: {
+      target: 'el-upload',
+      intercept: ['success', 'error', 'preview', 'exceed'],
+      note: 'el-upload 固定 list-type=picture-card，图片选择/上传/预览/超限回调由组件接管重发，载荷以本文档为准；预览使用内置 el-image-viewer。其余 el-upload 属性经 $attrs 透传。',
+    },
     title: 'ImageUpload 图片上传',
     desc: '图片上传：缩略图网格、数量上限（超限隐藏加号）、点击缩略图调用 el-image-viewer 大图预览',
     group: '表单元素',

@@ -5,7 +5,7 @@
     :effect="tipsType"
     :placement="placement"
   >
-    <el-button v-bind="buttonAttrs" :disabled="mergedDisabled" @click="onClick">
+    <el-button v-bind="buttonAttrs" :loading="loading" :disabled="mergedDisabled" @click="onClick">
       <template v-if="hasIcon" #icon>
         <el-icon v-if="loading" class="is-loading"><Loading /></el-icon>
         <slot v-else-if="hasIconSlot" name="icon" />
@@ -14,7 +14,7 @@
       <slot>{{ label }}</slot>
     </el-button>
   </el-tooltip>
-  <el-button v-else v-bind="buttonAttrs" :disabled="mergedDisabled" @click="onClick">
+  <el-button v-else v-bind="buttonAttrs" :loading="loading" :disabled="mergedDisabled" @click="onClick">
     <template v-if="hasIcon" #icon>
       <el-icon v-if="loading" class="is-loading"><Loading /></el-icon>
       <slot v-else-if="hasIconSlot" name="icon" />

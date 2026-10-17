@@ -5,6 +5,10 @@ export const coreData: ComponentMeta[] = [
   {
     path: 'requester',
     name: 'WdRequester',
+    passthrough: {
+      target: '—（不透传）',
+      note: '无 UI 的行为型组件，模板仅渲染默认插槽（fragment），没有可透传的 Element Plus 组件；属性与事件均以本文档为准。',
+    },
     title: 'WdRequester 请求触发组件',
     desc: '完全封装请求核心 RequestAPI；通过 v-model 一次性触发请求（true 发起 → 完成后自动回 false）；支持在 apiBefore 手动中断请求；新请求自动中断旧请求。method/reqOptions 默认值可通过全局配置 page.componentDefault.WdRequester 覆盖（app.use 或 window.workDesktopConfig）',
     group: '数据',
@@ -293,6 +297,10 @@ export const coreData: ComponentMeta[] = [
   {
     path: 'datagrid',
     name: 'WdDataGrid',
+    passthrough: {
+      target: '—（不透传）',
+      note: '厚封装组件：根节点为自研 div.wd-datagrid，内部 el-table / el-pagination 均未绑定 $attrs，el-table 的属性与事件（如 row-click、highlight-current-row）不可直接使用，请改用本文档的 columns/rowActions 配置与 Events。',
+    },
     title: 'DataGrid 数据表格',
     desc: '旗舰组件：内部封装 el-table + el-pagination，支持 API/静态双数据源、分页搜索、工具栏、卡片模式切换、动态列、行合并、树形、多选',
     group: '数据',
@@ -439,6 +447,10 @@ export const coreData: ComponentMeta[] = [
   {
     path: 'editable-grid',
     name: 'WdEditableGrid',
+    passthrough: {
+      target: '—（不透传）',
+      note: '厚封装组件：内部 el-table / el-pagination / 编辑控件均未绑定 $attrs，el-table 的属性与事件不可直接使用，请改用本文档的 columns（含 editConfig）配置与 Events。',
+    },
     title: 'EditableGrid 可编辑数据表格',
     desc: 'DataGrid 的可编辑版本：完整继承 DataGrid 全部能力（API/静态双数据源、分页、工具栏、卡片模式、动态列、行合并、树形、多选、SearchPanel 联动），并增加 columns 配置驱动的单元格/行双编辑模式、脏行与已修改单元格样式、ElForm 风格 rules 单元格校验与保存中断、批量保存、新增/删除行',
     group: '数据',
@@ -596,6 +608,10 @@ export const coreData: ComponentMeta[] = [
   {
     path: 'viewer',
     name: 'WdViewer',
+    passthrough: {
+      target: 'el-descriptions（部分透传）',
+      note: '仅 items 配置驱动的描述列表模式把 $attrs 透传给 el-descriptions；使用 content 默认插槽的自定义模式不透传。el-descriptions-item 由组件按 items 生成，不接受外部透传。',
+    },
     title: 'Viewer 数据详情',
     desc: 'el-descriptions 的二次封装：以只读描述列表展示一条数据的详情，支持配置 items 自动渲染字段；可直接配置 api + apiParam 自动请求详情数据并装载，也可通过 data 传入静态数据，支持插槽/render/formatter 自定义字段渲染。标题右侧自带「调整大小」（大/默认/小）与「显示字段」（勾选显隐、拖拽手柄排序、恢复默认，与 DataGrid 列设置一致）两个工具，自动启用无需配置',
     group: '数据',
@@ -684,6 +700,10 @@ export const coreData: ComponentMeta[] = [
   {
     path: 'dataform',
     name: 'WdDataForm',
+    passthrough: {
+      target: 'el-form',
+      note: '$attrs 透传到内部 el-form（根节点为自研 div.wd-data-form）；change、submit-success/submit-fail、load-success、close 等均为组件自有事件（由内部表单状态与提交流程触发，非 el-form 原生事件），载荷以本文档为准。',
+    },
     title: 'DataForm 数据表单',
     desc: '自动表单：mode(create/edit) + 详情回填 + 校验 + 修改检测 + 提交联动关抽屉/刷新表格/连续操作，适合弹窗内维护数据',
     group: '表单',

@@ -1,6 +1,6 @@
 {
   "name": "workdesktop-ai",
-  "version": "1.2.5",
+  "version": "1.2.7",
   "description": "WorkDesktop 一个企业级 Vue3 组件库。让AI在做前端设计的时候拥有更加可控，更加稳定的输出结果。（基于 ElementPlus，HTML 模板渲染友好、AI 编码友好）",
   "type": "module",
   "main": "dist/index.umd.js",
@@ -157,7 +157,9 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE",
-    "llms.txt"
+    "ai-router.md",
+    "ai-api",
+    "scenarios"
   ],
   "scripts": {
     "dev": "vite",
@@ -166,6 +168,8 @@
     "build:esm": "vite build",
     "build:umd": "vite build --mode umd",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly --outDir dist/types",
+    "gen:ai-api": "node scripts/gen-ai-api.mjs",
+    "prepack": "node scripts/gen-ai-api.mjs",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
     "docs:dev": "vite --config docs/vite.config.ts",

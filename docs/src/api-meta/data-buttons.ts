@@ -14,6 +14,11 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'api-button',
     name: 'WdApiButton',
+    passthrough: {
+      target: 'el-button',
+      intercept: ['click'],
+      note: '过滤版透传：icon、disabled、loading 被组件接管（$attrs 解构剔除后再绑定），外部传入无效；loading 由 buttonLoading/pageLoading 内部控制，disabled 与 loading 联动。其余 el-button 属性正常透传。',
+    },
     title: 'ApiButton 请求按钮',
     desc: '点击发起 API 请求，自动 loading、成功提示与声明式联动刷新',
     group: '按钮',
@@ -49,6 +54,11 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'confirm-button',
     name: 'WdConfirmButton',
+    passthrough: {
+      target: 'el-button',
+      intercept: ['click'],
+      note: '$attrs 全部透传给触发按钮；点击事件被组件接管（先弹确认框），确认/取消后的载荷以本文档 Events 为准，ElMessageBox 的属性不经过此处透传。',
+    },
     title: 'ConfirmButton 确认按钮',
     desc: '点击弹出二次确认，确认后才发起请求；文案可配',
     group: '按钮',
@@ -90,6 +100,10 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'dialog-button',
     name: 'WdDialogButton',
+    passthrough: {
+      target: 'el-button',
+      note: '$attrs 只透传给触发按钮（外部 @click 仍会在点击时正常触发，组件自身不声明 click）；内部 el-dialog 弹层不接收外部属性/事件，弹层行为通过组件 props 与 open/close/confirm 事件控制。',
+    },
     title: 'DialogButton 对话框按钮',
     desc: '点击打开对话框（mode=dialog 固定），支持 iframe 嵌入或内部插槽表单，关闭后声明式联动刷新',
     group: '按钮',
@@ -143,6 +157,11 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'popconfirm-button',
     name: 'WdPopconfirmButton',
+    passthrough: {
+      target: 'el-button / el-popconfirm',
+      intercept: ['click', 'confirm', 'cancel', 'show', 'hide'],
+      note: '$attrs 全部透传给触发按钮；气泡确认框的属性均为组件显式 props（popIcon、popDisabled 等改名版，见 Props 表），不经 $attrs 透传。show/hide 弹层事件同样被组件原样重发。',
+    },
     title: 'PopconfirmButton 气泡确认按钮',
     desc: '基于 ApiButton 与 el-popconfirm：点击弹出气泡确认，用户确认后自动请求 API；同时支持悬停提示（el-tooltip）——hover 显示提示、click 弹出确认，两者互不冲突',
     group: '按钮',
@@ -189,6 +208,11 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'prompt-button',
     name: 'WdPromptButton',
+    passthrough: {
+      target: 'el-button',
+      intercept: ['click'],
+      note: '$attrs 全部透传给触发按钮；点击事件被组件接管（先弹输入框），prompt/cancel/confirm 的载荷以本文档 Events 为准，ElMessageBox 的属性不经过此处透传。',
+    },
     title: 'PromptButton 输入按钮',
     desc: '点击弹出输入框/自定义表单，输入值并入请求参数后发起请求；API 成功自动关闭弹窗，失败保留弹窗允许修改',
     group: '按钮',
@@ -234,6 +258,11 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'route-button',
     name: 'WdRouteButton',
+    passthrough: {
+      target: 'el-button',
+      intercept: ['click'],
+      note: '$attrs 全部透传给 el-button；点击事件被组件接管执行路由跳转，跳转目标由 to/replace 等组件 props 决定，不要同时用 el-button 的原生跳转行为。',
+    },
     title: 'RouteButton 路由按钮',
     desc: '基于 el-button 的路由跳转，支持 name/path、params/query 与 target=_blank 新窗口',
     group: '按钮',
@@ -277,6 +306,11 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'tips-button',
     name: 'WdTipsButton',
+    passthrough: {
+      target: 'el-button',
+      intercept: ['click'],
+      note: '$attrs 全部透传给 el-button；悬停提示由组件内部 el-tooltip 承载（tips 等属性见 Props 表），el-tooltip 其他属性不经过透传。',
+    },
     title: 'TipsButton 提示按钮',
     desc: '基于 el-tooltip 的悬停提示按钮，所有按钮均已集成本组件提示能力；若仅需要悬停提示，直接用本组件',
     group: '按钮',
@@ -313,6 +347,10 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'drawer-button',
     name: 'WdDrawerButton',
+    passthrough: {
+      target: 'el-button',
+      note: '$attrs 只透传给触发按钮（内部按 { ...$attrs, size } 合并，size 为组件显式 prop）；内部 wd-drawer 弹层不接收外部属性/事件，弹层行为通过组件 props 与 open/close/confirm 事件控制。',
+    },
     title: 'DrawerButton 弹层按钮',
     desc: '点击打开弹层，通过 mode 切换抽屉（drawer）/ 对话框（dialog）；支持 iframe 嵌入或内部插槽表单，关闭后声明式联动刷新',
     group: '按钮',

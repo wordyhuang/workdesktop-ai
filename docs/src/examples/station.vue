@@ -53,7 +53,7 @@
 
     <demo-block
       title="Tabs 内容模式"
-      desc="content-mode=tabs 开启多标签页：点菜单自动开标签，affix 菜单为固定标签（自动开启、不可关闭），关闭激活标签后跳转相邻标签"
+      desc="content-mode=tabs 开启多标签页：点菜单自动开标签，affix 菜单为固定标签（自动开启、不可关闭），关闭激活标签后跳回上一次激活的标签（activate-previous-tab 可关闭）"
       :code="code3"
     >
       <div class="station-stage">
