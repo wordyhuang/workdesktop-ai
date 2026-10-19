@@ -1,5 +1,5 @@
 /**
- * 组件汇总导出（30 个组件）
+ * 组件汇总导出（33 个组件）
  */
 // 指引组件
 export { default as WdGuide } from './guide/Guide.vue'
@@ -29,12 +29,13 @@ export { default as WdDrawerButton } from './buttons/DrawerButton.vue'
 export { default as WdDrawer } from './containers/Drawer.vue'
 export { default as WdIframe } from './containers/Iframe.vue'
 
-// 输入选择组（5 个）
+// 输入选择组（7 个）
 export { default as WdSelect } from './inputs/Select.vue'
 export { default as WdAutoComplete } from './inputs/AutoComplete.vue'
 export { default as WdCheckboxList } from './inputs/CheckboxList.vue'
 export { default as WdRadioList } from './inputs/RadioList.vue'
 export { default as WdSwitch } from './inputs/Switch.vue'
+export { default as WdDateRangePicker } from './inputs/DateRangePicker.vue'
 
 // 上传组（2 个）
 export { default as WdUpload } from './upload/Upload.vue'
@@ -43,8 +44,9 @@ export { default as WdImageUpload } from './upload/ImageUpload.vue'
 // 样式组（1 个）
 export { default as WdPanel } from './styles/Panel.vue'
 
-// 页面元素组（2 个）
+// 页面元素组（3 个）
 export { default as WdPath } from './styles/Path.vue'
+export { default as WdAnchor } from './styles/Anchor.vue'
 export { default as WdTips } from './styles/Tips.vue'
 
 // 布局组（1 个）

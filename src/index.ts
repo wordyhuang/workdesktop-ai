@@ -51,6 +51,16 @@ export {
 } from './lib/core/station-linkage'
 export type { StationInstance, MenuChainItem } from './lib/core/station-linkage'
 
+// Anchor 联动（跨组件菜单内容指定 / 刷新通知 / 菜单读取）
+export {
+  registerAnchorInstance,
+  setAnchorItems,
+  notifyAnchorChange,
+  getAnchorItems,
+  clearAnchorRegistry
+} from './lib/core/anchor-linkage'
+export type { AnchorInstance, AnchorItemLike } from './lib/core/anchor-linkage'
+
 // 组合式 hooks
 export { useRequest } from './lib/composables/useRequest'
 export { useDataGrid } from './lib/composables/useDataGrid'

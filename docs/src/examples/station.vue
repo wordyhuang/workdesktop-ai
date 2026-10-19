@@ -177,7 +177,7 @@
 
     <demo-block
       title="固定点位插槽"
-      desc="logo / menu-top / menu-bottom / header-left / header-center / header-right / tabs-left / tabs-right / footer 各固定点位均可插槽自定义；logo 与 menu 插槽带 collapsed 作用域参数（折叠时可切换 mini 形态），未传插槽的点位保持默认渲染"
+      desc="logo / menu-top / menu-bottom / header-left / header-center / header-right / tabs-left / tabs-right / footer 各固定点位均可插槽自定义；logo 与 menu 插槽带 collapsed 作用域参数（折叠时可切换 mini 形态），未传插槽的点位保持默认渲染。**每个插槽内容都由带固定 id 的承载容器包裹**（如 #wd-station__header-right），便于自动化测试用 document.querySelector 精确定位；多实例场景 id 会重复，需用 filter 或 class 区分"
       :code="code7"
     >
       <div class="station-stage">
@@ -227,6 +227,12 @@
             <p>{{ currentMenuText }}</p>
           </div>
         </wd-station>
+      </div>
+      <div class="slot-id-tip">
+        <span>插槽容器 id 定位演示：</span>
+        <el-button size="small" @click="onLocateSlot('wd-station__header-right')">#wd-station__header-right</el-button>
+        <el-button size="small" @click="onLocateSlot('wd-station__header-left')">#wd-station__header-left</el-button>
+        <el-button size="small" @click="onLocateSlot('wd-station__footer')">#wd-station__footer</el-button>
       </div>
     </demo-block>
   </div>
@@ -358,7 +364,14 @@ const code7 = `<wd-station
     <span>© 2026 WorkDesktop</span>
   </template>
   <div>内容区</div>
-</wd-station>`
+</wd-station>
+
+// 每个插槽内容都由带固定 id 的承载容器包裹，自动化测试可精确定位：
+//   #wd-station__header-right / #wd-station__header-left / #wd-station__header-center
+//   #wd-station__menu-top / #wd-station__menu-bottom
+//   #wd-station__tabs-left / #wd-station__tabs-right
+//   #wd-station__footer / #wd-station__content
+// 多实例场景 id 会重复，请用 filter 或 class 区分。`
 
 const code8 = `<wd-station
   title="WorkDesktop" logo="Platform"
@@ -482,6 +495,17 @@ function onRefreshStation() {
 function onRefresh() {
   refreshCount.value += 1
 }
+
+// 演示：用固定 id 精确定位插槽承载容器（自动化测试场景）
+function onLocateSlot(id: string) {
+  const el = document.getElementById(id)
+  if (el) {
+    ElMessage.success(`已找到 #${id}（标签：<${el.tagName.toLowerCase()}>）`)
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  } else {
+    ElMessage.error(`未找到 #${id}`)
+  }
+}
 </script>
 
 <style scoped>
@@ -534,5 +558,13 @@ function onRefresh() {
   font-size: 12px;
   color: var(--wd-text-color-secondary, #909399);
   white-space: nowrap;
+}
+.slot-id-tip {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--wd-text-color-secondary, #909399);
 }
 </style>

@@ -1,11 +1,11 @@
 # 组件规格补充需求汇总
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-14\
-> **当前版本**：V\_1.0\
+> **最后修改时间**：2026-10-17\
+> **当前版本**：V\_1.1\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：场景落地中对组件规格的补充诉求（回流 PRD）\
-> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
+> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
 
 
 以下补充需求需同步更新到 PRD 对应组件规格中：
@@ -44,6 +44,18 @@ interface DataGridProps {
 
   /** 联动分组标识，同 filter 才联动，默认 ''（所有参与联动组件共有） */
   filter?: string
+
+  /** 勾选任意行后自动悬浮在表格底部的批量操作条，未勾选时自动隐藏；
+   *  插槽暴露 selectedRows（当前选中行）与 clearSelection（清空选中方法）。
+   *  替代业务在 #toolbar 里手写 v-if="selectedRows.length" 的批量按钮 */
+  batchBar?: boolean  // 默认 false
+  // 插槽签名：<slot name="batch-bar" :selectedRows="selection" :clearSelection="clearSelection" />
+
+  /** 用户自定义列配置（显隐/宽度/顺序）持久化的 localStorage key；
+   *  传入后自动保存与恢复，不同页面须传不同 key 避免串数据；
+   *  不传则不持久化，刷新页面后还原默认列配置。
+   *  已实现（useColumnSettings 内置 localStorage，key 前缀 wd:columns: / wd:tablesize:） */
+  columnStorageKey?: string  // 默认 ''（不持久化）
 }
 ```
 
@@ -91,5 +103,27 @@ interface SearchPanelProps {
 ```
 
 > 分页样式档位 `pagerStyle` 已包含在 DataGridProps 中，不单独出 Pagination 组件。DataGrid 内部使用 el-pagination 实现，用户通过 DataGrid 的 `pagerStyle` 属性控制样式档位。
+
+### WdDateRangePicker 新增
+
+```ts
+interface WdDateRangePickerProps {
+  /** 选择器类型 */
+  type?: 'date' | 'datetime'  // 默认 'date'
+
+  /** 绑定值格式，默认按 type 自动匹配（date='YYYY-MM-DD' / datetime='YYYY-MM-DD HH:mm:ss'） */
+  valueFormat?: string
+
+  /** 占位文案（起止两端） */
+  startPlaceholder?: string  // 默认 '开始日期'
+  endPlaceholder?: string    // 默认 '结束日期'
+
+  /** 是否显示快捷选项（今天 / 近7天 / 近30天 / 本月 / 上月） */
+  withShortcut?: boolean  // 默认 false
+
+  /** 是否禁用 */
+  disabled?: boolean
+}
+```
 
 ***

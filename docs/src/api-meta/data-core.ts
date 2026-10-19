@@ -395,6 +395,7 @@ export const coreData: ComponentMeta[] = [
       { name: 'tableSize', type: "'large' | 'default' | 'small'", default: "'default'", desc: '表格尺寸' },
       { name: 'withIndex', type: 'boolean', default: 'true', desc: '序号列（翻页连续）' },
       { name: 'withSelection', type: 'boolean', default: 'false', desc: '多选列' },
+      { name: 'batchBar', type: 'boolean', default: 'false', desc: '批量操作条：开启后，勾选任意行即在表格底部浮出一条悬浮操作条，未勾选时自动隐藏；插槽 #batch-bar 暴露 selectedRows（当前选中行）与 clearSelection（清空选中），用于「先勾选、再批量通过/驳回/删除」的轻量批量场景' },
       { name: 'modelValue', type: 'array', default: '[]', desc: '选中项 v-model 双向绑定：读取当前勾选行（withSelection 开启时）；设置（传值）自动勾选对应行、置空清空勾选（与 selectionKey 配合返回该字段值数组）' },
       { name: 'selectionKey', type: 'string', default: "''", desc: '选中项取值字段：默认返回完整行对象数组；设置后 modelValue/selection-change/getSelection() 返回该字段值数组（如 selectionKey="id" → [1,2]）' },
       { name: 'withSelectionCart', type: 'boolean', default: 'false', desc: '跨页选择「购物车」：表格右上方出现收集按钮（实时显示暂存数量），勾选行跨页累计、翻页/搜索/刷新不清空、翻回所在页自动回勾；点击按钮弹出查看面板' },
@@ -426,6 +427,7 @@ export const coreData: ComponentMeta[] = [
     slots: [
       { name: 'default', params: '—', desc: 'el-table-column 集合（业务列）' },
       { name: 'toolbar', params: '{ selection, list }', desc: '左区补充按钮：渲染在内置「新增/导出」的最左侧' },
+      { name: 'batch-bar', params: '{ selectedRows, clearSelection }', desc: '批量操作条内容：开启 batchBar 且有勾选行时浮出。selectedRows 为当前选中行数组（勾选即更新）；clearSelection() 调用后清空勾选并隐藏操作条' },
       { name: 'empty', params: '—', desc: '空数据插槽' },
       { name: 'card-item', params: '{ row, index }', desc: '卡片模式单项' },
       { name: 'cart-content', params: '{ list, remove, clear }', desc: '购物车面板主体自定义（list 为暂存数组；remove(row)/clear() 逐条移除/一键清空），默认内容为逐条列表 + 移除按钮' }

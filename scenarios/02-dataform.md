@@ -1,11 +1,13 @@
 # 场景二：数据维护表单页面（DataForm 标准场景）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-14\
-> **当前版本**：V\_1.0\
+> **最后修改时间**：2026-10-18\
+> **当前版本**：V\_1.2\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：新增/编辑表单的结构、分组与提交规范\
-> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
+> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
+>
+> **版本变更**：V_1.1 → V_1.2：下线 WdDatePicker 组件（组件源码、测试、docs 示例与元数据全量移除），单日期字段统一改用原生 `el-date-picker`，仅保留 WdDateRangePicker 用于日期范围场景。
 
 
 ### 2.1 场景描述
@@ -103,6 +105,9 @@ DataGrid 页面
     <wd-form-item label="状态" prop="status">
       <wd-switch v-model="form.status" />
     </wd-form-item>
+    <wd-form-item label="活动周期" prop="activityRange">
+      <wd-date-range-picker v-model="form.activityRange" type="datetime" with-shortcut />
+    </wd-form-item>
     <wd-form-item label="描述" prop="remark">
       <el-input type="textarea" v-model="form.remark" />
     </wd-form-item>
@@ -111,6 +116,38 @@ DataGrid 页面
 ```
 
 > DataForm 支持内嵌 Panel 组件实现分组，Panel 的 `title` 即分组标题。分组标题应简洁，能概括组内字段的核心含义。
+
+#### 日期范围选择器组件（WdDateRangePicker）
+
+DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `el-date-picker`（daterange 模式），封装了按 type 自动匹配的 `value-format` 默认值与快捷选项，避免每页手写。单日期字段直接使用原生 `el-date-picker` 即可，无需二次封装：
+
+```html
+<!-- 单日期：直接用原生 el-date-picker -->
+<wd-form-item label="生效日期" prop="effectiveDate">
+  <el-date-picker v-model="form.effectiveDate" type="date" value-format="YYYY-MM-DD" />
+</wd-form-item>
+
+<!-- 日期范围：默认起止占位「开始日期 / 结束日期」，YYYY-MM-DD 格式 -->
+<wd-form-item label="活动周期" prop="activityRange">
+  <wd-date-range-picker v-model="form.activityRange" with-shortcut />
+</wd-form-item>
+
+<!-- 日期时间范围：绑定值 YYYY-MM-DD HH:mm:ss 数组 -->
+<wd-form-item label="直播时段" prop="liveRange">
+  <wd-date-range-picker
+    v-model="form.liveRange"
+    type="datetime"
+    start-placeholder="开始时间"
+    end-placeholder="结束时间"
+    with-shortcut />
+</wd-form-item>
+```
+
+| 组件                 | type 默认 | value-format 默认值              | 快捷选项内置                            |
+| ------------------ | -------- | ----------------------------- | --------------------------------- |
+| `WdDateRangePicker` | 固定 daterange | date=`YYYY-MM-DD` / datetime=`YYYY-MM-DD HH:mm:ss` | 今天 / 近7天 / 近30天 / 本月 / 上月 |
+
+> 若业务需要自定义格式（如 `YYYY/MM/DD`），仍可通过 `value-format` prop 显式覆盖；其余原生 el-date-picker 属性全部透传。
 
 ### 2.4 两种模式
 

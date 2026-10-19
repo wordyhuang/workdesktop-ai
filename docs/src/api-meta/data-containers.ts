@@ -645,5 +645,50 @@ export const inputData: ComponentMeta[] = [
       { name: 'apiException', payload: '{ error, message }', desc: '网络异常（回滚）' },
       { name: 'apiAfter', payload: '—', desc: '请求完成' }
     ]
+  },
+  {
+    path: 'date-range-picker',
+    name: 'WdDateRangePicker',
+    passthrough: {
+      target: 'el-date-picker（type="daterange" 固定）',
+      intercept: ['change'],
+      note: '组件固定使用 el-date-picker 的 daterange 模式，仅封装 type / valueFormat / startPlaceholder / endPlaceholder / disabled / withShortcut；其余属性经 $attrs 透传。',
+    },
+    title: 'DateRangePicker 日期范围选择器',
+    desc: '基于 el-date-picker daterange：v-model 绑定 [开始, 结束] 数组，type 切 date/datetime，内置快捷（今天/近7天/近30天/本月/上月）',
+    group: '表单元素',
+    intro: {
+      overview: 'WdDateRangePicker 固定使用 el-date-picker 的 daterange 模式：v-model 绑定 [开始, 结束] 数组，缺省格式按 type 自动映射（date=YYYY-MM-DD / datetime=YYYY-MM-DD HH:mm:ss）；开启 withShortcut 后面板左侧内置「今天 / 近7天 / 近30天 / 本月 / 上月」五个常用快捷区间。',
+      whenToUse: [
+        '搜索区按时间区间筛选（如订单时间范围、创建时间范围）。',
+        '表单中需要填写一段连续起止时间（如项目周期、值班时段）。',
+        '需要快捷选中「本月」「上月」「近30天」等常用统计区间。',
+        '不建议：只需要选单个时间点，请直接使用原生 el-date-picker（type="date" 或 type="datetime"）。'
+      ],
+      notes: [
+        'v-model 输出为字符串数组 [开始, 结束]，格式遵循 valueFormat（缺省按 type 映射）。',
+        'withShortcut 内置五个快捷项：今天、近7天、近30天、本月、上月；type=datetime 时结束时刻取当前时刻，其余类型按天取当天结束。',
+        'startPlaceholder / endPlaceholder 可分别自定义起止占位文案，缺省为「开始日期 / 结束日期」。',
+        'el-date-picker daterange 原生属性（rangeSeparator、unlinkPanels 等）经 $attrs 透传。'
+      ],
+      faq: [
+        { q: 'v-model 绑定的是什么结构？', a: '字符串数组 [start, end]，格式由 valueFormat/type 决定；未选时为 undefined。' },
+        { q: 'datetime 类型绑定值长什么样？', a: `['2026-10-01 00:00:00', '2026-10-18 23:59:59'] 这样的起止字符串数组。` },
+        { q: '怎么把「本月」快捷默认带上？', a: '设置 with-shortcut 并在面板左侧点击「本月」即可；也可直接给 v-model 赋初值数组。' }
+      ]
+    },
+    props: [
+      { name: 'modelValue', type: 'string[] | Date[]', default: '—', desc: '选中区间（v-model），[开始, 结束]；缺省格式按 type 映射' },
+      { name: 'type', type: "'date' | 'datetime'", default: "'date'", desc: '选择类型：date 日期范围 / datetime 日期时间范围' },
+      { name: 'valueFormat', type: 'string', default: "''", desc: '绑定值格式（dayjs 令牌）；缺省按 type 映射：date=YYYY-MM-DD / datetime=YYYY-MM-DD HH:mm:ss' },
+      { name: 'startPlaceholder', type: 'string', default: "'开始日期'", desc: '起始占位文案' },
+      { name: 'endPlaceholder', type: 'string', default: "'结束日期'", desc: '结束占位文案' },
+      { name: 'disabled', type: 'boolean', default: 'false', desc: '是否禁用' },
+      { name: 'withShortcut', type: 'boolean', default: 'false', desc: '是否内置快捷选项（今天 / 近7天 / 近30天 / 本月 / 上月）' }
+    ],
+    emits: [
+      { name: 'update:modelValue', payload: '[start, end]', desc: '选中区间变化（v-model）' },
+      { name: 'change', payload: '[start, end]', desc: '选中变化，载荷与 update:modelValue 一致' }
+    ]
   }
 ]

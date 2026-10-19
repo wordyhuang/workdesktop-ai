@@ -444,6 +444,34 @@
         </wd-data-grid>
       </div>
     </demo-block>
+
+    <demo-block title="批量操作条（batch-bar）"
+      desc="开启 batch-bar 后，勾选任意行自动在表格底部浮出一条操作条；插槽暴露 selectedRows（当前选中行）与 clearSelection（清空选中），未勾选任何行时自动隐藏。适用于「先勾选、再批量通过 / 驳回 / 删除」的轻量批量场景"
+      :code="codeBatch">
+      <wd-data-grid :data-source="staticRows" border row-key="code"
+        :with-selection="true" batch-bar :height="420">
+        <el-table-column type="selection" width="50" />
+        <el-table-column prop="code" label="项目编号" width="150" />
+        <el-table-column prop="name" label="项目名称" min-width="240" show-overflow-tooltip />
+        <el-table-column prop="owner" label="负责人" width="90" />
+        <el-table-column prop="priority" label="优先级" width="90">
+          <template #default="{ row }">
+            <el-tag :type="priorityType(row.priority)" size="small" effect="plain">{{ row.priority }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="projectStatusType(row.status)" size="small">{{ projectStatusText(row.status) }}</el-tag>
+          </template>
+        </el-table-column>
+        <template #batch-bar="{ selectedRows, clearSelection }">
+          <span style="margin-right: 12px; color: var(--el-color-primary)">已选 {{ selectedRows.length }} 项</span>
+          <el-button size="small" type="primary" @click="onBatchAction(selectedRows, '批量通过')">批量通过</el-button>
+          <el-button size="small" type="danger" @click="onBatchAction(selectedRows, '批量驳回')">批量驳回</el-button>
+          <el-button size="small" link @click="clearSelection">清除选择</el-button>
+        </template>
+      </wd-data-grid>
+    </demo-block>
   </div>
 
   <!-- 附件大图预览：使用 ElementPlus 内置 el-image-viewer -->
@@ -558,6 +586,39 @@ function callClearSelection() {
   gridRef.value?.clearSelection()
   ElMessage.success('已调用 clearSelection()')
 }
+
+/** 批量操作条示例：模拟批量通过/驳回 */
+function onBatchAction(rows: any[], action: string) {
+  const names = rows.map((r) => r.name).join('、')
+  ElMessage.success(`${action} ${rows.length} 项：${names || '（未选中）'}`)
+}
+
+const codeBatch = `<wd-data-grid
+  :data-source="rows"
+  border
+  row-key="code"
+  :with-selection="true"
+  batch-bar
+  :height="420"
+>
+  <el-table-column type="selection" width="50" />
+  <el-table-column prop="code" label="项目编号" width="150" />
+  <el-table-column prop="name" label="项目名称" min-width="240" show-overflow-tooltip />
+  <el-table-column prop="owner" label="负责人" width="90" />
+  <el-table-column prop="status" label="状态" width="100" />
+
+  <!-- 批量操作条插槽：勾选任意行后自动浮出，未勾选时自动隐藏 -->
+  <template #batch-bar="{ selectedRows, clearSelection }">
+    <span style="margin-right: 12px">已选 {{ selectedRows.length }} 项</span>
+    <el-button size="small" type="primary" @click="onBatchPass(selectedRows)">批量通过</el-button>
+    <el-button size="small" type="danger" @click="onBatchReject(selectedRows)">批量驳回</el-button>
+    <el-button size="small" link @click="clearSelection">清除选择</el-button>
+  </template>
+</wd-data-grid>
+
+// 插槽入参：
+// selectedRows  : 当前选中行数组（勾选即更新）
+// clearSelection: 函数，调用后清空当前页勾选并隐藏操作条`
 
 const code1 = `<div>
   <wd-search-panel head-refresh-datagrid filter="main">

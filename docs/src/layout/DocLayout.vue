@@ -29,6 +29,17 @@
       </template>
     </wd-station>
 
+    <!-- 内容区右侧悬浮快速导航：自动扫描 .wd-station__content 内 H1~H4 标题，
+         滚动高亮当前章节；用 fixed 定位悬浮在视口右侧，不抢文档流。
+         注意：Station 在 router 模式下内容区只渲染 RouterView，默认插槽不会落地，
+         因此挂到 Station 外层、用 fixed 定位跟随视口。 -->
+    <wd-anchor
+      class="doc-anchor"
+      container=".wd-station__content"
+      position="fixed"
+      :offset="64"
+    />
+
     <!-- 全站主题皮肤：挂到 WdStation 顶栏 settings 工具，点击打开抽屉 -->
     <el-drawer v-model="skinVisible" title="全站主题皮肤" size="420px">
       <div class="skin-picker">
@@ -59,7 +70,7 @@
 import { nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Brush, CircleCheckFilled } from '@element-plus/icons-vue'
-import { WdPath, useGlobalConfig } from '../../../src'
+import { WdPath, WdAnchor, useGlobalConfig } from '../../../src'
 import { componentNav } from '../api-meta'
 import { SITE_SKINS, currentSkinKey, swatchesOf, applySkin } from '../skins'
 import BrandMark from '../components/BrandMark.vue'
@@ -286,5 +297,13 @@ body,
 /* —— 顶栏皮肤入口按钮 —— */
 .skin-entry {
   flex: none;
+}
+
+/* —— 内容区右侧悬浮快速导航 —— */
+.doc-anchor {
+  right: 12px;
+  top: 80px;
+  max-width: 160px;
+  font-size: 12px;
 }
 </style>

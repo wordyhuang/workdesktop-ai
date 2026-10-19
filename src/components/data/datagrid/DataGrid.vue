@@ -144,6 +144,14 @@
       </div>
     </div>
 
+    <!-- 批量操作条：勾选任意行后悬浮表格底部，未勾选自动隐藏 -->
+    <div v-if="batchBar && selection.length" class="wd-datagrid__batch-bar">
+      <slot name="batch-bar" :selectedRows="selection" :clearSelection="clearSelection">
+        <span class="wd-datagrid__batch-bar-count">已选 {{ selection.length }} 项</span>
+        <el-button link type="primary" size="small" @click="clearSelection">清除</el-button>
+      </slot>
+    </div>
+
     <!-- 底部栏：置于底部的工具组/自定义组与分页合并同一行 -->
     <div
       v-if="showBottomBar"
@@ -352,6 +360,11 @@ const props = defineProps({
   pagerPosition: { type: String as PropType<'left' | 'center' | 'right'>, default: '' },
   withIndex: { type: Boolean, default: true },
   withSelection: { type: Boolean, default: false },
+  /**
+   * 批量操作条：勾选任意行后自动悬浮在表格底部，未勾选时自动隐藏。
+   * 插槽签名 <slot name="batch-bar" :selectedRows="selection" :clearSelection="clearSelection" />
+   */
+  batchBar: { type: Boolean, default: false },
   // 行合并
   rowspanKey: { type: String, default: '' },
   rowspanColumn: { type: Array as PropType<string[]>, default: () => [] },
@@ -1007,6 +1020,7 @@ watch(
 
 <style scoped>
 .wd-datagrid {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -1116,6 +1130,26 @@ watch(
 /* 固定高度模式下 el-table 自带显式高度，禁止 flex:1 拉伸覆盖该高度 */
 .wd-datagrid--fixed-height .wd-datagrid__table {
   flex: none;
+}
+/* 批量操作条：悬浮于表格底部之上，不占据文档流（不影响 fix 高度计算） */
+.wd-datagrid__batch-bar {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 8px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--wd-bg-color, #fff);
+  border: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light, #e4e7ed);
+  border-radius: var(--wd-radius-base, 4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.wd-datagrid__batch-bar-count {
+  font-size: var(--wd-font-size-small, 12px);
+  color: var(--wd-text-color-regular, #606266);
 }
 .wd-datagrid__pager {
   display: flex;

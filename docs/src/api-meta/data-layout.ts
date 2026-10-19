@@ -32,7 +32,8 @@ export const layoutData: ComponentMeta[] = [
         '`userName` 非空时顶栏显示用户下拉（含退出登录），为空时显示登录按钮；`userAvatar` 为空时头像显示用户名首字。',
         '`toolbarConfig` 中 `refresh` / `fullscreen` / `user` / `login` 默认在右侧（right），`settings` 默认 `none`（不渲染）；各点位均可设为 left / right / none。`user` 与 `login` 按 `userName` 是否为空二选一出现。刷新与全屏图标带原生 `title` 悬浮提示（全屏态下自动切换为「退出全屏」）。',
         'Station 自身高度为 100%，父容器必须提供确定高度（示例中用 `height: 440px` 的舞台 div），否则布局会塌陷。',
-        '`refresh()` / `refreshStationView` 通过自增 key 强制重挂载内容区，适用于「保存后整页重取数据」类场景；局部刷新请走 DataGrid 等组件自身的刷新机制。'
+        '`refresh()` / `refreshStationView` 通过自增 key 强制重挂载内容区，适用于「保存后整页重取数据」类场景；局部刷新请走 DataGrid 等组件自身的刷新机制。',
+        '**每个插槽内容都由带固定 id 的承载容器包裹**（如 `#wd-station__header-right` / `#wd-station__content` / `#wd-station__footer`，完整列表见上方 Slots 表「容器 id」列），自动化测试可直接 `document.querySelector` 精确定位；同一页面渲染多个 WdStation 时 id 会重复，多实例场景请改用 class 或 `filter` 区分。'
       ],
       faq: [
         { q: 'html 模式和 router 模式怎么选？', a: '项目已用 vue-router 管理页面时用 `auto`/`router`，菜单 `path` 直接对接路由；静态站点、多页嵌入或想完全自管内容时用 `html`，通过 `menu-select` 事件自行切换默认插槽内容。' },

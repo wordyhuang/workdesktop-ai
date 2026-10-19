@@ -4,10 +4,10 @@
 >
 > - 数据源：`docs/src/api-meta/`（文档站组件页与本目录的共同单一源）
 > - 生成命令：`npm run gen:ai-api`
-> - 生成时间：2026-10-17 14:20:32（Asia/Shanghai）
+> - 生成时间：2026-10-19 11:00:43（Asia/Shanghai）
 > - 组件源码：`src/components/**/*.vue`；类型声明：`dist/types/`
 >
-> 覆盖 30 个组件（Wd 前缀）的 Props / Events / Slots / 暴露方法与自定义数据类型，
+> 覆盖 32 个组件（Wd 前缀）的 Props / Events / Slots / 暴露方法与自定义数据类型，
 > 以及 3 个基础设施 API（全局配置、HTTP 请求核心、皮肤主题）。
 > 组件的组合用法与交互约定见 [ai-router.md](../ai-router.md) 与 `scenarios/**.md`。
 
@@ -81,12 +81,14 @@ Element Plus 原生 API 的权威定义以官方文档为准（[https://element-
 - [WdCheckboxList CheckboxList 多选列表](./wd-checkbox-list.md)
 - [WdRadioList RadioList 单选列表](./wd-radio-list.md)
 - [WdSwitch Switch 状态开关](./wd-switch.md)
+- [WdDateRangePicker DateRangePicker 日期范围选择器](./wd-date-range-picker.md)
 - [WdUpload Upload 文件上传](./wd-upload.md)
 - [WdImageUpload ImageUpload 图片上传](./wd-image-upload.md)
 
 ### 页面元素
 
 - [WdPath Path 路径（面包屑）](./wd-path.md)
+- [WdAnchor Anchor 快速导航（锚点）](./wd-anchor.md)
 - [WdTips Tips 提示](./wd-tips.md)
 - [WdGuide Guide 指引](./wd-guide.md)
 

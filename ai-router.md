@@ -1,8 +1,8 @@
 # WorkDesktop AI 编码路由（AI 阅读入口）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-16\
-> **当前版本**：V\_1.6\
+> **最后修改时间**：2026-10-17\
+> **当前版本**：V\_1.8\
 > **适用对象**：AI 编码助手（每次开发前必读的第一入口）\
 > **核心目标**：让 AI 按任务命中场景，只读对应子路由文件，避免通读全篇\
 > **文档简略描述**：本文件是编码场景指导的路由索引，供 AI 在每次开发前先阅读。内容按场景严格拆分为 `scenarios/` 目录下的子文件，小节编号（§x.y）与主文档 `document/scenarios_v1.0.md` 一致。组件精确 API（props/emits/slots/方法签名）统一查 [ai-api/](./ai-api/) 路由（主路由 [ai-api/README.md](./ai-api/README.md) 按组件名索引定位，只打开对应子文件，如 [wd-select.md](./ai-api/wd-select.md)），由 `docs/src/api-meta/` 自动生成、随包发布，不要翻组件源码。HTTP 请求的完整执行流程 / 配置全景 / 代码示例 / 排错表见手写版 [ai-api/use-request-guide.md](./ai-api/use-request-guide.md)。
@@ -45,6 +45,9 @@
 
 ## 版本变化
 
+- **V_1.9（2026-10-18）**：下线 `WdDatePicker` 组件——组件源码 / 测试 / docs 示例 / `api-meta/data-containers.ts` 元数据 / 规格稿接口段落全量移除；`WdDateRangePicker` 完整保留为唯一日期封装组件；[scenarios/02-dataform.md](./scenarios/02-dataform.md) 日期小节重写为「WdDateRangePicker 专章」（单日期字段回归原生 el-date-picker）并升 V_1.2；主文档 scenarios_v1.0.md 同步升至 V_1.22。
+- **V_1.8（2026-10-17）**：[scenarios/00-common.md](./scenarios/00-common.md) §0.10 新增「0.10.1 空状态文案规范（统一口径）」——四种空态（初始空/筛选空/加载失败/无权限）主文案、副文案、主次按钮命名规律；[scenarios/99-spec-requests.md](./scenarios/99-spec-requests.md) 新增四项规格：DataGrid `batchBar` prop + `#batch-bar` 插槽（勾选行悬浮批量操作条）、DataGrid `storageKey` prop（列配置 localStorage 持久化）、新增 `WdDatePicker` / `WdDateRangePicker` 组件；主文档 scenarios_v1.0.md 同步升至 V_1.20。
+- **V_1.7（2026-10-17）**：[scenarios/00-common.md](./scenarios/00-common.md) §0.3 新增「操作按钮归属原则」——操作表格数据的按钮放进对应 DataGrid 的 `#toolbar` 插槽，页面只有一个 DataGrid 时所有按钮统一进该表 `#toolbar`；§0.5「工具栏布局」条目扩写并修正原示例无效插槽 `#toolbar-left`（DataGrid 只暴露 `#toolbar`）为 `#toolbar="{ selection }"`；主文档 scenarios_v1.0.md 同步升至 V_1.19。
 - **V_1.6（2026-10-16）**：新增场景八子路由 [scenarios/08-status-tabs.md](./scenarios/08-status-tabs.md)（审核页/结果展示页按状态分类拆 Tab、Tab 后带数据总量、「全部」常量分类可不显示总量、按分类定制列与操作按钮）；速查表新增一行直达场景八；主文档 scenarios_v1.0.md 同步升至 V_1.18。
 - **V_1.5（2026-10-16）**：新增手写版 HTTP 请求详细指引 [ai-api/use-request-guide.md](./ai-api/use-request-guide.md)（执行流程、配置全景、ReqOptions 示例、useRequest 声明式、排错对照表）；速查表新增一行「手动发起 HTTP 请求」直达指引入口；ai-api/README.md 使用流程第 2 步补充指引入口与索引。
 - **V_1.4（2026-10-14）**：阅读规则第 5 条补充子文件路径规律——Wd 组件 `ai-api/wd-{组件名kebab}.md`、基础设施页 `ai-api/use-config.md` 等，AI 知道组件名即可直接构造子文件路径，不必先翻索引；ai-api/README.md 使用流程同步。

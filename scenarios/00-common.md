@@ -1,11 +1,11 @@
 # 通用页面规范
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-14\
-> **当前版本**：V\_1.0\
+> **最后修改时间**：2026-10-17\
+> **当前版本**：V\_1.2\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：跨场景通用编码约定（布局/交互/反馈/按钮选型）\
-> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
+> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
 
 ### 0.1 页面介绍与注意事项
 
@@ -117,6 +117,7 @@ const result = await RequestAPI.request({
 | 容器组件    | 优先使用 wd-panel 无标题模式；确有必要才用带标题模式                                              |
 | 嵌套限制    | **Panel 尽量只作一级容器，不建议 Panel 嵌套 Panel**；除非确实需要较大间距否则不嵌套                        |
 | 简要搜索免容器 | 搜索条件仅 1–2 个时，搜索与表格合并在一个容器——直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽，不再单独包 wd-panel |
+| 按钮归属    | 操作表格数据的按钮（新增/导出/批量删除等）放进**对应 DataGrid 的** **`#toolbar`** **插槽**；页面只有一个 DataGrid 时，所有操作按钮统一放进该表的 `#toolbar`。详见下方「操作按钮归属原则」 |
 | 表格固定高度  | 内页仅一个表格且**布局固定以该表格结尾**（不含弹出层等动态元素）时，开 DataGrid `height="fix"` 铺满剩余高、行区滚动     |
 
 布局骨架：
@@ -165,6 +166,84 @@ const result = await RequestAPI.request({
 
 > `wd-station` 之外不再包背景/间距容器；`height="fix"` 会贴合最近一个「有确定高度 / 可滚动的祖先容器」，配合 WdStation 内容区（flex:1 定高区）即可实现表格占满余高、不弹出纵向滚动条。
 
+#### 操作按钮归属原则
+
+对表格数据进行操作的按钮（新增、导出、批量删除、批量启用、导入等），**应当放进对应 DataGrid 的 `#toolbar` 插槽**，而不是悬浮在页面独立区域或外层 panel 标题栏。
+
+| 页面情形 | 按钮归属                                      |
+| ---- | ----------------------------------------- |
+| 页面对应操作的表格数量 | 按钮放进**被操作那张表**的 `#toolbar` 插槽            |
+| 页面仅一个 DataGrid | 页面**所有**操作按钮统一放进这张表的 `#toolbar` 插槽，不在外层另设按钮区 |
+| 操作不针对任何表格（如「返回上级」「页面级全局设置」） | 可放在页面外，不属于本原则约束                           |
+
+**为什么放 DataGrid 的 `#toolbar`**：
+
+- 按钮与表格视觉一体，用户一眼就知道按钮作用于这张表（「一致性」「状态可预期」原则，见 §0.4）；
+- 工具栏高度被 `height="fix"` 自动扣除，按钮多时不会撑破表格余高布局；
+- `#toolbar` 插槽暴露 `selection`（当前选中行）与 `list`（当前页数据），批量按钮可直接读取选中行，不必另写 ref 联动；
+- 右侧功能区（刷新 / 列设置 / 调整大小，见 §1.3）已由 DataGrid 内置 tools 承担，左侧 `#toolbar` 留给业务按钮，左右分工天然清晰。
+
+```html
+<!-- 页面只有一个 DataGrid：所有操作按钮都放进它的 #toolbar -->
+<wd-panel :show-header="false">
+  <wd-datagrid
+    ref="gridRef"
+    api="/api/users"
+    :active="true"
+    with-selection
+    :height="'fix'">
+    <!-- 左侧 #toolbar：全部业务操作按钮都在这里 -->
+    <template #toolbar="{ selection }">
+      <wd-drawer-button label="新增用户" title="新增用户" type="primary">
+        <wd-data-form mode="create" submit-api="/api/users/save"
+          :head-close-drawer="true" :head-refresh-datagrid="true" />
+      </wd-drawer-button>
+      <wd-confirm-button
+        api="/api/users/batch-delete"
+        :api-param="{ ids: selection.map(r => r.id) }"
+        confirm-text="确认删除选中的用户？删除后数据将无法恢复。"
+        type="danger"
+        :head-refresh-datagrid="true">批量删除</wd-confirm-button>
+      <el-button @click="handleExport">导出</el-button>
+    </template>
+    <el-table-column prop="name" label="名称" />
+  </wd-datagrid>
+</wd-panel>
+```
+
+```html
+<!-- 页面有多个 DataGrid：按钮放进「被操作那张表」的 #toolbar，各表互不干扰 -->
+<wd-panel :show-header="false">
+  <!-- 用户表：操作按钮只作用于用户表 -->
+  <wd-datagrid filter="user-table" api="/api/users" :active="true" with-selection>
+    <template #toolbar="{ selection }">
+      <wd-drawer-button label="新增用户" title="新增用户" type="primary" />
+      <wd-confirm-button api="/api/users/batch-delete"
+        :api-param="{ ids: selection.map(r => r.id) }"
+        confirm-text="确认删除选中的用户？" type="danger"
+        :head-refresh-datagrid="true">批量删除</wd-confirm-button>
+    </template>
+    <el-table-column prop="name" label="名称" />
+  </wd-datagrid>
+</wd-panel>
+
+<wd-panel :show-header="false" style="margin-top: 16px;">
+  <!-- 角色表：操作按钮只作用于角色表 -->
+  <wd-datagrid filter="role-table" api="/api/roles" :active="true" with-selection>
+    <template #toolbar="{ selection }">
+      <wd-drawer-button label="新增角色" title="新增角色" type="primary" />
+      <wd-confirm-button api="/api/roles/batch-delete"
+        :api-param="{ ids: selection.map(r => r.id) }"
+        confirm-text="确认删除选中的角色？" type="danger"
+        :head-refresh-datagrid="true">批量删除</wd-confirm-button>
+    </template>
+    <el-table-column prop="name" label="角色名" />
+  </wd-datagrid>
+</wd-panel>
+```
+
+> **注意插槽名**：DataGrid 只暴露一个自定义业务插槽 `#toolbar`（带 `selection` / `list` 两个插槽参数），**没有** `#toolbar-left` / `#toolbar-right` 插槽——左右分区由 DataGrid 内部自动处理（左区 = `#toolbar` 业务按钮，右区 = 内置 tools）。写 `#toolbar-left` 是无效的，内容不会渲染。
+
 ### 0.4 设计原则
 
 所有页面的交互决策以以下五条原则为裁判标准，当规则之间冲突时按此优先级取舍：
@@ -193,7 +272,7 @@ const result = await RequestAPI.request({
 | 查询触发      | 点击「查询」按钮触发；输入框支持回车触发                                                                                                                                                                                               |
 | 重置行为      | 重置 = 清空条件 + 立即重新查询                                                                                                                                                                                                 |
 | 条件记忆      | 列表页跳转详情再返回时，查询条件和页码保持（路由 keep-alive）                                                                                                                                                                               |
-| 工具栏布局     | 业务操作按钮（新增/导出/批量）放表格**左上角**；刷新、调整大小、列设置放**右上角**                                                                                                                                                                     |
+| 工具栏布局     | 业务操作按钮（新增/导出/批量）放表格**左上角**——即放进对应 DataGrid 的 `#toolbar` 插槽；页面只有一个 DataGrid 时所有操作按钮统一放进该表 `#toolbar`（归属原则见 §0.3「操作按钮归属原则」）；刷新、调整大小、列设置放**右上角**（DataGrid 内置 tools，无需手写）                                              |
 | 不可用操作隐藏   | 按行状态永远无法执行的操作**直接不渲染**（如状态=完成时不显示「编辑」），不用 disabled 占位；仅临时不可用（权限/处理中）才用禁用并说明原因                                                                                                                                      |
 | 行操作收纳     | 行内操作 ≤ 3 个直接展示；超过时，或列数多、横向空间紧张时，保留 1–2 个最高频 + 其余收进「更多」下拉                                                                                                                                                           |
 | 批量操作条     | 勾选后出现批量操作条，显示已选数量，提供「取消选择」；批量按钮禁用态要给出原因                                                                                                                                                                            |
@@ -223,13 +302,15 @@ const result = await RequestAPI.request({
     :columns="columns"
     selectable
   >
-    <!-- 左上角：业务操作按钮 -->
-    <template #toolbar-left>
+    <!-- 左上角 #toolbar：业务操作按钮（插槽暴露 selection 当前选中行） -->
+    <template #toolbar="{ selection }">
       <el-button type="primary" @click="handleAdd">新增用户</el-button>
       <el-button @click="handleExport">导出</el-button>
+      <el-button v-if="selection.length" link type="danger"
+        @click="handleBatchDelete(selection)">批量删除（已选 {{ selection.length }} 项）</el-button>
     </template>
 
-    <!-- 批量操作条 -->
+    <!-- 批量操作条（勾选后出现的悬浮条，与 #toolbar 是两个不同插槽） -->
     <template #batch-bar="{ selectedRows, clearSelection }">
       <div class="batch-bar">
         <span>已选 {{ selectedRows.length }} 项</span>
@@ -529,19 +610,34 @@ async function handleBatchDelete(rows: any[]) {
 | 加载失败     | 错误图标 + 失败原因    | 提供「重新加载」按钮       |
 | 无权限      | 403 图标 + 说明    | 引导联系管理员或返回       |
 
+#### 0.10.1 空状态文案规范（统一口径）
+
+**主文案命名规律**：`<暂无/未找到> + <业务对象名> + <数据/结果>`。
+
+| 场景 | 主文案（description） | 副文案（可选） | 主行动按钮 | 次行动按钮 |
+| --- | --- | --- | --- | --- |
+| 列表初始空（一次筛选都没点过） | 「暂无{业务对象}数据」（如「暂无用户数据」「暂无订单数据」） | 「点击右上角「新增」，开始创建第一条{业务对象}」 | 「立即新增{业务对象}」（type=primary） | — |
+| 搜索/筛选后空 | 「未找到匹配结果」 | 「试试调整搜索条件，或清空筛选」 | — | 「清空筛选条件」 |
+| 加载失败 | 「数据加载失败」 | 「网络或服务器异常，请稍后重试」 | 「重新加载」（type=primary） | — |
+| 无权限 | 「暂无访问权限」 | 「请联系管理员开通{模块名}权限」 | — | 「返回上一页」「联系管理员」 |
+
 ```html
 <wd-datagrid ref="gridRef" api="/api/users" :columns="columns">
   <!-- 空数据：区分初始空与筛选空 -->
   <template #empty>
-    <el-empty :description="hasSearchCondition ? '未找到符合条件的数据' : '暂无用户数据'">
+    <el-empty :description="hasSearchCondition ? '未找到匹配结果' : '暂无用户数据'">
+      <template v-if="hasSearchCondition" #description>
+        <span>未找到匹配结果</span>
+        <p style="font-size: 13px; color: var(--el-text-color-secondary)">试试调整搜索条件，或清空筛选</p>
+      </template>
       <el-button v-if="hasSearchCondition" @click="handleClearSearch">清空筛选条件</el-button>
-      <el-button v-else type="primary" @click="handleAdd">立即新增</el-button>
+      <el-button v-else type="primary" @click="handleAdd">立即新增用户</el-button>
     </el-empty>
   </template>
 
   <!-- 加载失败 -->
   <template #error="{ retry }">
-    <el-result icon="error" title="数据加载失败" sub-title="网络异常，请检查网络后重试">
+    <el-result icon="error" title="数据加载失败" sub-title="网络或服务器异常，请稍后重试">
       <template #extra>
         <el-button type="primary" @click="retry">重新加载</el-button>
       </template>
@@ -549,6 +645,12 @@ async function handleBatchDelete(rows: any[]) {
   </template>
 </wd-datagrid>
 ```
+
+> **规范要点**：
+> - **主文案必须点明业务对象**（如「暂无用户数据」而非空泛的「暂无数据」），用户一眼知道在看哪个模块的空态。
+> - **副文案用灰色小字**（`--el-text-color-secondary`），字号 13px，不要喧宾夺主。
+> - **按钮顺序**：主行动按钮 `type="primary"` 放左侧，次行动按钮放右侧（默认 type）；只有一个按钮时不强制居右。
+> - **插画统一**：列表空态用 `el-empty` 默认插画，不要各页面自行上传自定义插画；只有品牌化页面才允许换图。
 
 ### 0.11 加载模式规范
 
