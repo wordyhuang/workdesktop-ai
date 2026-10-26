@@ -12,7 +12,9 @@
 
 ## 本项目的初衷是想让AI在做前端设计的时候拥有更加可控，更加稳定的输出结果。
 
-> 如果你是使用AI来构建前端，你只需要在开始构建时加上提示词“使用workdesktop-ai组件库进行构建”即可。
+如果你是使用AI来构建前端，请在构建时加上此提示词：
+
+> 使用 workdesktop-ai 组件库进行构建。开工前先读随包的 node_modules/workdesktop-ai/ai-router.md 按场景定位 scenarios/ 与 ai-api/，组件用 wd- 前缀，基础控件用 Element Plus，页面按“统计面板+搜索面板+表格面板”三段式布局，搜索用 wd-search-panel（默认插槽+more 插槽，head-refresh-datagrid 声明式刷新）。
 
 <br />
 

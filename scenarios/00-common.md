@@ -1,11 +1,13 @@
 # 通用页面规范
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-17\
-> **当前版本**：V\_1.2\
+> **最后修改时间**：2026-10-19\
+> **当前版本**：V\_1.4\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：跨场景通用编码约定（布局/交互/反馈/按钮选型）\
-> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
+> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.24）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
+>
+> **版本变更**：V_1.3 → V_1.4：新增「页面跳转原则」——非必要不做直接跳转，新内容展示优先用 `wd-drawer-button` 抽屉完成；确需独立工作区时用 `wd-station` 联动（`content-mode="tabs"` + `openTab` / `v-model:open-tabs` / `v-model:active-menu`）打开新标签页；非常不建议 `window.open` / `target="_blank"` 新开浏览器窗口或当前页直接跳转。
 
 ### 0.1 页面介绍与注意事项
 
@@ -116,6 +118,7 @@ const result = await RequestAPI.request({
 | 面板标题    | **仅一个 panel、或仅「搜索+表格」情形：不使用 title（`show-header=false`）**；多逻辑时才用 title        |
 | 容器组件    | 优先使用 wd-panel 无标题模式；确有必要才用带标题模式                                              |
 | 嵌套限制    | **Panel 尽量只作一级容器，不建议 Panel 嵌套 Panel**；除非确实需要较大间距否则不嵌套                        |
+| 搜索面板容器  | 多条件搜索（≥3 个）时，`wd-search-panel` **单独占用一个 `wd-panel`**（`show-header=false`），不再嵌套在其他外层容器内；搜索面板与表格面板相邻排列，结构清晰。仅 1–2 个条件才走「简要搜索免容器」 |
 | 简要搜索免容器 | 搜索条件仅 1–2 个时，搜索与表格合并在一个容器——直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽，不再单独包 wd-panel |
 | 按钮归属    | 操作表格数据的按钮（新增/导出/批量删除等）放进**对应 DataGrid 的** **`#toolbar`** **插槽**；页面只有一个 DataGrid 时，所有操作按钮统一放进该表的 `#toolbar`。详见下方「操作按钮归属原则」 |
 | 表格固定高度  | 内页仅一个表格且**布局固定以该表格结尾**（不含弹出层等动态元素）时，开 DataGrid `height="fix"` 铺满剩余高、行区滚动     |
@@ -154,10 +157,35 @@ const result = await RequestAPI.request({
     <el-row>...</el-row>
   </wd-panel>
 
-  <!-- 一级容器二：搜索 + 表格（仅搜索+表格时可不加 title），表格垫底开 height="fix" -->
-  <wd-panel :show-header="false">
-    <wd-search-panel ...>...</wd-search-panel>
-    <wd-datagrid api="/api/users" :active="true" :height="'fix'">
+  <!-- 一级容器二：多条件搜索单独一个 panel（>=3 个搜索条件时） -->
+  <wd-panel :show-header="false" style="margin-top: 16px;">
+    <wd-search-panel :head-refresh-datagrid="gridRef">
+      <!-- 常用/重要条件：默认插槽，一行外露 -->
+      <wd-search-item label="名称"><el-input v-model="q.name" /></wd-search-item>
+      <wd-search-item label="状态">
+        <el-select v-model="q.status" clearable>
+          <el-option label="全部" value="" />
+          <el-option label="启用" value="1" />
+          <el-option label="停用" value="0" />
+        </el-select>
+      </wd-search-item>
+      <!-- 不常用/次要条件：#more 插槽，默认收起，点展开才显示 -->
+      <template #more>
+        <wd-search-item label="创建时间">
+          <el-date-picker v-model="q.createRange" type="daterange" />
+        </wd-search-item>
+        <wd-search-item label="创建人"><el-input v-model="q.creator" /></wd-search-item>
+      </template>
+    </wd-search-panel>
+  </wd-panel>
+
+  <!-- 一级容器三：表格（与搜索面板相邻，表格垫底开 height="fix"） -->
+  <wd-panel :show-header="false" style="margin-top: 16px;">
+    <wd-datagrid
+      ref="gridRef"
+      api="/api/users"
+      :active="true"
+      :height="'fix'">
       ...
     </wd-datagrid>
   </wd-panel>
@@ -262,15 +290,17 @@ const result = await RequestAPI.request({
 
 | 规则        | 要求                                                                                                                                                                                                                 |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 高频条件外露    | 常用筛选条件直接展示，默认 ≤ 1 行（3-4 个）                                                                                                                                                                                         |
-| 低频条件折叠    | 超过一行的条件收进「展开/收起」                                                                                                                                                                                                   |
+| 搜索面板组件选型  | 多条件搜索（≥3 个）一律用 `wd-search-panel` 包裹，**不要**手写 `<el-form>` + 自拼按钮；它自带「搜索 / 重置 / 展开收起」操作列（`with-actions` 默认 true），不需要额外添加按钮 |
+| 常用条件外露    | 常用/重要的搜索条件放 `wd-search-panel` **默认插槽**（一行外露，≤ 3–4 个）                                                                                                                                                          |
+| 低频条件折叠    | 不常用/次要的搜索条件放 `wd-search-panel` 的 **`#more` 插槽**，默认收起，点「展开」滑出；超过一行的条件自动进入折叠态                                                                                                             |
+| 声明式联动刷新   | `wd-search-panel` 通过 `:head-refresh-datagrid="gridRef"` 声明式联动——点「搜索」自动带参刷新目标 DataGrid（重置到第一页）、点「重置」自动清空条件并重查；**不需要手写 `@search` 事件 / `@reset` 事件 / `searchParams` 双向绑定** |
 | 简要搜索免容器   | 仅 1–2 个搜索条件时，可不包 wd-panel，直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽（搜索与表格一体，少一层容器，见下方示例）                                                                                                                                  |
 | 统计口径解释    | 页面/指标/合计行中出现的统计数据，**紧接标签文字后用** **`wd-tips type="word"`** **加问号图标**，悬停说明计算口径与包含范围（例：数量合计 = 已审核行数量总和，不含草稿；金额合计 = 含税金额）                                                                                               |
 | 关键字段/操作解释 | 含义不直观的字段 label 旁用 `wd-form-item :tip="说明文字"`（表单内）或 `wd-tips type="word"`（详情页原生 item label）；操作区域的标题/状态标签旁用 `wd-tips type="word"` 说明含义（按钮本体 tooltip 用 TipsButton）                                                    |
 | 选项形态选型    | 选项数量少时（单选 ≤ 6 个 / 多选 ≤ 6 个，选项文案较短），用按钮形态的列表组件 `wd-radio-list` / `wd-checkbox-list`（开 `buttonStyle`）——选项一目了然、少一次点击；选项多、文案长或需搜索时再用 select                                                                            |
 | 列多优化      | 大列表列多时按下述策略降列数 + 省宽度 + 提可读：唯一标识列固定宽 + `show-overflow-tooltip`；短状态/分类用 Tag 与名称合并成一列；低频操作收进「更多」下拉；备注列用 wd-tips + 固定窄宽；维护者用「时间icon+姓名」悬停显时间；长内容列固定宽 + 悬停看全文；仍放不下再考虑默认 list 卡片（需 card-item 插槽 + modeSwitch）。完整规范见 §1.9 |
-| 查询触发      | 点击「查询」按钮触发；输入框支持回车触发                                                                                                                                                                                               |
-| 重置行为      | 重置 = 清空条件 + 立即重新查询                                                                                                                                                                                                 |
+| 查询触发      | 点击「查询」按钮触发；输入框支持回车触发（`wd-search-panel` 内置 el-form 提交处理）                                                                                                                                                              |
+| 重置行为      | 重置 = 清空条件 + 立即重新查询（`wd-search-panel` 内置逻辑，调用 `resetSearchDataGrid`）                                                                                                                                                      |
 | 条件记忆      | 列表页跳转详情再返回时，查询条件和页码保持（路由 keep-alive）                                                                                                                                                                               |
 | 工具栏布局     | 业务操作按钮（新增/导出/批量）放表格**左上角**——即放进对应 DataGrid 的 `#toolbar` 插槽；页面只有一个 DataGrid 时所有操作按钮统一放进该表 `#toolbar`（归属原则见 §0.3「操作按钮归属原则」）；刷新、调整大小、列设置放**右上角**（DataGrid 内置 tools，无需手写）                                              |
 | 不可用操作隐藏   | 按行状态永远无法执行的操作**直接不渲染**（如状态=完成时不显示「编辑」），不用 disabled 占位；仅临时不可用（权限/处理中）才用禁用并说明原因                                                                                                                                      |
@@ -280,17 +310,41 @@ const result = await RequestAPI.request({
 | 行点击       | 整行点击不触发跳转（防误触），跳转入口收敛到名称列链接或「查看」按钮                                                                                                                                                                                 |
 | 分页        | 显示总数和每页条数选择（10/20/50/100）；切换每页条数后回到第一页                                                                                                                                                                             |
 
-标准代码示例：
+标准代码示例（多条件搜索 ≥ 3 个）：
 
 ```html
-<!-- 容器一：搜索表单 -->
+<!-- 容器一：多条件搜索面板，单独一个 wd-panel，不嵌套在外层容器内 -->
 <wd-panel :show-header="false" style="margin-bottom: 16px;">
-  <wd-search-panel
-    :fields="searchFields"
-    collapsible
-    @search="handleSearch"
-    @reset="handleReset"
-  />
+  <!-- 常用/重要条件放默认插槽；不常用/次要条件放 #more 插槽；
+       通过 head-refresh-datagrid 声明式联动下方 DataGrid，自动带参刷新 -->
+  <wd-search-panel :head-refresh-datagrid="gridRef">
+    <!-- 常用条件：一行外露 -->
+    <wd-search-item label="名称" prop="name">
+      <el-input v-model="q.name" placeholder="请输入名称" clearable />
+    </wd-search-item>
+    <wd-search-item label="状态" prop="status">
+      <el-select v-model="q.status" placeholder="全部" clearable>
+        <el-option label="启用" value="1" />
+        <el-option label="停用" value="0" />
+      </el-select>
+    </wd-search-item>
+    <wd-search-item label="分类" prop="categoryId">
+      <el-select v-model="q.categoryId" placeholder="全部" clearable filterable>
+        <el-option v-for="c in categoryOptions" :key="c.value" :label="c.text" :value="c.value" />
+      </el-select>
+    </wd-search-item>
+
+    <!-- 不常用条件：#more 插槽，默认收起，点「展开」滑出 -->
+    <template #more>
+      <wd-search-item label="创建时间" prop="createRange">
+        <el-date-picker v-model="q.createRange" type="daterange"
+          range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" />
+      </wd-search-item>
+      <wd-search-item label="创建人" prop="creator">
+        <el-input v-model="q.creator" placeholder="请输入创建人" clearable />
+      </wd-search-item>
+    </template>
+  </wd-search-panel>
 </wd-panel>
 
 <!-- 容器二：数据表格 -->
@@ -298,8 +352,8 @@ const result = await RequestAPI.request({
   <wd-datagrid
     ref="gridRef"
     api="/api/users"
-    :search-params="searchParams"
-    :columns="columns"
+    :active="true"
+    :height="'fix'"
     selectable
   >
     <!-- 左上角 #toolbar：业务操作按钮（插槽暴露 selection 当前选中行） -->
@@ -321,7 +375,6 @@ const result = await RequestAPI.request({
 
     <!-- 行操作：按状态渲染高频按钮 + 更多收纳低频操作 -->
     <template #operation="{ row }">
-      <!-- 状态=完成的行不渲染编辑：永久不可用操作不占位 -->
       <el-button
         v-if="row.status !== 'completed'"
         link
@@ -347,7 +400,18 @@ const result = await RequestAPI.request({
     </template>
   </wd-datagrid>
 </wd-panel>
+
+<script setup>
+// 说明：
+// - q 的字段会自动被 wd-search-panel 收集为请求参数（点「搜索」时随 head-refresh-datagrid 一起发出）
+// - 不需要手写 @search / @reset 事件，也不需要维护 searchParams 与 DataGrid 的双向同步
+// - wd-search-panel 内置「搜索 / 重置 / 展开 / 收起」按钮，with-actions 默认开启，不要额外添加
+const q = ref({ name: '', status: '', categoryId: '', createRange: null, creator: '' })
+const gridRef = ref()
+</script>
 ```
+
+> 其他用法（`search-text` / `reset-text` / `expand-text` / `action-width` / `filter` 多表联动 / `default-expand` 等）详见 docs 站 `WdSearchPanel` 组件文档。
 
 **简要搜索（仅 1–2 个条件）——免 wd-panel，直接放进 DataGrid 的** **`#toolbar`** **插槽**：搜索与表格合并在一个容器内，搜索项在工具栏左区，与表格一体，页面少一层容器更紧凑。
 
@@ -483,6 +547,37 @@ async function handleSubmit() {
 - 数字、金额、百分比用 InputNumber，金额自动千分位格式化
 
 ### 0.7 弹窗与抽屉选型规范
+
+**页面跳转原则——非必要不做直接跳转**：
+
+| 展示方式 | 优先级 | 适用情形 | 说明 |
+| --- | --- | --- | --- |
+| Drawer 弹层 | **首选** | 非必要不跳转——新增/编辑/详情等新内容展示，优先在当前页以抽屉完成 | 优先用 `wd-drawer-button`（触发按钮 + 弹层一体：默认插槽内嵌 DataForm、`url` 模式 iframe 内嵌页面；关闭后 `head-refresh-datagrid` 声明式刷新列表）——保留列表上下文，操作完即回，搜索条件与页码不丢 |
+| 新标签页 | 次选 | 内容确实需要独立工作区（复杂表单、需长时间停留或多页面并排对照） | 用 `wd-station` 的联动能力打开：`content-mode="tabs"` 下 ref 调用 `openTab({ key, title, path })`（同 key 去重并激活），或受控绑定 `v-model:open-tabs` / `v-model:active-menu` 由菜单与路由自动联动成标签页 |
+| 浏览器级跳转 | 强烈不建议 | —— | **非常不建议** `window.open` / `target="_blank"` 打开新浏览器窗口，或当前页面直接跳转——丢失上下文、多窗口难管理；仅外部系统链接等确有必要时例外（用 `wd-route-button`） |
+
+代码示例：
+
+```html
+<!-- 首选：抽屉展示新内容（wd-drawer-button，关闭后声明式刷新列表） -->
+<el-table-column label="操作">
+  <template #default="{ row }">
+    <wd-drawer-button label="查看详情" title="用户详情" :data="row" link drawer-size="720px">
+      <!-- 详情 / 表单内容 -->
+    </wd-drawer-button>
+  </template>
+</el-table-column>
+
+<!-- 次选：Station tabs 联动打开新标签页（同 key 去重并激活） -->
+<el-button
+  link
+  type="primary"
+  @click="stationRef?.openTab({ key: `user-detail-${row.id}`, title: `用户详情 - ${row.name}`, path: '/user/detail' })">
+  在新标签页打开
+</el-button>
+```
+
+> 下方选型表中的「独立页面（路由跳转）」在 Station 应用（tabs 模式）内即指**新标签页打开**——路由 push 自动成标签，而非浏览器窗口级跳转。
 
 | 场景                 | 容器                            | 理由                       |
 | ------------------ | ----------------------------- | ------------------------ |
@@ -718,6 +813,7 @@ WorkDesktop 提供 8 个按钮组件，全部继承自 TipsButton（自带 `tips
 │   ├── 当前窗口跳转 → RouteButton（routeName/routePath + params/query）
 │   └── 新窗口打开     → RouteButton（target="_blank"）
 │   ※ 不发请求，纯路由跳转；无 vue-router 环境时自动退化为 window.location
+│   ⚠ 跳转受 §0.7 页面跳转原则约束——非必要不做直接跳转，新内容展示优先 Drawer 弹层 / Station 新标签页；仅外部系统链接等确有必要时才用
 │
 ├── 要请求后端接口？
 │   ├── 点击直接发请求（高频、低风险操作）
@@ -782,7 +878,7 @@ WorkDesktop 提供 8 个按钮组件，全部继承自 TipsButton（自带 `tips
 
 ##### RouteButton —— 路由跳转
 
-纯路由跳转，**不发请求**。适用：跳到详情页、跳转带参数到另一个业务页、新窗口打开日志/审计记录。支持 `target="_blank"` 新窗口打开，也支持无 vue-router 环境（自动退化为 `window.location`）。
+纯路由跳转，**不发请求**。适用：跳到详情页、跳转带参数到另一个业务页、新窗口打开日志/审计记录（受 §0.7 页面跳转原则约束——非必要不做直接跳转，仅外部系统链接等确有必要时使用）。支持 `target="_blank"` 新窗口打开，也支持无 vue-router 环境（自动退化为 `window.location`）。
 
 ```html
 <!-- 行内"查看"按钮：跳到独立详情页（保留浏览器地址栏 + 可分享链接） -->

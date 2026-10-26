@@ -59,6 +59,7 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 | opened | `boolean` | true | 展开状态（配合 collapsible，支持 v-model:opened） |
 | shadow | `'always' \| 'hover' \| 'never'` | 'hover' | 阴影策略：常驻 / 悬停显示 / 无阴影 |
 | border | `boolean` | true | 是否显示外边框（嵌套在卡片/弹层等容器内时可关闭） |
+| descriptionExpandable | `boolean` | false | 描述展示模式：false=直接显示在标题旁；true=标题下出现虚线，鼠标悬停标题时才显示描述 |
 
 ### Events
 

@@ -108,6 +108,25 @@
         <p>不传 title（也不使用 title 插槽）时不渲染标题栏，主体直接从面板边缘开始。</p>
       </wd-panel>
     </demo-block>
+
+    <demo-block
+      title="描述折叠展示"
+      desc="descriptionExpandable 控制描述展示：默认显示展示（描述直接显示在标题旁）；设为 true 时标题下出现虚线，鼠标悬停标题才显示描述"
+      :code="code6"
+    >
+      <wd-panel title="显示展示（默认）" description="description 直接显示在标题旁">
+        <p>descriptionExpandable 未设（false）：描述常驻显示，保持默认表现。</p>
+      </wd-panel>
+
+      <wd-panel
+        title="折叠展示"
+        description="鼠标悬停标题才显示这段描述"
+        description-expandable
+        style="margin-bottom: 0"
+      >
+        <p>descriptionExpandable=true：描述默认隐藏，标题下出现虚线下划线，鼠标移到标题上时才显示描述。</p>
+      </wd-panel>
+    </demo-block>
   </div>
 </template>
 
@@ -166,6 +185,16 @@ const code5 = `<!-- 默认带边框 -->
 <!-- 不传 title：不渲染标题栏 -->
 <wd-panel>
   <p>不传 title（也不使用 title 插槽）时不渲染标题栏。</p>
+</wd-panel>`
+
+const code6 = `<!-- 默认：描述直接显示 -->
+<wd-panel title="显示展示（默认）" description="description 直接显示在标题旁">
+  <p>主体内容</p>
+</wd-panel>
+
+<!-- 折叠展示：标题下虚线，悬停标题才显示 -->
+<wd-panel title="折叠展示" description="鼠标悬停标题才显示这段描述" description-expandable>
+  <p>主体内容</p>
 </wd-panel>`
 
 const form = reactive({ name: '', dept: '', email: '' })

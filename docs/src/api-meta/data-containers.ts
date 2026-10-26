@@ -168,7 +168,8 @@ export const containerData: ComponentMeta[] = [
       { name: 'collapsible', type: 'boolean', default: 'false', desc: '是否可折叠（点击标题区收起/展开主体与底部）' },
       { name: 'opened', type: 'boolean', default: 'true', desc: '展开状态（配合 collapsible，支持 v-model:opened）' },
       { name: 'shadow', type: "'always' | 'hover' | 'never'", default: "'hover'", desc: '阴影策略：常驻 / 悬停显示 / 无阴影' },
-      { name: 'border', type: 'boolean', default: 'true', desc: '是否显示外边框（嵌套在卡片/弹层等容器内时可关闭）' }
+      { name: 'border', type: 'boolean', default: 'true', desc: '是否显示外边框（嵌套在卡片/弹层等容器内时可关闭）' },
+      { name: 'descriptionExpandable', type: 'boolean', default: 'false', desc: '描述展示模式：false=直接显示在标题旁；true=标题下出现虚线，鼠标悬停标题时才显示描述' }
     ],
     emits: [
       { name: 'update:opened', payload: 'value: boolean', desc: '展开状态变化（v-model:opened）' },

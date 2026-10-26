@@ -12,8 +12,15 @@
     >
       <div class="wd-panel__header-main">
         <slot name="title">
-          <span class="wd-panel__title">{{ title }}</span>
-          <span v-if="description" class="wd-panel__description">{{ description }}</span>
+          <span
+            class="wd-panel__title"
+            :class="{ 'is-dashed': descriptionExpandable }"
+          >{{ title }}</span>
+          <span
+            v-if="description"
+            class="wd-panel__description"
+            :class="{ 'is-folding': descriptionExpandable }"
+          >{{ description }}</span>
         </slot>
       </div>
       <div v-if="$slots.extra || collapsible" class="wd-panel__header-extra" @click.stop>
@@ -67,7 +74,9 @@ const props = defineProps({
     default: 'hover'
   },
   /** 是否显示外边框（嵌套在卡片/弹层等容器内时可关闭） */
-  border: { type: Boolean, default: true }
+  border: { type: Boolean, default: true },
+  /** description 展示模式：false=显示展示（默认，描述直接显示在标题旁）；true=折叠展示（标题下出现虚线，鼠标悬停标题时才显示描述） */
+  descriptionExpandable: { type: Boolean, default: false }
 })
 
 const emit = defineEmits<{
@@ -184,6 +193,18 @@ function onHeaderClick() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* descriptionExpandable=true：标题下出现虚线下划线 */
+.wd-panel__title.is-dashed {
+  border-bottom: 1px dashed var(--wd-text-color-secondary, #909399);
+  padding-bottom: 1px;
+}
+/* descriptionExpandable=true：描述默认隐藏，鼠标悬停标题时才显示 */
+.wd-panel__description.is-folding {
+  display: none;
+}
+.wd-panel__header:hover .wd-panel__description.is-folding {
+  display: inline-block;
 }
 .wd-panel__header-extra {
   display: flex;
