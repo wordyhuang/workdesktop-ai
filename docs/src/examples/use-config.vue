@@ -306,7 +306,7 @@ const configItems = [
   { path: 'response.exception.tipsMode', default: "'messagebox'", desc: '网络异常提示呈现方式，showTips 默认 true，弹框标题默认「网络异常」' },
   { path: 'page.pager.pageSize', default: '20', desc: 'DataGrid 默认每页条数' },
   { path: 'page.componentDefault', default: '{}', desc: '按组件类型设置 props 默认值（如 WdRequester.method / WdDataGrid.withPager）' },
-  { path: 'theme.skin', default: "'default'", desc: '预设皮肤名（10 款）：default/fashion/business/tech/cyberpunk/chinese/flat/cool/governance/apple' },
+  { path: 'theme.skin', default: "'default'", desc: '预设皮肤名（11 款）：default/fashion/business/tech/cyberpunk/chinese/flat/cool/governance/apple/arco' },
   { path: 'theme.colors', default: '{}', desc: '主题色令牌覆盖（自动应用到 :root CSS 变量），优先级高于皮肤预设' },
   { path: 'theme.cssVars', default: '{}', desc: 'CSS 变量覆盖（--wd-* / --el-*），优先级 cssVars > colors > skin' }
 ]
@@ -426,7 +426,7 @@ const configItems = [
   {
     path: 'theme.skin',
     default: "'default'",
-    desc: '预设皮肤名（10 款）：default/fashion/business/tech/cyberpunk/chinese/flat/cool/governance/apple'
+    desc: '预设皮肤名（11 款）：default/fashion/business/tech/cyberpunk/chinese/flat/cool/governance/apple/arco'
   },
   {
     path: 'theme.colors',

@@ -14,9 +14,9 @@ describe('skins 预设皮肤库', () => {
     vi.restoreAllMocks()
   })
 
-  it('内置 10 套皮肤，结构完整（key/label/desc/theme）', () => {
+  it('内置 11 套皮肤，结构完整（key/label/desc/theme）', () => {
     const skins = listSkins()
-    expect(skins).toHaveLength(10)
+    expect(skins).toHaveLength(11)
     expect(Object.keys(SKIN_PRESETS)).toEqual([
       'default',
       'fashion',
@@ -27,7 +27,8 @@ describe('skins 预设皮肤库', () => {
       'flat',
       'cool',
       'governance',
-      'apple'
+      'apple',
+      'arco'
     ])
     for (const skin of skins) {
       expect(skin.key).toBeTruthy()
@@ -458,6 +459,71 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('color: #fff')
     expect(css).toContain('.wd-station__menu .el-menu-item.is-active:hover {')
     expect(css).toContain('background: var(--el-color-primary-dark-2)')
+  })
+
+  it('arco 字节风：Arcoblue 蓝 + 字节灰阶（对比度压深）+ 小圆角 + 白卡细边', () => {
+    applyTheme({ skin: 'arco' })
+    const css = themeCss()
+    expect(css).toContain('--wd-color-primary: #165dff')
+    expect(css).toContain('--el-color-primary: #165dff')
+    expect(css).toContain('--wd-color-success: #00b42a')
+    expect(css).toContain('--wd-color-warning: #ff7d00')
+    expect(css).toContain('--wd-color-danger: #f53f3f')
+    expect(css).toContain('--wd-color-info: #86909c')
+    // 字节灰阶：页面底 gray-1、正文 gray-9/8、secondary 与 placeholder 压深至 WCAG AA
+    expect(css).toContain('--wd-bg-color-page: #f7f8fa')
+    expect(css).toContain('--wd-text-color-primary: #1d2129')
+    expect(css).toContain('--wd-text-color-regular: #272e3b')
+    expect(css).toContain('--wd-text-color-secondary: #5c6b7a')
+    expect(css).toContain('--wd-text-color-placeholder: #65707f')
+    expect(css).toContain('--wd-border-color: #e5e6eb')
+    expect(css).toContain('--wd-border-color-light: #f2f3f5')
+    // 小圆角是 Arco 识别特征（按钮/控件 2px）
+    expect(css).toContain('--wd-radius-base: 2px')
+    expect(css).toContain('--wd-radius-small: 2px')
+    // 主色按 EP 公式推导色阶（混白 30% → #5c8eff，混黑 20% → #124acc）
+    expect(css).toContain('--el-color-primary-light-3: #5c8eff')
+    expect(css).toContain('--el-color-primary-dark-2: #124acc')
+  })
+
+  it('arco 组件级：白卡 4px 小圆角 + 字节灰细边 + 极轻阴影 + 标识条归零', () => {
+    applyTheme({ skin: 'arco' })
+    const css = themeCss()
+    expect(css).toContain('--wd-panel-radius: 4px')
+    expect(css).toContain('--wd-panel-border-color: #e5e6eb')
+    expect(css).toContain('--wd-panel-shadow-sm: 0 1px 2px rgba(29, 33, 41, 0.06)')
+    expect(css).toContain('--wd-panel-title-bar-width: 0')
+    expect(css).toContain('--wd-datagrid-radius: 4px')
+    expect(css).toContain('--wd-datagrid-border-color: #e5e6eb')
+    expect(css).toContain('--wd-editable-grid-border-color: #e5e6eb')
+  })
+
+  it('arco cssRules：hover 变浅 + 灰底无边框默认按钮 + 浅蓝标签 + 浅蓝菜单选中 + 表头灰底', () => {
+    applyTheme({ skin: 'arco' })
+    const css = themeCss()
+    // 主按钮：Arco 悬停变浅（light-3）、按下更深（dark-2），与苹果相反
+    expect(css).toContain('.el-button--primary {')
+    expect(css).toContain('--el-button-hover-bg-color: var(--el-color-primary-light-3)')
+    expect(css).toContain('--el-button-active-bg-color: var(--el-color-primary-dark-2)')
+    // 默认按钮（secondary）：灰底无边框，hover 加深一级灰
+    expect(css).toContain(".el-button:not([class*='el-button--']):not(.is-text):not(.is-link) {")
+    expect(css).toContain('--el-button-bg-color: #f2f3f5')
+    expect(css).toContain('--el-button-hover-bg-color: #e5e6eb')
+    // 标签：primary 浅蓝底蓝字无边框（底色取 light-9 随主色覆盖联动）
+    expect(css).toContain('.el-tag.el-tag--primary {')
+    expect(css).toContain('--el-tag-bg-color: var(--el-color-primary-light-9)')
+    expect(css).toContain('--el-tag-text-color: var(--el-color-primary)')
+    // 菜单：hover 浅灰（作用域限定 Station，避免 :root 注入被 EP 元素规则盖住）+ 选中浅蓝底蓝字无左条
+    expect(css).toContain('.wd-station__menu,')
+    expect(css).toContain('--el-menu-hover-bg-color: #f2f3f5')
+    expect(css).toContain('.wd-station__menu .el-menu-item.is-active {')
+    expect(css).toContain('background: var(--el-color-primary-light-9)')
+    expect(css).toContain('color: var(--el-color-primary)')
+    // 表格：表头浅灰底 + 中灰字 + 细边（同选择器级覆盖）
+    expect(css).toContain('.el-table {')
+    expect(css).toContain('--el-table-header-bg-color: #f7f8fa')
+    expect(css).toContain('--el-table-header-text-color: #4e5969')
+    expect(css).toContain('--el-table-border-color: #e5e6eb')
   })
 
   it('tech 深空霓虹青：深空蓝底 + 青色描边辉光 + 青蓝标识条 + 导航区压黑 + El 深色联动', () => {

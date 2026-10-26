@@ -2,7 +2,7 @@
   <div class="example-page">
     <demo-block
       title="预设皮肤一键切换 theme.skin"
-      desc="theme.skin 一键套用预设皮肤（10 款）；setGlobalConfig({ theme: { skin } }) 即时切换并写入 :root CSS 变量，resetConfig() 恢复默认。下方预览区的按钮 / 标签 / 背景均随皮肤联动"
+      desc="theme.skin 一键套用预设皮肤（11 款）；setGlobalConfig({ theme: { skin } }) 即时切换并写入 :root CSS 变量，resetConfig() 恢复默认。下方预览区的按钮 / 标签 / 背景均随皮肤联动"
       :code="code1"
     >
       <div>
@@ -227,8 +227,8 @@ onUnmounted(() => {
   restoreSiteConfig()
 })
 
-const code1 = `// theme.skin 一键套用预设皮肤（10 款）：
-// default / fashion / business / tech / cyberpunk / chinese / flat / cool / governance / apple
+const code1 = `// theme.skin 一键套用预设皮肤（11 款）：
+// default / fashion / business / tech / cyberpunk / chinese / flat / cool / governance / apple / arco
 
 // 方式一：install 时传入
 createApp(App).use(WorkDesktop, { theme: { skin: 'tech' } })

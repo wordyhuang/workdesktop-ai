@@ -2,11 +2,11 @@
 
 # 自定义皮肤
 
-10 套预设皮肤一键切换（theme.skin），并可在皮肤基础上用 colors 语义令牌 / cssVars CSS 变量继续覆盖（优先级 cssVars > colors > skin）；listSkins() / getSkinPreset() 查询皮肤清单
+11 套预设皮肤一键切换（theme.skin），并可在皮肤基础上用 colors 语义令牌 / cssVars CSS 变量继续覆盖（优先级 cssVars > colors > skin）；listSkins() / getSkinPreset() 查询皮肤清单
 
 ### 概述
 
-WorkDesktop 内置 10 套预设皮肤（默认 / 时尚 / 商务 / 科技 / 赛博朋克 / 中国风 / 扁平 / 酷炫 / 政务 / 苹果），通过 `theme.skin` 一键套用整套主题；每套皮肤是一组 `colors`（语义令牌）+ `cssVars`（CSS 变量）的组合，切换时由 applyTheme 统一写入 `:root` 上的 `--wd-*` 与 `--el-*` 变量，Element Plus 组件与库组件同步换肤。在皮肤基础上还可以用 `theme.colors`（语义令牌覆盖）与 `theme.cssVars`（CSS 变量覆盖）继续微调，优先级 **cssVars > colors > 皮肤预设**。
+WorkDesktop 内置 11 套预设皮肤（默认 / 时尚 / 商务 / 科技 / 赛博朋克 / 中国风 / 扁平 / 酷炫 / 政务 / 苹果 / 字节），通过 `theme.skin` 一键套用整套主题；每套皮肤是一组 `colors`（语义令牌）+ `cssVars`（CSS 变量）的组合，切换时由 applyTheme 统一写入 `:root` 上的 `--wd-*` 与 `--el-*` 变量，Element Plus 组件与库组件同步换肤。在皮肤基础上还可以用 `theme.colors`（语义令牌覆盖）与 `theme.cssVars`（CSS 变量覆盖）继续微调，优先级 **cssVars > colors > 皮肤预设**。
 
 ### 何时使用
 
@@ -29,7 +29,7 @@ WorkDesktop 内置 10 套预设皮肤（默认 / 时尚 / 商务 / 科技 / 赛�
 
 **问：有哪些预设皮肤可用？**
 
-共 10 套：default（默认）、fashion（时尚）、business（商务）、tech（科技）、cyberpunk（赛博朋克）、chinese（中国风）、flat（扁平）、cool（酷炫）、governance（政务）、apple（苹果）。调用 `listSkins()` 可拿到含中文名与风格描述的完整清单。
+共 11 套：default（默认）、fashion（时尚）、business（商务）、tech（科技）、cyberpunk（赛博朋克）、chinese（中国风）、flat（扁平）、cool（酷炫）、governance（政务）、apple（苹果）、arco（字节）。调用 `listSkins()` 可拿到含中文名与风格描述的完整清单。
 
 **问：如何在皮肤基础上只改主色？**
 
@@ -80,8 +80,8 @@ cssVars 生效。优先级 cssVars > colors > 皮肤预设；cssVars 是最终�
 
 引用：`theme.skin` / `SkinPreset.key` 的取值类型
 
-10 个联合字面量，与 SKIN_PRESETS 一一对应：
+11 个联合字面量，与 SKIN_PRESETS 一一对应：
 
 ```ts
-type SkinName = 'default' | 'fashion' | 'business' | 'tech' | 'cyberpunk' | 'chinese' | 'flat' | 'cool' | 'governance' | 'apple'
+type SkinName = 'default' | 'fashion' | 'business' | 'tech' | 'cyberpunk' | 'chinese' | 'flat' | 'cool' | 'governance' | 'apple' | 'arco'
 ```

@@ -10,6 +10,7 @@ import { flatSkin } from './flat'
 import { coolSkin } from './cool'
 import { governanceSkin } from './governance'
 import { appleSkin } from './apple'
+import { arcoSkin } from './arco'
 
 /**
  * 预设皮肤库（接入全局配置能力）
@@ -31,7 +32,8 @@ export const SKIN_PRESETS: Record<SkinName, SkinPreset> = {
   flat: flatSkin,
   cool: coolSkin,
   governance: governanceSkin,
-  apple: appleSkin
+  apple: appleSkin,
+  arco: arcoSkin
 }
 
 /** 查询皮肤预设；未传 key 或未知 key 返回 undefined（由调用方回退默认行为） */
