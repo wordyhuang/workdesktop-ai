@@ -103,6 +103,7 @@ export const layoutData: ComponentMeta[] = [
       { name: 'menus', type: 'array | string', default: '—', desc: '扁平菜单：按 groupKey / group 自动聚合分组，无组项归「默认」组；与 menuGroups 二选一' },
       { name: 'headerMode', type: "'nav' | 'title' | 'both'", default: "'nav'", desc: '顶栏中央：nav=分导台（多分组时显示，左侧随分组切换），title=系统标题（左侧展示全量分组菜单），both=并存（顶部显示分导台 + 左侧联动跟随激活分组，显示该分组一级菜单作 title 分组、二级平铺全量、二级含三级才折叠）' },
       { name: 'menuMode', type: "'side' | 'top' | 'none'", default: "'side'", desc: '菜单位置：side=左侧栏，top=顶部横排，none=不启用菜单' },
+      { name: 'menuAccordion', type: 'boolean', default: 'false', desc: '左侧菜单手风琴：true 时同时只展开一个子菜单（透传 el-menu unique-opened，仅 side 模式生效）' },
       { name: 'contentMode', type: "'page' | 'tabs'", default: "'page'", desc: '内容方式：page=单页，tabs=多标签页（affix 菜单为固定标签）' },
       { name: 'routerMode', type: "'auto' | 'router' | 'html'", default: "'auto'", desc: '路由模式：auto=检测到 vue-router 即用；router=点菜单 push + RouterView；html=仅抛事件 + 默认插槽' },
       { name: 'collapsible', type: 'boolean', default: 'true', desc: '显示折叠按钮（分导台左侧；side 为左右折叠图标，top 为向上折叠图标）' },

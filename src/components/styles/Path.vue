@@ -16,8 +16,9 @@
           :to="seg.path && hasRouter ? { path: seg.path } : undefined"
           @click="onSegmentClick(seg)"
         >
-          <el-icon v-if="resolveIcon(seg.icon)" class="wd-path__icon">
-            <component :is="resolveIcon(seg.icon)" />
+          <el-icon v-if="isIconFontClass(seg.icon)" class="wd-path__icon"><i :class="seg.icon" /></el-icon>
+          <el-icon v-else-if="resolveStationIcon(seg.icon)" class="wd-path__icon">
+            <component :is="resolveStationIcon(seg.icon)" />
           </el-icon>
           {{ seg.title }}
         </el-breadcrumb-item>
@@ -30,8 +31,9 @@
           :to="seg.path && hasRouter ? { path: seg.path } : undefined"
           @click="onSegmentClick(seg)"
         >
-          <el-icon v-if="resolveIcon(seg.icon)" class="wd-path__icon">
-            <component :is="resolveIcon(seg.icon)" />
+          <el-icon v-if="isIconFontClass(seg.icon)" class="wd-path__icon"><i :class="seg.icon" /></el-icon>
+          <el-icon v-else-if="resolveStationIcon(seg.icon)" class="wd-path__icon">
+            <component :is="resolveStationIcon(seg.icon)" />
           </el-icon>
           {{ seg.title }}
         </el-breadcrumb-item>
@@ -50,9 +52,9 @@ import {
   watch,
   type PropType
 } from 'vue'
-import * as ElIcons from '@element-plus/icons-vue'
 import { filterProp } from '../common/props'
 import { getStationMenuChain, subscribeStationChange } from '../../lib/core/station-linkage'
+import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 import type { PathItem } from '../layout/types'
 
 defineOptions({ name: 'WdPath' })
@@ -283,12 +285,6 @@ function unbindContainer() {
 /* ---------- 事件 ---------- */
 function onSegmentClick(seg: PathItem) {
   emit('item-click', seg)
-}
-
-function resolveIcon(icon: any) {
-  if (!icon) return null
-  if (typeof icon === 'string') return (ElIcons as any)[icon] || null
-  return icon
 }
 
 /* ---------- 生命周期：自动模式联动（Station 菜单链 + 路由 + 标题） ---------- */

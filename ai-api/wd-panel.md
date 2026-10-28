@@ -20,6 +20,9 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 
 - 标题区仅在传了 `title` 或使用了 `title` 插槽时才渲染；两者都不传时整个头部（含 description、extra）不显示。`description` 需配合 `title` 属性使用——使用 `title` 插槽自定义标题时，`description` 不再渲染，请把描述写进插槽内容里。
 - `opened` 只在 `collapsible` 开启后生效；未开启折叠时面板始终展开。
+- `descriptionAlign="right"` 时描述吸收标题右侧剩余空白贴到面板右端；与 `descriptionExpandable` 可叠加使用（悬停标题显示的描述同样靠右）。
+- `descriptionExpandable=true` 时描述以 0.24s 淡入 + 4px 滑入的入场动效出现（`right` 对齐时从右侧滑入），纯 CSS 实现；无需开关，如需关闭可在业务侧覆盖 `animation`。
+- `collapseHeight` 需配合 `collapsible` 使用：内容实际高度超过阈值时渲染完成后自动收起一次，用户可点击标题重新展开；后续内容变化不再重复触发自动折叠。
 - `extra` 插槽区域的点击事件已被拦截（`@click.stop`），点击里面的按钮不会误触面板的折叠/展开。
 - 折叠时主体（default）与底部（footer）会一并收起，展开带高度过渡动画；不要把需要常驻的操作只放在 footer 里。
 - 阴影选择建议：`hover`（默认）适合常规分区；`always` 适合需要突出的核心分区；`never` 仅保留描边，适合密集排列的次级分区。
@@ -59,7 +62,9 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 | opened | `boolean` | true | 展开状态（配合 collapsible，支持 v-model:opened） |
 | shadow | `'always' \| 'hover' \| 'never'` | 'hover' | 阴影策略：常驻 / 悬停显示 / 无阴影 |
 | border | `boolean` | true | 是否显示外边框（嵌套在卡片/弹层等容器内时可关闭） |
-| descriptionExpandable | `boolean` | false | 描述展示模式：false=直接显示在标题旁；true=标题下出现虚线，鼠标悬停标题时才显示描述 |
+| descriptionExpandable | `boolean` | false | 描述展示模式：false=直接显示在标题旁；true=标题下出现虚线，鼠标悬停标题时才以淡入动效显示描述 |
+| descriptionAlign | `'left' \| 'right'` | 'left' | 描述在标题右侧空白区的对齐方式：left=紧跟标题；right=吸收剩余空白贴到面板头部右端 |
+| collapseHeight | `number` | 0 | 内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时渲染完成后自动折叠；0=不自动折叠（完全撑开） |
 
 ### Events
 

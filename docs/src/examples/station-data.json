@@ -1,0 +1,105 @@
+{
+  "menuGroups": [
+    {
+      "key": "workspace",
+      "title": "工作区",
+      "icon": "Monitor",
+      "menus": [
+        { "title": "工作台", "path": "/work/dashboard", "icon": "Odometer", "affix": true },
+        {
+          "title": "我的任务",
+          "icon": "Tickets",
+          "children": [
+            { "title": "任务列表", "path": "/work/tasks" },
+            { "title": "任务日历", "path": "/work/calendar" }
+          ]
+        },
+        { "title": "消息中心", "path": "/work/messages", "icon": "Bell", "badge": 5 }
+      ]
+    },
+    {
+      "key": "system",
+      "title": "系统设置",
+      "icon": "Setting",
+      "menus": [
+        {
+          "title": "用户管理",
+          "icon": "User",
+          "children": [
+            { "title": "用户列表", "path": "/sys/user" },
+            { "title": "角色管理", "path": "/sys/role" }
+          ]
+        },
+        { "title": "系统参数", "path": "/sys/config", "icon": "Tools" }
+      ]
+    }
+  ],
+  "menuGroupsDeep": [
+    {
+      "key": "workspace",
+      "title": "工作区",
+      "icon": "Monitor",
+      "menus": [
+        { "title": "工作台", "path": "/work/dashboard", "icon": "Odometer", "affix": true },
+        {
+          "title": "我的任务",
+          "icon": "Tickets",
+          "children": [
+            {
+              "title": "任务看板",
+              "children": [
+                { "title": "进行中", "path": "/work/board/active" },
+                { "title": "已完成", "path": "/work/board/done" }
+              ]
+            },
+            { "title": "任务列表", "path": "/work/tasks" }
+          ]
+        },
+        { "title": "消息中心", "path": "/work/messages", "icon": "Bell", "badge": 5 }
+      ]
+    },
+    {
+      "key": "system",
+      "title": "系统设置",
+      "icon": "Setting",
+      "menus": [
+        {
+          "title": "用户管理",
+          "icon": "User",
+          "children": [
+            { "title": "用户列表", "path": "/sys/user" },
+            { "title": "角色管理", "path": "/sys/role" }
+          ]
+        },
+        { "title": "系统参数", "path": "/sys/config", "icon": "Tools" }
+      ]
+    }
+  ],
+  "flatMenus": [
+    { "title": "工作台", "path": "/work/dashboard", "icon": "Odometer", "group": "工作区", "groupKey": "workspace" },
+    { "title": "任务列表", "path": "/work/tasks", "icon": "Tickets", "group": "工作区", "groupKey": "workspace" },
+    { "title": "用户列表", "path": "/sys/user", "icon": "User", "group": "系统设置", "groupKey": "system" },
+    { "title": "系统参数", "path": "/sys/config", "icon": "Tools", "group": "系统设置", "groupKey": "system" },
+    { "title": "关于系统", "path": "/about", "icon": "InfoFilled" }
+  ],
+  "menuGroupsFa": [
+    {
+      "key": "workspace",
+      "title": "工作区",
+      "icon": "fa-solid fa-gauge-high",
+      "menus": [
+        { "title": "工作台", "path": "/work/dashboard", "icon": "fa-solid fa-house", "affix": true },
+        { "title": "消息中心", "path": "/work/messages", "icon": "fa-regular fa-bell", "badge": 5 }
+      ]
+    },
+    {
+      "key": "eco",
+      "title": "生态",
+      "icon": "fa-solid fa-cubes",
+      "menus": [
+        { "title": "GitHub 仓库", "path": "/eco/github", "icon": "fa-brands fa-github" },
+        { "title": "系统设置", "path": "/eco/settings", "icon": "fa-solid fa-gear" }
+      ]
+    }
+  ]
+}

@@ -235,6 +235,29 @@
         <el-button size="small" @click="onLocateSlot('wd-station__footer')">#wd-station__footer</el-button>
       </div>
     </demo-block>
+
+    <demo-block
+      title="Font Awesome 图标"
+      desc="菜单 / 分组 / logo / tab / 路径图标支持 Font Awesome 等图标字体：icon 直接传图标字体 class（如 fa-solid fa-house），组件按 <i :class> 渲染。图标字体 CSS 由使用方自行引入（npm i @fortawesome/fontawesome-free 后 import '@fortawesome/fontawesome-free/css/all.min.css'），组件库零新增依赖；bi-（Bootstrap Icons）/ ri-（Remix Icon）/ iconfont 前缀同样识别"
+      :code="code9"
+    >
+      <div class="station-stage">
+        <wd-station
+          title="WorkDesktop"
+          logo="fa-brands fa-vuejs"
+          :menu-groups="menuGroupsFa"
+          user-name="张管理员"
+          copyright="© 2026 WorkDesktop"
+          router-mode="html"
+          @menu-select="onMenuSelect"
+        >
+          <div class="station-demo-page">
+            <h4>当前菜单</h4>
+            <p>{{ currentMenuText }}</p>
+          </div>
+        </wd-station>
+      </div>
+    </demo-block>
   </div>
 </template>
 
@@ -243,6 +266,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Platform, Bell } from '@element-plus/icons-vue'
 import { setStationFooter, refreshStationView } from '../../../src'
+import stationData from './station-data.json'
 
 const code1 = `<wd-station
   title="WorkDesktop" logo="Platform"
@@ -255,32 +279,49 @@ const code1 = `<wd-station
   @menu-select="onMenuSelect"
 >
   <div>内容区</div>
-</wd-station>`
+</wd-station>
+
+<script setup>
+// menuGroups：左侧菜单分组数据（完整 JSON，见同目录 station-data.json）
+const menuGroups = ${JSON.stringify(stationData.menuGroups, null, 2)}
+<\/script>`
 
 const code2 = `<wd-station :menus="flatMenus" router-mode="html">
   <div>内容区</div>
 </wd-station>
 
-// flatMenus：按 group / groupKey 自动聚合，无组项归「默认」组
-[
-  { title: '工作台', path: '/work/dashboard', group: '工作区', groupKey: 'workspace' },
-  { title: '用户列表', path: '/sys/user', group: '系统设置', groupKey: 'system' },
-  { title: '关于系统', path: '/about' }
-]`
+<script setup>
+// flatMenus：扁平菜单数据，按 group / groupKey 自动聚合，无组项归「默认」组
+const flatMenus = ${JSON.stringify(stationData.flatMenus, null, 2)}
+<\/script>`
 
 const code3 = `<wd-station :menu-groups="menuGroups" content-mode="tabs" router-mode="html">
   <div>内容区</div>
 </wd-station>
 
-// 菜单项 affix: true → 固定标签，挂载自动开启、不可关闭`
+<script setup>
+// menuGroups：左侧菜单分组数据（完整 JSON，见同目录 station-data.json）
+// 菜单项 affix: true → 固定标签，挂载自动开启、不可关闭
+const menuGroups = ${JSON.stringify(stationData.menuGroups, null, 2)}
+<\/script>`
 
 const code4 = `<wd-station :menu-groups="menuGroups" menu-mode="top" router-mode="html">
   <div>内容区</div>
-</wd-station>`
+</wd-station>
+
+<script setup>
+// menuGroups：左侧菜单分组数据（完整 JSON，见同目录 station-data.json）
+const menuGroups = ${JSON.stringify(stationData.menuGroups, null, 2)}
+<\/script>`
 
 const code5 = `<wd-station :menu-groups="menuGroups" header-mode="title" router-mode="html">
   <div>内容区</div>
-</wd-station>`
+</wd-station>
+
+<script setup>
+// menuGroups：左侧菜单分组数据（完整 JSON，见同目录 station-data.json）
+const menuGroups = ${JSON.stringify(stationData.menuGroups, null, 2)}
+<\/script>`
 
 const code6 = `<template>
   <wd-station
@@ -305,6 +346,9 @@ const code6 = `<template>
 // setStationFooter / refreshStationView：命令式 API，按 filter 定向作用（true 只作用于同 filter 分组）
 import { ref } from 'vue'
 import { setStationFooter, refreshStationView } from 'workdesktop-ai'
+
+// menuGroups：左侧菜单分组数据（完整 JSON，见同目录 station-data.json）
+const menuGroups = ${JSON.stringify(stationData.menuGroups, null, 2)}
 
 const refreshCount = ref(0)
 
@@ -371,7 +415,12 @@ const code7 = `<wd-station
 //   #wd-station__menu-top / #wd-station__menu-bottom
 //   #wd-station__tabs-left / #wd-station__tabs-right
 //   #wd-station__footer / #wd-station__content
-// 多实例场景 id 会重复，请用 filter 或 class 区分。`
+// 多实例场景 id 会重复，请用 filter 或 class 区分。
+
+<script setup>
+// menuGroups：左侧菜单分组数据（完整 JSON，见同目录 station-data.json）
+const menuGroups = ${JSON.stringify(stationData.menuGroups, null, 2)}
+<\/script>`
 
 const code8 = `<wd-station
   title="WorkDesktop" logo="Platform"
@@ -381,94 +430,44 @@ const code8 = `<wd-station
   @menu-select="onMenuSelect"
 >
   <div>内容区</div>
-</wd-station>`
+</wd-station>
 
-const menuGroups = [
-  {
-    key: 'workspace',
-    title: '工作区',
-    icon: 'Monitor',
-    menus: [
-      { title: '工作台', path: '/work/dashboard', icon: 'Odometer', affix: true },
-      {
-        title: '我的任务',
-        icon: 'Tickets',
-        children: [
-          { title: '任务列表', path: '/work/tasks' },
-          { title: '任务日历', path: '/work/calendar' }
-        ]
-      },
-      { title: '消息中心', path: '/work/messages', icon: 'Bell', badge: 5 }
-    ]
-  },
-  {
-    key: 'system',
-    title: '系统设置',
-    icon: 'Setting',
-    menus: [
-      {
-        title: '用户管理',
-        icon: 'User',
-        children: [
-          { title: '用户列表', path: '/sys/user' },
-          { title: '角色管理', path: '/sys/role' }
-        ]
-      },
-      { title: '系统参数', path: '/sys/config', icon: 'Tools' }
-    ]
-  }
-]
+<script setup>
+// menuGroupsDeep：both 模式演示数据（在共享 menuGroups 基础上加深一组三级）
+const menuGroupsDeep = ${JSON.stringify(stationData.menuGroupsDeep, null, 2)}
+<\/script>`
+
+const code9 = `<!-- 第一步：安装图标字体（可选安装，不用 FA 的项目完全无需引入）
+  npm i @fortawesome/fontawesome-free -->
+<!-- 第二步：入口引入 CSS
+  import '@fortawesome/fontawesome-free/css/all.min.css' -->
+<wd-station
+  title="WorkDesktop" logo="fa-brands fa-vuejs"
+  :menu-groups="menuGroupsFa"
+  user-name="张管理员" copyright="© 2026 WorkDesktop"
+  router-mode="html"
+  @menu-select="onMenuSelect"
+>
+  <div>内容区</div>
+</wd-station>
+
+<script setup>
+// 图标字体 class（fa- 前缀 / 含空格多 class）→ 组件按 <i :class> 渲染，颜色字号继承所在位置
+// bi-（Bootstrap Icons）/ ri-（Remix Icon）/ iconfont 前缀同样识别
+const menuGroupsFa = ${JSON.stringify(stationData.menuGroupsFa, null, 2)}
+<\/script>`
+
+// 左侧菜单演示数据统一抽离到同目录 station-data.json，此处按用途取用（结构说明见组件文档 menuGroups / menus）
+const menuGroups = stationData.menuGroups
 
 // both 模式独立演示数据：在共享 menuGroups 基础上加深一组三级，用于可视化「二级含三级才折叠为 sub-menu」
-const menuGroupsDeep = [
-  {
-    key: 'workspace',
-    title: '工作区',
-    icon: 'Monitor',
-    menus: [
-      { title: '工作台', path: '/work/dashboard', icon: 'Odometer', affix: true },
-      {
-        title: '我的任务',
-        icon: 'Tickets',
-        children: [
-          {
-            title: '任务看板',
-            children: [
-              { title: '进行中', path: '/work/board/active' },
-              { title: '已完成', path: '/work/board/done' }
-            ]
-          },
-          { title: '任务列表', path: '/work/tasks' }
-        ]
-      },
-      { title: '消息中心', path: '/work/messages', icon: 'Bell', badge: 5 }
-    ]
-  },
-  {
-    key: 'system',
-    title: '系统设置',
-    icon: 'Setting',
-    menus: [
-      {
-        title: '用户管理',
-        icon: 'User',
-        children: [
-          { title: '用户列表', path: '/sys/user' },
-          { title: '角色管理', path: '/sys/role' }
-        ]
-      },
-      { title: '系统参数', path: '/sys/config', icon: 'Tools' }
-    ]
-  }
-]
+const menuGroupsDeep = stationData.menuGroupsDeep
 
-const flatMenus = [
-  { title: '工作台', path: '/work/dashboard', icon: 'Odometer', group: '工作区', groupKey: 'workspace' },
-  { title: '任务列表', path: '/work/tasks', icon: 'Tickets', group: '工作区', groupKey: 'workspace' },
-  { title: '用户列表', path: '/sys/user', icon: 'User', group: '系统设置', groupKey: 'system' },
-  { title: '系统参数', path: '/sys/config', icon: 'Tools', group: '系统设置', groupKey: 'system' },
-  { title: '关于系统', path: '/about', icon: 'InfoFilled' }
-]
+// flatMenus：按 group / groupKey 自动聚合，无组项归「默认」组
+const flatMenus = stationData.flatMenus
+
+// Font Awesome 图标演示数据：icon 传图标字体 class（fa-solid / fa-regular / fa-brands）
+const menuGroupsFa = stationData.menuGroupsFa
 
 const currentMenuText = ref('（点击左侧菜单）')
 const refreshCount = ref(0)

@@ -4,8 +4,9 @@
     <aside v-if="menuMode === 'side'" class="wd-station__aside" :class="{ 'is-collapsed': collapsedState }">
       <div id="wd-station__logo" class="wd-station__logo" :class="{ 'is-collapsed': collapsedState }">
         <slot name="logo" :collapsed="collapsedState">
-          <el-icon v-if="resolveIcon(logo)" class="wd-station__logo-icon">
-            <component :is="resolveIcon(logo)" />
+          <el-icon v-if="isIconFontClass(logo)" class="wd-station__logo-icon"><i :class="logo" /></el-icon>
+          <el-icon v-else-if="resolveStationIcon(logo)" class="wd-station__logo-icon">
+            <component :is="resolveStationIcon(logo)" />
           </el-icon>
           <span v-show="!collapsedState" class="wd-station__logo-title">{{ title }}</span>
         </slot>
@@ -14,7 +15,7 @@
         <slot name="menu-top" :collapsed="collapsedState" />
       </div>
       <el-scrollbar class="wd-station__menu-scroll">
-        <el-menu class="wd-station__menu" :collapse="collapsedState" :default-active="currentKey">
+        <el-menu class="wd-station__menu" :collapse="collapsedState" :default-active="currentKey" :unique-opened="menuAccordion">
           <template v-if="headerMode === 'title'">
             <template v-if="groups.length > 1">
               <el-menu-item-group v-for="g in groups" :key="g.key" :title="g.title">
@@ -31,7 +32,8 @@
                 <station-menu-node :items="one.children" @select="onMenuSelect" />
               </el-menu-item-group>
               <el-menu-item v-else :index="one._key" :disabled="one.disabled" @click="onMenuSelect(one)">
-                <el-icon v-if="resolveIcon(one.icon)"><component :is="resolveIcon(one.icon)" /></el-icon>
+                <el-icon v-if="isIconFontClass(one.icon)"><i :class="one.icon" /></el-icon>
+                <el-icon v-else-if="resolveStationIcon(one.icon)"><component :is="resolveStationIcon(one.icon)" /></el-icon>
                 <span>{{ one.title }}</span>
                 <el-badge v-if="one.badge !== undefined && one.badge !== ''" :value="one.badge" class="wd-station__menu-badge" />
               </el-menu-item>
@@ -62,8 +64,9 @@
           <!-- top / none 模式 logo 进 header -->
           <div v-if="menuMode !== 'side'" id="wd-station__logo-header" class="wd-station__logo wd-station__logo--header">
             <slot name="logo" :collapsed="collapsedState">
-              <el-icon v-if="resolveIcon(logo)" class="wd-station__logo-icon">
-                <component :is="resolveIcon(logo)" />
+              <el-icon v-if="isIconFontClass(logo)" class="wd-station__logo-icon"><i :class="logo" /></el-icon>
+              <el-icon v-else-if="resolveStationIcon(logo)" class="wd-station__logo-icon">
+                <component :is="resolveStationIcon(logo)" />
               </el-icon>
               <span class="wd-station__logo-title">{{ title }}</span>
             </slot>
@@ -114,7 +117,8 @@
               :class="{ 'is-active': g.key === activeGroupKey }"
               @click="setActiveGroup(g.key)"
             >
-              <el-icon v-if="resolveIcon(g.icon)"><component :is="resolveIcon(g.icon)" /></el-icon>
+              <el-icon v-if="isIconFontClass(g.icon)"><i :class="g.icon" /></el-icon>
+              <el-icon v-else-if="resolveStationIcon(g.icon)"><component :is="resolveStationIcon(g.icon)" /></el-icon>
               {{ g.title }}
             </span>
           </nav>
@@ -185,8 +189,11 @@
         >
           <el-tab-pane v-for="tab in tabs" :key="tab.key" :name="tab.key">
             <template #label>
-              <el-icon v-if="tabIcon && tab.icon" class="wd-station__tab-icon">
-                <component :is="resolveIcon(tab.icon)" />
+              <el-icon v-if="tabIcon && tab.icon && isIconFontClass(tab.icon)" class="wd-station__tab-icon">
+                <i :class="tab.icon" />
+              </el-icon>
+              <el-icon v-else-if="tabIcon && tab.icon && resolveStationIcon(tab.icon)" class="wd-station__tab-icon">
+                <component :is="resolveStationIcon(tab.icon)" />
               </el-icon>
               <span class="wd-station__tab-label" @click="onTabClick(tab)">{{ tab.title }}</span>
               <el-icon v-if="!tab.affix" class="wd-station__tab-close" @click.stop="closeTab(tab.key)">
@@ -237,10 +244,10 @@
 
 <script setup lang="ts">
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, type PropType } from 'vue'
-import * as ElIcons from '@element-plus/icons-vue'
 import { Fold, Expand, ArrowUp, ArrowDown, Refresh, Setting, Close, FullScreen } from '@element-plus/icons-vue'
 import { filterProp } from '../common/props'
 import { registerStation, notifyStationChange } from '../../lib/core/station-linkage'
+import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 import StationMenuNode from './StationMenuNode.vue'
 import type { MenuChainItem } from '../../lib/core/station-linkage'
 import type { StationMenuGroup, StationTab, StationToolbarConfig } from './types'
@@ -251,7 +258,7 @@ const props = defineProps({
   ...filterProp,
   /** 系统标题（logo 区 / headerMode=title 时的头部标题） */
   title: { type: String, default: '' },
-  /** logo 图标（@element-plus/icons-vue 名称字符串，或直接传组件） */
+  /** logo 图标（@element-plus/icons-vue 名称字符串 / 图标字体 class 如 'fa-solid fa-user'（需自行引入对应 CSS）/ 直接传组件） */
   logo: { type: [String, Object] as PropType<string | object>, default: '' },
   /** 分组菜单结构（优先），支持 JSON 字符串 */
   menuGroups: { type: [Array, String] as PropType<any[] | string>, default: undefined },
@@ -263,6 +270,8 @@ const props = defineProps({
   showHeaderTitle: { type: Boolean, default: true },
   /** 菜单位置：side=左侧 / top=顶部 / none=不启用 */
   menuMode: { type: String as PropType<'side' | 'top' | 'none'>, default: 'side' },
+  /** 左侧菜单手风琴：true 时同时只展开一个子菜单（透传 el-menu unique-opened，仅 side 模式） */
+  menuAccordion: { type: Boolean, default: false },
   /** 内容方式：page=单页 / tabs=多标签 */
   contentMode: { type: String as PropType<'page' | 'tabs'>, default: 'page' },
   /** 路由适配：auto=自动检测 $router / router / html */
@@ -719,13 +728,6 @@ onUnmounted(() => {
   document.removeEventListener('fullscreenchange', syncFullscreenState)
 })
 
-/* ---------- 图标归一 ---------- */
-function resolveIcon(icon: any) {
-  if (!icon) return null
-  if (typeof icon === 'string') return (ElIcons as any)[icon] || null
-  return icon
-}
-
 defineExpose({ refresh, openTab, closeTab })
 </script>
 
@@ -785,6 +787,57 @@ defineExpose({ refresh, openTab, closeTab })
 }
 .wd-station__menu {
   border-right: none;
+}
+
+/* 左侧菜单 title 分组标题（headerMode=title/both）：小型章节标题风格，与菜单项拉开层级 */
+.wd-station__aside :deep(.el-menu-item-group__title) {
+  margin-top: 12px;
+  padding: 4px 0 4px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+  color: var(--wd-station-menu-group-color, var(--el-text-color-secondary));
+}
+/* 首个分组标题不加大顶部间距 */
+.wd-station__aside :deep(.el-menu-item-group:first-child > .el-menu-item-group__title) {
+  margin-top: 0;
+}
+/* 折叠时隐藏分组标题（EP collapse 不处理 group title，64px 窄栏会溢出） */
+.wd-station__aside.is-collapsed :deep(.el-menu-item-group__title) {
+  display: none;
+}
+/* EP collapse 的 icon/span 隐藏规则只命中 .el-menu--collapse 的直接子级菜单项；
+   headerMode=title/both 下菜单项位于 el-menu-item-group 内不被命中，
+   64px 窄栏下文字残留溢出——补齐 group 内菜单项的 collapse 处理 */
+.wd-station__aside :deep(.el-menu--collapse .el-menu-item-group .el-menu-item > span) {
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  display: inline-block;
+  overflow: hidden;
+}
+.wd-station__aside :deep(.el-menu--collapse .el-menu-item-group .el-menu-item [class^='el-icon']) {
+  margin: 0;
+  vertical-align: middle;
+  width: var(--el-menu-icon-width);
+  text-align: center;
+}
+
+/* 菜单徽章对齐：与 StationMenuNode.vue 同款规则。
+   headerMode=both 的叶子菜单项在本组件模板内联渲染（不经 StationMenuNode），
+   scoped 规则互不渗透，需在此补齐——否则 badge 被 el-menu-item 的 56px
+   line-height 撑成整行 block，红点沉到下半行 */
+.wd-station__menu-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  align-self: center;
+  flex-shrink: 0;
+}
+/* 折叠成窄条时隐藏徽章，避免溢出（both 模式 badge 同样受折叠影响） */
+.el-menu--collapse .wd-station__menu-badge {
+  display: none;
 }
 
 /* 右侧主区 */

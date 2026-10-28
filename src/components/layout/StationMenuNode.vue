@@ -2,13 +2,15 @@
   <template v-for="item in items" :key="item._key">
     <el-sub-menu v-if="item.children && item.children.length" :index="item._key">
       <template #title>
-        <el-icon v-if="resolveIcon(item.icon)"><component :is="resolveIcon(item.icon)" /></el-icon>
+        <el-icon v-if="isIconFontClass(item.icon)"><i :class="item.icon" /></el-icon>
+        <el-icon v-else-if="resolveStationIcon(item.icon)"><component :is="resolveStationIcon(item.icon)" /></el-icon>
         <span>{{ item.title }}</span>
       </template>
       <station-menu-node :items="item.children" @select="forwardSelect" />
     </el-sub-menu>
     <el-menu-item v-else :index="item._key" :disabled="item.disabled" @click="onClick(item)">
-      <el-icon v-if="resolveIcon(item.icon)"><component :is="resolveIcon(item.icon)" /></el-icon>
+      <el-icon v-if="isIconFontClass(item.icon)"><i :class="item.icon" /></el-icon>
+      <el-icon v-else-if="resolveStationIcon(item.icon)"><component :is="resolveStationIcon(item.icon)" /></el-icon>
       <span>{{ item.title }}</span>
       <el-badge v-if="item.badge !== undefined && item.badge !== ''" :value="item.badge" class="wd-station__menu-badge" />
     </el-menu-item>
@@ -16,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import * as ElIcons from '@element-plus/icons-vue'
+import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 
 defineOptions({ name: 'StationMenuNode' })
 
@@ -28,13 +30,6 @@ defineProps({
 const emit = defineEmits<{
   (e: 'select', item: any): void
 }>()
-
-/** 图标归一：字符串按 @element-plus/icons-vue 名称解析，组件直接用 */
-function resolveIcon(icon: any) {
-  if (!icon) return null
-  if (typeof icon === 'string') return (ElIcons as any)[icon] || null
-  return icon
-}
 
 function onClick(item: any) {
   if (item.disabled) return

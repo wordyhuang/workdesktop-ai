@@ -44,7 +44,7 @@
     <el-drawer v-model="skinVisible" title="全站主题皮肤" size="420px">
       <div class="skin-picker">
         <p class="skin-picker__tip">
-          组件库 11 套系统预设皮肤，选择后经 <code>theme.skin</code> 一键套用，全站实时换肤（Element 组件联动）。
+          组件库 12 套系统预设皮肤，选择后经 <code>theme.skin</code> 一键套用，全站实时换肤（Element 组件联动）。
           <el-tag size="small" type="info" effect="plain">刷新恢复默认</el-tag>
         </p>
         <div v-for="s in SITE_SKINS" :key="s.key" class="skin-item" :class="{ 'is-active': s.key === currentSkinKey }"

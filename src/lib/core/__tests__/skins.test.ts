@@ -14,9 +14,9 @@ describe('skins 预设皮肤库', () => {
     vi.restoreAllMocks()
   })
 
-  it('内置 11 套皮肤，结构完整（key/label/desc/theme）', () => {
+  it('内置 12 套皮肤，结构完整（key/label/desc/theme）', () => {
     const skins = listSkins()
-    expect(skins).toHaveLength(11)
+    expect(skins).toHaveLength(12)
     expect(Object.keys(SKIN_PRESETS)).toEqual([
       'default',
       'fashion',
@@ -28,7 +28,8 @@ describe('skins 预设皮肤库', () => {
       'cool',
       'governance',
       'apple',
-      'arco'
+      'arco',
+      'antd'
     ])
     for (const skin of skins) {
       expect(skin.key).toBeTruthy()
@@ -524,6 +525,92 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--el-table-header-bg-color: #f7f8fa')
     expect(css).toContain('--el-table-header-text-color: #4e5969')
     expect(css).toContain('--el-table-border-color: #e5e6eb')
+  })
+
+  it('antd 蚂蚁风：Ant 蓝 + 暖黑灰阶（对比度压深）+ 6px 圆角 + 白卡浅灰底', () => {
+    applyTheme({ skin: 'antd' })
+    const css = themeCss()
+    // Ant 官方 Seed Token：主色 colorPrimary #1677ff（与品牌主色一致）、info 同为品牌蓝
+    expect(css).toContain('--wd-color-primary: #1677ff')
+    expect(css).toContain('--el-color-primary: #1677ff')
+    expect(css).toContain('--wd-color-success: #52c41a')
+    expect(css).toContain('--wd-color-warning: #faad14')
+    expect(css).toContain('--wd-color-danger: #ff4d4f')
+    expect(css).toContain('--wd-color-info: #1677ff')
+    // 暖黑灰阶：页面底 colorBgLayout、正文 0.88 黑近似、secondary/placeholder 压深至 WCAG AA
+    expect(css).toContain('--wd-bg-color-page: #f0f2f5')
+    expect(css).toContain('--wd-text-color-primary: #1f1f1f')
+    expect(css).toContain('--wd-text-color-regular: #404040')
+    expect(css).toContain('--wd-text-color-secondary: #595959')
+    expect(css).toContain('--wd-text-color-placeholder: #707070')
+    expect(css).toContain('--wd-border-color: #d9d9d9')
+    expect(css).toContain('--wd-border-color-light: #f0f0f0')
+    // Ant 圆角：基础 6px（Seed borderRadius）、小圆角 4px（borderRadiusSM）
+    expect(css).toContain('--wd-radius-base: 6px')
+    expect(css).toContain('--wd-radius-small: 4px')
+    // 主色按 EP 公式推导色阶（混白 30% → #5ca0ff，混黑 20% → #125fcc）
+    expect(css).toContain('--el-color-primary-light-3: #5ca0ff')
+    expect(css).toContain('--el-color-primary-dark-2: #125fcc')
+  })
+
+  it('antd 组件级：白卡 8px 大圆角 + 灰细边 + Ant 三段式轻影 + 标识条归零 + 暗蓝侧栏', () => {
+    applyTheme({ skin: 'antd' })
+    const css = themeCss()
+    expect(css).toContain('--wd-panel-radius: 8px')
+    expect(css).toContain('--wd-panel-border-color: #f0f0f0')
+    expect(css).toContain('--wd-panel-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03)')
+    expect(css).toContain('--wd-panel-title-bar-width: 0')
+    expect(css).toContain('--wd-datagrid-radius: 8px')
+    expect(css).toContain('--wd-datagrid-border-color: #f0f0f0')
+    expect(css).toContain('--wd-editable-grid-border-color: #f0f0f0')
+    // 导航区：Ant Design Pro 招牌暗蓝侧栏
+    expect(css).toContain('--wd-station-aside-bg: #001529')
+  })
+
+  it('antd cssRules：hover 变浅 + 白底灰边默认按钮 + 浅蓝标签 + 暗蓝侧栏主色实心选中 + 表头灰底', () => {
+    applyTheme({ skin: 'antd' })
+    const css = themeCss()
+    // 主按钮：Ant hover 变浅（light-5 ≈ #4096ff 档）、按下更深（dark-2 ≈ #0958d9 档），色阶随覆盖联动
+    expect(css).toContain('.el-button--primary {')
+    expect(css).toContain('--el-button-hover-bg-color: var(--el-color-primary-light-5)')
+    expect(css).toContain('--el-button-active-bg-color: var(--el-color-primary-dark-2)')
+    // 默认按钮（Ant default）：白底灰边近黑字，hover 边框/文字变主色（区别于 Arco 灰底无边框）
+    expect(css).toContain(".el-button:not([class*='el-button--']):not(.is-text):not(.is-link) {")
+    expect(css).toContain('--el-button-bg-color: #fff')
+    expect(css).toContain('--el-button-border-color: #d9d9d9')
+    expect(css).toContain('--el-button-hover-border-color: var(--el-color-primary)')
+    expect(css).toContain('--el-button-hover-text-color: var(--el-color-primary)')
+    // 标签：primary 浅蓝底蓝字无边框（底色取 light-9 随主色覆盖联动）
+    expect(css).toContain('.el-tag.el-tag--primary {')
+    expect(css).toContain('--el-tag-bg-color: var(--el-color-primary-light-9)')
+    expect(css).toContain('--el-tag-text-color: var(--el-color-primary)')
+    // 顶栏菜单：浅色 hover 浅灰 + 选中浅蓝底蓝字（作用域限定 Station）
+    expect(css).toContain('.wd-station__top-menu .el-menu {')
+    expect(css).toContain('--el-menu-hover-bg-color: #f5f5f5')
+    expect(css).toContain('.wd-station__top-menu .el-menu-item.is-active {')
+    expect(css).toContain('background: var(--el-color-primary-light-9)')
+    expect(css).toContain('color: var(--el-color-primary)')
+    // 侧栏菜单：Ant Design Pro 招牌暗蓝——去右边框、logo 白字、0.65 白字、选中主色实心白字
+    expect(css).toContain('.wd-station .wd-station__aside {')
+    expect(css).toContain('border-right: none')
+    expect(css).toContain('.wd-station__aside .wd-station__logo-title {')
+    expect(css).toContain('.wd-station__menu {')
+    expect(css).toContain('--el-menu-text-color: rgba(255, 255, 255, 0.65)')
+    expect(css).toContain('--el-menu-hover-bg-color: rgba(255, 255, 255, 0.08)')
+    // 侧栏分组标题（headerMode=title/both）：暗蓝下用半透明白变量，供 scoped 样式回退消费
+    expect(css).toContain('--wd-station-menu-group-color: rgba(255, 255, 255, 0.45)')
+    expect(css).toContain('.wd-station__menu .el-menu-item.is-active {')
+    expect(css).toContain('background: var(--el-color-primary)')
+    expect(css).toContain('.wd-station__menu .el-menu-item.is-active:hover {')
+    expect(css).toContain('background: var(--el-color-primary-dark-2)')
+    expect(css).toContain('.wd-station__menu .el-sub-menu.is-active > .el-sub-menu__title {')
+    expect(css).toContain('color: #fff')
+    // 表格：表头 colorFillAlter 灰底 + 中灰字 + 细边（同选择器级覆盖）
+    expect(css).toContain('.el-table {')
+    expect(css).toContain('--el-table-header-bg-color: #fafafa')
+    expect(css).toContain('--el-table-header-text-color: #595959')
+    expect(css).toContain('--el-table-border-color: #f0f0f0')
+    expect(css).toContain('--el-table-row-hover-bg-color: #fafafa')
   })
 
   it('tech 深空霓虹青：深空蓝底 + 青色描边辉光 + 青蓝标识条 + 导航区压黑 + El 深色联动', () => {

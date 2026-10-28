@@ -19,7 +19,7 @@
           <span
             v-if="description"
             class="wd-panel__description"
-            :class="{ 'is-folding': descriptionExpandable }"
+            :class="{ 'is-folding': descriptionExpandable, 'is-right': descriptionAlign === 'right' }"
           >{{ description }}</span>
         </slot>
       </div>
@@ -41,7 +41,7 @@
       </div>
     </div>
     <div class="wd-panel__content" :class="{ 'is-collapsed': collapsible && !openedState }">
-      <div class="wd-panel__content-inner">
+      <div ref="contentInnerRef" class="wd-panel__content-inner">
         <div class="wd-panel__body">
           <slot />
         </div>
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, type PropType } from 'vue'
+import { ref, computed, watch, onMounted, nextTick, type PropType } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 
 defineOptions({ name: 'WdPanel' })
@@ -76,7 +76,14 @@ const props = defineProps({
   /** 是否显示外边框（嵌套在卡片/弹层等容器内时可关闭） */
   border: { type: Boolean, default: true },
   /** description 展示模式：false=显示展示（默认，描述直接显示在标题旁）；true=折叠展示（标题下出现虚线，鼠标悬停标题时才显示描述） */
-  descriptionExpandable: { type: Boolean, default: false }
+  descriptionExpandable: { type: Boolean, default: false },
+  /** description 在标题右侧空白区的对齐方式：left=紧跟标题（默认）；right=靠面板头部右端对齐 */
+  descriptionAlign: {
+    type: String as PropType<'left' | 'right'>,
+    default: 'left'
+  },
+  /** 内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时挂载后自动折叠；0=不自动折叠（完全撑开） */
+  collapseHeight: { type: Number, default: 0 }
 })
 
 const emit = defineEmits<{
@@ -105,6 +112,21 @@ function toggle() {
 function onHeaderClick() {
   if (props.collapsible) toggle()
 }
+
+const contentInnerRef = ref<HTMLElement | null>(null)
+
+// collapseHeight > 0 且 collapsible 时：挂载渲染完成后测量内容高度，超限则自动折叠一次
+onMounted(async () => {
+  if (!props.collapsible || !(props.collapseHeight > 0) || !openedState.value) return
+  await nextTick()
+  const el = contentInnerRef.value
+  if (!el) return
+  if (el.scrollHeight > props.collapseHeight) {
+    innerOpened.value = false
+    emit('update:opened', false)
+    emit('change', false)
+  }
+})
 </script>
 
 <style scoped>
@@ -194,17 +216,46 @@ function onHeaderClick() {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* descriptionAlign='right'：description 吸收标题右侧剩余空白，贴到面板头部右端 */
+.wd-panel__description.is-right {
+  margin-left: auto;
+}
 /* descriptionExpandable=true：标题下出现虚线下划线 */
 .wd-panel__title.is-dashed {
   border-bottom: 1px dashed var(--wd-text-color-secondary, #909399);
   padding-bottom: 1px;
 }
-/* descriptionExpandable=true：描述默认隐藏，鼠标悬停标题时才显示 */
+/* descriptionExpandable=true：描述默认隐藏，鼠标悬停标题时淡入 + 轻微滑入 */
 .wd-panel__description.is-folding {
   display: none;
 }
 .wd-panel__header:hover .wd-panel__description.is-folding {
   display: inline-block;
+  animation: wd-panel-description-in 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+/* 居右对齐时从右往左滑入，位移方向与对齐方向一致 */
+.wd-panel__header:hover .wd-panel__description.is-folding.is-right {
+  animation-name: wd-panel-description-in-right;
+}
+@keyframes wd-panel-description-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes wd-panel-description-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 .wd-panel__header-extra {
   display: flex;

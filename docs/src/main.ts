@@ -2,6 +2,8 @@ import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import 'element-plus/dist/index.css'
+// Font Awesome 图标字体：仅供 docs 示例演示（WdStation 菜单 FA 图标 demo），组件库本身零依赖
+import '@fortawesome/fontawesome-free/css/all.min.css'
 import WorkDesktop from '../../src'
 import { siteBaseConfig } from './site-config'
 import DemoBlock from './components/DemoBlock.vue'

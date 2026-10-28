@@ -72,6 +72,7 @@ WdStation 是一站式中后台外框架组件：顶部「分导台」按业务�
 | menus | `array \| string` | — | 扁平菜单：按 groupKey / group 自动聚合分组，无组项归「默认」组；与 menuGroups 二选一 |
 | headerMode | `'nav' \| 'title' \| 'both'` | 'nav' | 顶栏中央：nav=分导台（多分组时显示，左侧随分组切换），title=系统标题（左侧展示全量分组菜单），both=并存（顶部显示分导台 + 左侧联动跟随激活分组，显示该分组一级菜单作 title 分组、二级平铺全量、二级含三级才折叠） |
 | menuMode | `'side' \| 'top' \| 'none'` | 'side' | 菜单位置：side=左侧栏，top=顶部横排，none=不启用菜单 |
+| menuAccordion | `boolean` | false | 左侧菜单手风琴：true 时同时只展开一个子菜单（透传 el-menu unique-opened，仅 side 模式生效） |
 | contentMode | `'page' \| 'tabs'` | 'page' | 内容方式：page=单页，tabs=多标签页（affix 菜单为固定标签） |
 | routerMode | `'auto' \| 'router' \| 'html'` | 'auto' | 路由模式：auto=检测到 vue-router 即用；router=点菜单 push + RouterView；html=仅抛事件 + 默认插槽 |
 | collapsible | `boolean` | true | 显示折叠按钮（分导台左侧；side 为左右折叠图标，top 为向上折叠图标） |

@@ -1,6 +1,6 @@
 /**
  * 文档站：全站换肤（组件库系统预设皮肤）
- * 数据源 = 组件库 listSkins() 的 11 套 SKIN_PRESETS；切换经 theme.skin 通道：
+ * 数据源 = 组件库 listSkins() 的 12 套 SKIN_PRESETS；切换经 theme.skin 通道：
  *   setGlobalConfig({ theme: { skin } }) → resolveTheme 皮肤打底 → applyTheme
  *   整体重写 <style data-workdesktop-theme> 的 :root 块，Element 组件随令牌联动。
  * default 皮肤 theme 为空 → 写空 :root，回落 tokens.css 出厂值（刷新亦恢复默认）。
@@ -10,7 +10,7 @@ import { listSkins, getSkinPreset, setGlobalConfig, resetConfig } from '../../sr
 import type { SkinPreset, SkinName } from '../../src'
 import { siteBaseConfig } from './site-config'
 
-/** 全部系统预设皮肤（11 套，default 为首） */
+/** 全部系统预设皮肤（12 套，default 为首） */
 export const SITE_SKINS: SkinPreset[] = listSkins()
 
 /* —— 全站皮肤状态（模块单例，路由切换不丢） —— */

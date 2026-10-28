@@ -35,7 +35,7 @@ WorkDesktop AI 是一套面向企业后台管理场景的 Vue 3 组件库，在 
 | 声明式联动      | 属性（`filter` 分组 + `head-refresh-datagrid` 刷新）+ 事件驱动（A+B 混合），无需引入中心化 DSL                               |
 | 组合式 Hooks  | `useRequest` / `useDataGrid` / `useConfig` / `useGlobalConfig` / `useEventBus` / `useGlobalState`    |
 | 双产物 + 按需入口 | `dist/index.esm.js` + `dist/index.umd.js` + 27 个组件子路径入口 + 完整 `.d.ts`                                 |
-| 开箱主题       | 11 套预设皮肤一键套用（`theme.skin`）+ 语义色令牌 + El 派生色阶自动推导 + CSS 变量覆盖（优先级 cssVars > colors > skin）              |
+| 开箱主题       | 12 套预设皮肤一键套用（`theme.skin`）+ 语义色令牌 + El 派生色阶自动推导 + CSS 变量覆盖（优先级 cssVars > colors > skin）              |
 | 测试保障       | vitest + @vue/test-utils：237 用例全通过，行覆盖率 96.6%（阈值 lines/funcs ≥ 80%，branches ≥ 70%）                   |
 
 ## 安装
@@ -183,7 +183,7 @@ app.use(WorkDesktop, {
       WdDataForm: { submitApi: '/save' }
     }
   },
-  // 主题：skin 一键套用预设皮肤（11 套可选），colors / cssVars 在其上继续覆盖
+  // 主题：skin 一键套用预设皮肤（12 套可选），colors / cssVars 在其上继续覆盖
   // 覆盖优先级：cssVars > colors > skin；colors 改动会自动推导 El 浅/深色阶
   theme: { skin: 'default', colors: { primary: '#2f6bff' }, cssVars: { '--wd-radius': '8px' } }
 })

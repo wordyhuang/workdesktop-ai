@@ -371,6 +371,20 @@ describe('WdStation 集成', () => {
     expect(text).toContain('工作台')
   })
 
+  it('menuAccordion：左侧菜单手风琴（unique-opened 透传给侧栏 el-menu），默认关闭', async () => {
+    const wrapper = mountStation({ menuGroups: menuGroupsFixture })
+    // 默认 false：不透传 unique-opened=true（子菜单可多开）
+    expect(wrapper.find('.el-menu-stub').attributes('unique-opened')).not.toBe('true')
+    // 开启后透传 unique-opened=true（同时只展开一个子菜单）
+    await wrapper.setProps({ menuAccordion: true })
+    expect(wrapper.find('.el-menu-stub').attributes('unique-opened')).toBe('true')
+    // 顶部菜单模式不透传（horizontal 菜单无手风琴语义）
+    await wrapper.setProps({ menuMode: 'top' })
+    expect(
+      wrapper.find('.wd-station__top-menu .el-menu-stub').attributes('unique-opened')
+    ).toBeUndefined()
+  })
+
   it('show-header-title=false：headerMode 非 nav 时不再渲染头部中央标题', () => {
     const wrapper = mountStation({
       menuGroups: [menuGroupsFixture[0]],

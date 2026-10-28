@@ -152,10 +152,10 @@ export const coreData: ComponentMeta[] = [
     path: 'custom-skin',
     name: '自定义皮肤',
     title: '自定义皮肤',
-    desc: '11 套预设皮肤一键切换（theme.skin），并可在皮肤基础上用 colors 语义令牌 / cssVars CSS 变量继续覆盖（优先级 cssVars > colors > skin）；listSkins() / getSkinPreset() 查询皮肤清单',
+    desc: '12 套预设皮肤一键切换（theme.skin），并可在皮肤基础上用 colors 语义令牌 / cssVars CSS 变量继续覆盖（优先级 cssVars > colors > skin）；listSkins() / getSkinPreset() 查询皮肤清单',
     group: '核心',
     intro: {
-      overview: 'WorkDesktop 内置 11 套预设皮肤（默认 / 时尚 / 商务 / 科技 / 赛博朋克 / 中国风 / 扁平 / 酷炫 / 政务 / 苹果 / 字节），通过 `theme.skin` 一键套用整套主题；每套皮肤是一组 `colors`（语义令牌）+ `cssVars`（CSS 变量）的组合，切换时由 applyTheme 统一写入 `:root` 上的 `--wd-*` 与 `--el-*` 变量，Element Plus 组件与库组件同步换肤。在皮肤基础上还可以用 `theme.colors`（语义令牌覆盖）与 `theme.cssVars`（CSS 变量覆盖）继续微调，优先级 **cssVars > colors > 皮肤预设**。',
+      overview: 'WorkDesktop 内置 12 套预设皮肤（默认 / 时尚 / 商务 / 科技 / 赛博朋克 / 中国风 / 扁平 / 酷炫 / 政务 / 苹果 / 字节 / 蚂蚁），通过 `theme.skin` 一键套用整套主题；每套皮肤是一组 `colors`（语义令牌）+ `cssVars`（CSS 变量）的组合，切换时由 applyTheme 统一写入 `:root` 上的 `--wd-*` 与 `--el-*` 变量，Element Plus 组件与库组件同步换肤。在皮肤基础上还可以用 `theme.colors`（语义令牌覆盖）与 `theme.cssVars`（CSS 变量覆盖）继续微调，优先级 **cssVars > colors > 皮肤预设**。',
       whenToUse: [
         '项目初始化时统一确定整体视觉风格（app.use 注入 `theme: { skin }`）。',
         '运行中提供「换肤」功能，让用户在不同预设皮肤间切换（setGlobalConfig 动态修改 theme.skin）。',
@@ -172,7 +172,7 @@ export const coreData: ComponentMeta[] = [
         '**示例页面离开时应恢复现场**：动态换肤的页面建议在 onUnmounted 中 `resetConfig()`，避免影响其他页面（官方示例做法）。'
       ],
       faq: [
-        { q: '有哪些预设皮肤可用？', a: '共 11 套：default（默认）、fashion（时尚）、business（商务）、tech（科技）、cyberpunk（赛博朋克）、chinese（中国风）、flat（扁平）、cool（酷炫）、governance（政务）、apple（苹果）、arco（字节）。调用 `listSkins()` 可拿到含中文名与风格描述的完整清单。' },
+        { q: '有哪些预设皮肤可用？', a: '共 12 套：default（默认）、fashion（时尚）、business（商务）、tech（科技）、cyberpunk（赛博朋克）、chinese（中国风）、flat（扁平）、cool（酷炫）、governance（政务）、apple（苹果）、arco（字节）、antd（蚂蚁）。调用 `listSkins()` 可拿到含中文名与风格描述的完整清单。' },
         { q: '如何在皮肤基础上只改主色？', a: '`setGlobalConfig({ theme: { skin: \'tech\', colors: { primary: \'#ff6600\' } } })`——colors 在皮肤预设之上覆盖，主色及其派生色阶会替换为指定值。' },
         { q: 'colors 和 cssVars 改同一个变量，谁生效？', a: 'cssVars 生效。优先级 cssVars > colors > 皮肤预设；cssVars 是最终写入 `:root` 的值。' },
         { q: '切换皮肤后部分 Element Plus 组件没变化？', a: '皮肤通过 `:root` 上的 `--el-*` 变量驱动，Element Plus 组件需使用库默认的主题变量链路（未自行写死颜色）。自定义组件若写死了色值，需改用 `var(--el-color-primary)` 等变量引用。' }
@@ -201,15 +201,15 @@ export const coreData: ComponentMeta[] = [
       {
         name: 'SkinName（皮肤名）',
         ref: '`theme.skin` / `SkinPreset.key` 的取值类型',
-        desc: ['11 个联合字面量，与 SKIN_PRESETS 一一对应：'],
-        code: "type SkinName = 'default' | 'fashion' | 'business' | 'tech' | 'cyberpunk' | 'chinese' | 'flat' | 'cool' | 'governance' | 'apple' | 'arco'",
+        desc: ['12 个联合字面量，与 SKIN_PRESETS 一一对应：'],
+        code: "type SkinName = 'default' | 'fashion' | 'business' | 'tech' | 'cyberpunk' | 'chinese' | 'flat' | 'cool' | 'governance' | 'apple' | 'arco' | 'antd'",
       },
     ],
     props: [],
     emits: [],
     slots: [],
     methods: [
-      { name: 'listSkins()', params: '—', returns: 'SkinPreset[]', desc: '获取全部预设皮肤清单（11 套，含中文名与风格描述）' },
+      { name: 'listSkins()', params: '—', returns: 'SkinPreset[]', desc: '获取全部预设皮肤清单（12 套，含中文名与风格描述）' },
       { name: 'getSkinPreset(key?)', params: 'key?: string', returns: 'SkinPreset | undefined', desc: '按 key 查询单个皮肤预设；未传或未知 key 返回 undefined' },
       { name: 'setGlobalConfig({ theme })', params: 'DeepPartial<WorkDesktopConfig>', returns: 'WorkDesktopConfig', desc: '运行中切换皮肤 / 覆盖 colors / cssVars，立即全站生效' },
       { name: 'resetConfig()', params: '—', returns: 'WorkDesktopConfig', desc: '恢复出厂配置（含主题），即回到默认皮肤' },

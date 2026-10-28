@@ -111,7 +111,7 @@
 
     <demo-block
       title="描述折叠展示"
-      desc="descriptionExpandable 控制描述展示：默认显示展示（描述直接显示在标题旁）；设为 true 时标题下出现虚线，鼠标悬停标题才显示描述"
+      desc="descriptionExpandable 控制描述展示：默认显示展示（描述直接显示在标题旁）；设为 true 时标题下出现虚线，鼠标悬停标题才以淡入动效显示描述"
       :code="code6"
     >
       <wd-panel title="显示展示（默认）" description="description 直接显示在标题旁">
@@ -125,6 +125,50 @@
         style="margin-bottom: 0"
       >
         <p>descriptionExpandable=true：描述默认隐藏，标题下出现虚线下划线，鼠标移到标题上时才显示描述。</p>
+      </wd-panel>
+    </demo-block>
+
+    <demo-block
+      title="描述对齐方式"
+      desc="descriptionAlign 控制 description 在标题右侧空白区的对齐：默认 left 紧跟标题；right 时吸收剩余空白贴到面板头部右端"
+      :code="code8"
+    >
+      <wd-panel title="居左（默认）" description="紧跟标题显示">
+        <p>descriptionAlign 未设（left）：描述紧跟标题，保持默认表现。</p>
+      </wd-panel>
+
+      <wd-panel
+        title="居右"
+        description="贴到面板头部右端"
+        description-align="right"
+        style="margin-bottom: 0"
+      >
+        <p>descriptionAlign="right"：描述吸收标题右侧剩余空白，贴到面板右端。</p>
+      </wd-panel>
+    </demo-block>
+
+    <demo-block
+      title="内容超限自动折叠"
+      desc="collapseHeight 指定内容高度阈值（px）：开启 collapsible 且内容实际高度超过该值时，渲染完成后自动收起，可点击标题重新展开；默认 0 表示不折叠、完全撑开"
+      :code="code7"
+    >
+      <wd-panel
+        title="自动折叠面板"
+        description="内容超过 80px，渲染完成后自动收起"
+        collapsible
+        :collapse-height="80"
+      >
+        <p v-for="i in 6" :key="i">第 {{ i }} 行内容，用于撑高面板验证超限自动折叠。</p>
+      </wd-panel>
+
+      <wd-panel
+        title="未超限面板（保持展开）"
+        description="内容未超过 80px，保持展开"
+        collapsible
+        :collapse-height="80"
+        style="margin-bottom: 0"
+      >
+        <p>内容不足阈值时不会被折叠。</p>
       </wd-panel>
     </demo-block>
   </div>
@@ -194,6 +238,26 @@ const code6 = `<!-- 默认：描述直接显示 -->
 
 <!-- 折叠展示：标题下虚线，悬停标题才显示 -->
 <wd-panel title="折叠展示" description="鼠标悬停标题才显示这段描述" description-expandable>
+  <p>主体内容</p>
+</wd-panel>`
+
+const code7 = `<!-- collapsible 开启且内容实际高度超过 80px 时，渲染完成后自动收起；可点击标题重新展开 -->
+<wd-panel title="自动折叠面板" collapsible :collapse-height="80">
+  <p v-for="i in 6" :key="i">第 {{ i }} 行内容</p>
+</wd-panel>
+
+<!-- 内容不足阈值：保持展开 -->
+<wd-panel title="未超限面板" collapsible :collapse-height="80">
+  <p>内容不足阈值时不会被折叠。</p>
+</wd-panel>`
+
+const code8 = `<!-- 默认 left：描述紧跟标题 -->
+<wd-panel title="居左（默认）" description="紧跟标题显示">
+  <p>主体内容</p>
+</wd-panel>
+
+<!-- right：描述吸收剩余空白，贴到面板头部右端 -->
+<wd-panel title="居右" description="贴到面板头部右端" description-align="right">
   <p>主体内容</p>
 </wd-panel>`
 

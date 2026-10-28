@@ -6,7 +6,7 @@
 export interface StationMenuItem {
   /** 菜单标题 */
   title: string
-  /** 图标（@element-plus/icons-vue 名称字符串，或直接传组件） */
+  /** 图标（@element-plus/icons-vue 名称字符串 / 图标字体 class 如 'fa-solid fa-user'（需自行引入对应 CSS）/ 直接传组件） */
   icon?: string | object
   /** 路由路径（router 模式点击 push；html 模式仅作标识） */
   path?: string
@@ -45,7 +45,7 @@ export interface StationMenuGroup {
 export interface StationTab {
   key: string
   title: string
-  /** 标签图标（菜单项打开时自动携带；tab-icon=false 可关闭渲染） */
+  /** 标签图标（菜单项打开时自动携带；tab-icon=false 可关闭渲染；支持 EP 名称 / 图标字体 class / 组件） */
   icon?: string | object
   path?: string
   affix?: boolean
@@ -66,7 +66,7 @@ export interface PathItem {
   title: string
   /** 路由路径（router 模式下自动以 el-breadcrumb-item 的 to 跳转） */
   path?: string
-  /** 图标（@element-plus/icons-vue 名称字符串，或直接传组件） */
+  /** 图标（@element-plus/icons-vue 名称字符串 / 图标字体 class 如 'fa-solid fa-user'（需自行引入对应 CSS）/ 直接传组件） */
   icon?: string | object
   /** 段来源：menu=Station 菜单链 / heading=页面标题 / home=首页节点 / manual=手动路径 */
   source?: 'menu' | 'heading' | 'home' | 'manual'
