@@ -50,11 +50,21 @@
             </template>
           </el-dropdown>
         </el-tooltip>
-        <el-tooltip v-if="(toolsConf.modeSwitch || modeSwitch) && $slots['card-item']" content="表格/列表切换" placement="top">
+        <el-tooltip v-if="modeSwitchVisible && modeSwitchType === 'icon'" content="表格/列表切换" placement="top">
           <el-button :circle="toolBtnMode === 'round'" :size="toolBtnSize" @click="toggleMode">
             <el-icon><Grid v-if="viewMode === 'card'" /><Menu v-else /></el-icon>
           </el-button>
         </el-tooltip>
+        <el-radio-group
+          v-else-if="modeSwitchVisible"
+          :model-value="viewMode"
+          :size="toolBtnSize"
+          class="wd-datagrid__mode-tabs"
+          @change="setViewMode"
+        >
+          <el-radio-button value="table">{{ tableText }}</el-radio-button>
+          <el-radio-button value="card">{{ cardText }}</el-radio-button>
+        </el-radio-group>
         <el-tooltip v-if="toolsConf.columnSetting || dynamicColumn" content="列设置" placement="top">
           <el-button :circle="toolBtnMode === 'round'" :size="toolBtnSize" @click="colSettingVisible = true">
             <el-icon><Setting /></el-icon>
@@ -193,11 +203,21 @@
             </template>
           </el-dropdown>
         </el-tooltip>
-        <el-tooltip v-if="(toolsConf.modeSwitch || modeSwitch) && $slots.list" content="表格/列表切换" placement="top">
+        <el-tooltip v-if="modeSwitchVisible && modeSwitchType === 'icon'" content="表格/列表切换" placement="top">
           <el-button :circle="toolBtnMode === 'round'" :size="toolBtnSize" @click="toggleMode">
             <el-icon><Grid v-if="viewMode === 'card'" /><Menu v-else /></el-icon>
           </el-button>
         </el-tooltip>
+        <el-radio-group
+          v-else-if="modeSwitchVisible"
+          :model-value="viewMode"
+          :size="toolBtnSize"
+          class="wd-datagrid__mode-tabs"
+          @change="setViewMode"
+        >
+          <el-radio-button value="table">{{ tableText }}</el-radio-button>
+          <el-radio-button value="card">{{ cardText }}</el-radio-button>
+        </el-radio-group>
         <el-tooltip v-if="toolsConf.columnSetting || dynamicColumn" content="列设置" placement="top">
           <el-button :circle="toolBtnMode === 'round'" :size="toolBtnSize" @click="colSettingVisible = true">
             <el-icon><Setting /></el-icon>
@@ -218,9 +238,9 @@
           </el-badge>
         </el-tooltip>
       </div>
-      <!-- 分页 -->
+      <!-- 分页（表格/卡片两种视图均保留） -->
       <el-pagination
-        v-if="withPager && viewMode === 'table'"
+        v-if="withPager"
         class="wd-datagrid__pager-main"
         :current-page="currentPage"
         :page-size="pageSize"
@@ -307,6 +327,7 @@ import { ref, computed, onMounted, onBeforeUnmount, useSlots, watch, nextTick, d
 import { Plus, Download, Refresh, Setting, ScaleToOriginal, Grid, Menu, ShoppingCart, Rank } from '@element-plus/icons-vue'
 import { useDataGrid } from '../../../lib/composables/useDataGrid'
 import { registerDataGrid } from '../../../lib/core/linkage'
+import { useContainer } from '../../containers/containerContext'
 import { getGlobalConfig } from '../../../lib/core/config'
 import { safeJsonParse } from '../../../lib/core/utils'
 import { useColumnSettings, orderColumnVnodes } from './useColumnSettings'
@@ -339,6 +360,12 @@ const props = defineProps({
   withPager: { type: Boolean, default: true },
   withSearch: { type: Boolean, default: false },
   modeSwitch: { type: Boolean, default: false },
+  /** 模式切换控件形态：icon 图标按钮（默认）/ tab 分段按钮 */
+  modeSwitchType: { type: String as PropType<'icon' | 'tab'>, default: 'icon' },
+  /** tab 形态下「表格」段文字 */
+  tableText: { type: String, default: '表格' },
+  /** tab 形态下「列表」段文字 */
+  cardText: { type: String, default: '列表' },
   dynamicColumn: { type: Boolean, default: false },
   columnStorageKey: { type: String, default: '' },
   // 表格展示
@@ -479,12 +506,14 @@ const toolBtnSize = computed<'large' | 'default' | 'small' | undefined>(() => pr
 const hasToolbar = computed(() => !!slots.toolbar)
 // 自定义工具栏组（toolbar 插槽 + 新增/导出业务按钮）
 const hasActions = computed(() => hasToolbar.value || toolsConf.value.add || toolsConf.value.export)
+// 模式切换控件可见性：开关开启且提供 card-item 插槽
+const modeSwitchVisible = computed(() => (toolsConf.value.modeSwitch || props.modeSwitch) && !!slots['card-item'])
 // 内置工具按钮组（刷新/大小/模式切换/列设置/购物车）；modeSwitch 还需 card-item 插槽才渲染
 const hasToolsGroup = computed(
   () =>
     toolsConf.value.refresh ||
     toolsConf.value.size ||
-    ((toolsConf.value.modeSwitch || props.modeSwitch) && !!slots['card-item']) ||
+    modeSwitchVisible.value ||
     toolsConf.value.columnSetting ||
     props.dynamicColumn ||
     props.withSelectionCart
@@ -498,9 +527,9 @@ const toolsAtBottom = computed(() => hasToolsGroup.value && props.toolsPosition 
 
 // 顶部工具栏：任一组位于顶部即渲染
 const showTopToolbar = computed(() => actionsAtTop.value || toolsAtTop.value)
-// 底栏：底部分组存在时始终渲染；否则有分页时渲染（保持原有底栏）
+// 底栏：底部分组存在时始终渲染；否则有分页时渲染（保持原有底栏，表格/卡片两种视图一致）
 const showBottomBar = computed(
-  () => actionsAtBottom.value || toolsAtBottom.value || (props.withPager && viewMode.value === 'table')
+  () => actionsAtBottom.value || toolsAtBottom.value || props.withPager
 )
 
 // 兼容旧逻辑（高度计算等场景仍按 hasTools 判断）
@@ -928,6 +957,14 @@ function toggleMode() {
   emit('mode-change', viewMode.value)
 }
 
+/** tab 形态：直设目标视图并广播 mode-change（与当前视图一致时不动） */
+function setViewMode(mode: string | number | boolean | undefined) {
+  const next = mode === 'card' ? 'card' : 'table'
+  if (viewMode.value === next) return
+  viewMode.value = next
+  emit('mode-change', next)
+}
+
 /** 操作列宽度：按按钮数量估算 */
 const actionColumnWidth = computed(() => {
   const w = props.rowActions.reduce((sum, act) => sum + act.text.length * 14 + 16, 20)
@@ -984,6 +1021,9 @@ defineExpose({
 
 // 注册到联动中心
 let unregister: (() => void) | null = null
+// 所在容器（Drawer/Dialog）的上下文：注册自身 refresh，容器刷新优先调用（只重拉数据，不销毁组件）
+let unregisterContainerRefresh: (() => void) | null = null
+const containerCtx = useContainer()
 onMounted(() => {
   unregister = registerDataGrid({
     filter: props.filter,
@@ -991,6 +1031,7 @@ onMounted(() => {
     search: (params?: Record<string, any>) => search(params),
     resetSearch: () => resetSearch()
   })
+  unregisterContainerRefresh = containerCtx?.registerRefresh?.(() => refresh()) ?? null
   if (props.active && !isStatic.value) {
     requestApi()
   }
@@ -1007,6 +1048,8 @@ onBeforeUnmount(() => {
   fixObserver = null
   fixBoundaryEl = null
   unregister?.()
+  unregisterContainerRefresh?.()
+  unregisterContainerRefresh = null
 })
 
 // api 变化自动重载

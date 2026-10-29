@@ -10,6 +10,12 @@ export interface ContainerContext {
   requestClose: (reason?: string) => void
   /** 注册关闭前拦截（返回 false 阻止关闭，如 DataForm 的 confirmLeave） */
   addBeforeClose: (guard: () => Promise<boolean>) => () => void
+  /**
+   * 注册内容组件自身的刷新函数（如 DataGrid.refresh）。
+   * 容器 refresh() 优先调用注册的刷新函数（只重拉数据、不销毁组件），
+   * 无注册时回退 key 强制重挂载。
+   */
+  registerRefresh?: (fn: () => any) => () => void
 }
 
 export const WD_CONTAINER_KEY: InjectionKey<ContainerContext> = Symbol('wdContainer')

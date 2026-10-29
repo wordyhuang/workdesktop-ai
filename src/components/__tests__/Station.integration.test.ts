@@ -3,11 +3,13 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, reactive, nextTick } from 'vue'
 import { Fold, Expand, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import Station from '../layout/Station.vue'
+import Drawer from '../containers/Drawer.vue'
 import {
   setStationFooter,
   refreshStationView,
   clearStationRegistry
 } from '../../lib/core/station-linkage'
+import { clearDrawerLinkageRegistry } from '../../lib/core/drawer-linkage'
 
 /* ---------- ElementPlus 桩（单根组件，class / onClick / index 等 attrs 自动落到根节点） ---------- */
 const passthrough = (name: string, tag: string, cls: string) =>
@@ -85,9 +87,23 @@ const ElDropdownItem = defineComponent({
 })
 const ElBadge = defineComponent({
   name: 'el-badge',
-  setup(_, { slots }) {
-    return () =>
-      h('span', { class: 'el-badge-stub' }, [slots.default?.(), h('sup', { class: 'el-badge-stub__value' })])
+  props: {
+    value: { type: [String, Number], default: undefined },
+    max: { type: Number, default: undefined },
+    isDot: { type: Boolean, default: false }
+  },
+  setup(props, { slots }) {
+    return () => {
+      // 复刻真实 el-badge：数值超 max 显示 `${max}+`，is-dot 红点模式
+      const text =
+        typeof props.value === 'number' && props.max !== undefined && props.value > props.max
+          ? `${props.max}+`
+          : props.value
+      return h('span', { class: ['el-badge-stub', { 'is-dot': props.isDot }] }, [
+        slots.default?.(),
+        h('sup', { class: 'el-badge-stub__value' }, text === undefined || text === '' ? undefined : String(text))
+      ])
+    }
   }
 })
 
@@ -106,7 +122,21 @@ const stubs = {
   'el-dropdown': ElDropdown,
   'el-dropdown-menu': ElDropdownMenu,
   'el-dropdown-item': ElDropdownItem,
-  'el-badge': ElBadge
+  'el-badge': ElBadge,
+  'el-drawer': defineComponent({
+    name: 'el-drawer',
+    inheritAttrs: false,
+    setup(_, { slots }) {
+      return () => h('div', { class: 'el-drawer-stub' }, slots.default?.())
+    }
+  }),
+  'el-dialog': defineComponent({
+    name: 'el-dialog',
+    inheritAttrs: false,
+    setup(_, { slots }) {
+      return () => h('div', { class: 'el-dialog-stub' }, slots.default?.())
+    }
+  })
 }
 
 const RouterViewStub = defineComponent({
@@ -144,6 +174,41 @@ const menuGroupsFixture = [
   }
 ]
 
+/* badgeType 分导台徽标夹具：聚合组（含 children 递归）/ 无效值组（非数值、0）/ 封顶组（累计超 99） */
+const badgeGroupsFixture = [
+  {
+    key: 'g1',
+    title: '聚合组',
+    menus: [
+      { title: '菜单A', path: '/a', badge: 5 },
+      {
+        title: '菜单B',
+        path: '/b',
+        children: [
+          { title: '子菜单B1', path: '/b1', badge: 3 },
+          { title: '子菜单B2', path: '/b2', badge: 2 }
+        ]
+      }
+    ]
+  },
+  {
+    key: 'g2',
+    title: '无效值组',
+    menus: [
+      { title: '菜单C', path: '/c', badge: 'new' },
+      { title: '菜单D', path: '/d', badge: 0 }
+    ]
+  },
+  {
+    key: 'g3',
+    title: '封顶组',
+    menus: [
+      { title: '菜单E', path: '/e', badge: 60 },
+      { title: '菜单F', path: '/f', badge: 50 }
+    ]
+  }
+]
+
 const flatMenusFixture = [
   { title: '工作台', path: '/work/dashboard', group: '工作区', groupKey: 'workspace' },
   { title: '我的项目', path: '/work/projects', group: '工作区', groupKey: 'workspace' },
@@ -177,9 +242,11 @@ function mountWithRouter(props: Record<string, any> = {}, routePath = '/work/das
 describe('WdStation 集成', () => {
   beforeEach(() => {
     clearStationRegistry()
+    clearDrawerLinkageRegistry()
   })
   afterEach(() => {
     clearStationRegistry()
+    clearDrawerLinkageRegistry()
     vi.restoreAllMocks()
   })
 
@@ -774,6 +841,79 @@ describe('WdStation 集成', () => {
     expect(mountedCount).toBe(3)
   })
 
+  it('refresh：存在可见 Drawer 时优先刷新 Drawer，内容页不动且不抛 refresh', async () => {
+    const pageMounts = { n: 0 }
+    const drawerMounts = { n: 0 }
+    const PageProbe = defineComponent({
+      name: 'PageProbe',
+      setup() {
+        pageMounts.n += 1
+        return () => h('div', { class: 'probe-page' }, 'page')
+      }
+    })
+    const DrawerProbe = defineComponent({
+      name: 'DrawerProbe',
+      setup() {
+        drawerMounts.n += 1
+        return () => h('div', { class: 'probe-drawer' }, 'drawer')
+      }
+    })
+    const wrapper = mount(Station, {
+      props: { menuGroups: menuGroupsFixture, routerMode: 'html' },
+      slots: {
+        default: () => [
+          h(PageProbe),
+          h(Drawer, { modelValue: true }, { default: () => h(DrawerProbe) })
+        ]
+      },
+      global: { stubs }
+    })
+    expect(pageMounts.n).toBe(1)
+    expect(drawerMounts.n).toBe(1)
+    await wrapper.find('[data-tool="refresh"]').trigger('click')
+    await nextTick()
+    // Drawer（非 iframe、无注册组件）走 key 重挂载；内容页保持不动
+    expect(drawerMounts.n).toBe(2)
+    expect(pageMounts.n).toBe(1)
+    expect(wrapper.emitted('refresh')).toBeFalsy()
+  })
+
+  it('refresh：Drawer 均不可见时回退刷新内容页并抛出 refresh', async () => {
+    const pageMounts = { n: 0 }
+    const drawerMounts = { n: 0 }
+    const PageProbe = defineComponent({
+      name: 'PageProbe',
+      setup() {
+        pageMounts.n += 1
+        return () => h('div', { class: 'probe-page' }, 'page')
+      }
+    })
+    const DrawerProbe = defineComponent({
+      name: 'DrawerProbe',
+      setup() {
+        drawerMounts.n += 1
+        return () => h('div', { class: 'probe-drawer' }, 'drawer')
+      }
+    })
+    const wrapper = mount(Station, {
+      props: { menuGroups: menuGroupsFixture, routerMode: 'html' },
+      slots: {
+        default: () => [
+          h(PageProbe),
+          h(Drawer, { modelValue: false }, { default: () => h(DrawerProbe) })
+        ]
+      },
+      global: { stubs }
+    })
+    expect(pageMounts.n).toBe(1)
+    await wrapper.find('[data-tool="refresh"]').trigger('click')
+    await nextTick()
+    expect(pageMounts.n).toBe(2)
+    // contentKey 重挂载整个内容区（含不可见 Drawer，既有语义）
+    expect(drawerMounts.n).toBe(2)
+    expect(wrapper.emitted('refresh')).toBeTruthy()
+  })
+
   it('v-model：collapsed / active-group / active-menu / open-tabs 双向同步', async () => {
     const wrapper = mountStation({
       menuGroups: menuGroupsFixture,
@@ -902,6 +1042,52 @@ describe('WdStation 集成', () => {
     // 无 badge 的菜单项不渲染徽章
     const plainItem = items.find((i) => i.text().includes('用户管理'))!
     expect(plainItem.find('.el-badge-stub').exists()).toBe(false)
+  })
+
+  it('badgeType 默认 dot：分组内任一菜单 badge>0 时分导台条目显示 is-dot 红点，无 badge 分组不显示', () => {
+    const wrapper = mountStation({ menuGroups: menuGroupsFixture })
+    const navItems = wrapper.findAll('.wd-station__nav-item')
+    // workspace 组无任何 badge → 无红点
+    expect(navItems[0].find('.el-badge-stub.wd-station__nav-badge').exists()).toBe(false)
+    // system 组角色管理 badge:3 → 右上角 is-dot 红点
+    const dot = navItems[1].find('.el-badge-stub.wd-station__nav-badge')
+    expect(dot.exists()).toBe(true)
+    expect(dot.classes()).toContain('is-dot')
+    // 显式传 dot 与默认行为一致
+    const w2 = mountStation({ menuGroups: menuGroupsFixture, badgeType: 'dot' })
+    expect(w2.findAll('.wd-station__nav-item')[1].find('.el-badge-stub.wd-station__nav-badge.is-dot').exists()).toBe(true)
+  })
+
+  it('badgeType=none：分导台永不渲染徽标', () => {
+    const wrapper = mountStation({ menuGroups: badgeGroupsFixture, badgeType: 'none' })
+    expect(wrapper.findAll('.wd-station__nav-item .wd-station__nav-badge')).toHaveLength(0)
+  })
+
+  it('badgeType=dot：仅数值化后 badge>0 触发红点，非数值字符串与 0 不触发', () => {
+    const wrapper = mountStation({ menuGroups: badgeGroupsFixture, badgeType: 'dot' })
+    const navItems = wrapper.findAll('.wd-station__nav-item')
+    // g1 聚合组：含 badge>0（含 children 内）→ 红点
+    expect(navItems[0].find('.el-badge-stub.wd-station__nav-badge.is-dot').exists()).toBe(true)
+    // g2 无效值组：'new' 非数值、badge 0 → 均不触发
+    expect(navItems[1].find('.wd-station__nav-badge').exists()).toBe(false)
+    // g3 封顶组：badge>0 → 红点
+    expect(navItems[2].find('.el-badge-stub.wd-station__nav-badge.is-dot').exists()).toBe(true)
+  })
+
+  it('badgeType=number：递归累加组内菜单 badge（含 children）且封顶 99+，无效值不渲染', () => {
+    const wrapper = mountStation({ menuGroups: badgeGroupsFixture, badgeType: 'number' })
+    const navItems = wrapper.findAll('.wd-station__nav-item')
+    // g1：5 + 3 + 2 = 10（children 内 badge 参与累加）
+    const badge1 = navItems[0].find('.el-badge-stub.wd-station__nav-badge')
+    expect(badge1.exists()).toBe(true)
+    expect(badge1.text()).toBe('10')
+    expect(badge1.classes()).not.toContain('is-dot')
+    // g2：非数值 'new' 与 badge 0 均不贡献 → 累计 0 不渲染
+    expect(navItems[1].find('.wd-station__nav-badge').exists()).toBe(false)
+    // g3：60 + 50 = 110 → 封顶显示 99+
+    const badge3 = navItems[2].find('.el-badge-stub.wd-station__nav-badge')
+    expect(badge3.exists()).toBe(true)
+    expect(badge3.text()).toBe('99+')
   })
 
   it('slots：各固定点位渲染自定义内容且位置正确，传入的 logo/footer 替换默认内容', () => {

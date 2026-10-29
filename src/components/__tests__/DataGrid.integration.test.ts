@@ -167,6 +167,44 @@ const ElDropdownItem = defineComponent({
   }
 })
 
+const radioGroupKey = Symbol('radio-group')
+const ElRadioGroup = defineComponent({
+  name: 'el-radio-group',
+  props: { modelValue: { type: [String, Number], default: '' } },
+  emits: ['update:modelValue', 'change'],
+  setup(p, { slots, emit }) {
+    // 模拟 EP radio-group：子项点击 -> emit update:modelValue + change
+    provide(radioGroupKey, (val: unknown) => {
+      emit('update:modelValue', val)
+      emit('change', val)
+    })
+    return () =>
+      h('div', { class: 'el-radio-group-stub', 'data-value': String(p.modelValue ?? '') }, slots.default?.())
+  }
+})
+const ElRadioButton = defineComponent({
+  name: 'el-radio-button',
+  props: {
+    label: { type: [String, Number], default: '' },
+    value: { type: [String, Number], default: undefined }
+  },
+  setup(p, { slots }) {
+    const emitVal = inject<(val: unknown) => void>(radioGroupKey)
+    const own = () => p.value ?? p.label
+    return () =>
+      h(
+        'button',
+        {
+          class: 'el-radio-button-stub',
+          type: 'button',
+          'data-value': String(own()),
+          onClick: () => emitVal?.(own())
+        },
+        slots.default?.() ?? String(own())
+      )
+  }
+})
+
 const stubs = {
   'el-button': ElButton,
   'el-tooltip': ElTooltip,
@@ -180,7 +218,9 @@ const stubs = {
   'el-badge': ElBadge,
   'el-dropdown': ElDropdown,
   'el-dropdown-menu': ElDropdownMenu,
-  'el-dropdown-item': ElDropdownItem
+  'el-dropdown-item': ElDropdownItem,
+  'el-radio-group': ElRadioGroup,
+  'el-radio-button': ElRadioButton
 }
 
 /** 列表成功响应 */
@@ -376,6 +416,27 @@ describe('DataGrid 集成（组件 + useDataGrid + linkage + http mock）', () =
     wrapper.unmount()
   })
 
+  it('表格/列表清单模式：切换卡片视图后分页与底栏保留', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, modeSwitch: true },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    // 表格视图：底栏与分页渲染
+    expect(wrapper.find('.wd-datagrid__bottom-bar').exists()).toBe(true)
+    expect(wrapper.find('.el-pagination-stub').exists()).toBe(true)
+
+    // 切到卡片视图：底栏与分页仍在（卡片列表同样按页展示）
+    await findModeBtn(wrapper).trigger('click')
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(true)
+    expect(wrapper.find('.wd-datagrid__bottom-bar').exists()).toBe(true)
+    expect(wrapper.find('.el-pagination-stub').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
   it('表格/列表清单模式：未提供 card-item 插槽时不渲染切换按钮（即使开启 modeSwitch）', async () => {
     const wrapper = mount(DataGrid, {
       props: { api: '/users', active: true, modeSwitch: true },
@@ -384,6 +445,100 @@ describe('DataGrid 集成（组件 + useDataGrid + linkage + http mock）', () =
     await flushPromises()
     expect(wrapper.findComponent(Menu).exists()).toBe(false)
     expect(wrapper.findComponent(Grid).exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('表格/列表清单模式：modeSwitchType=tab 时渲染分段按钮组（不渲染 icon 切换按钮），默认文字为表格/列表', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, modeSwitch: true, modeSwitchType: 'tab' },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    expect(wrapper.find('.el-radio-group-stub').exists()).toBe(true)
+    // icon 形态的切换按钮不渲染
+    expect(findModeBtn(wrapper)).toBeUndefined()
+    // 默认文字：每个按钮组都是「表格 / 列表」
+    const groups = wrapper.findAll('.el-radio-group-stub')
+    expect(groups.length).toBeGreaterThan(0)
+    for (const g of groups) {
+      const texts = g.findAll('.el-radio-button-stub').map((b: any) => b.text())
+      expect(texts).toEqual(['表格', '列表'])
+    }
+    wrapper.unmount()
+  })
+
+  it('表格/列表清单模式：tableText/cardText 可自定义分段按钮文字', async () => {
+    const wrapper = mount(DataGrid, {
+      props: {
+        api: '/users',
+        active: true,
+        modeSwitch: true,
+        modeSwitchType: 'tab',
+        tableText: '数据表',
+        cardText: '清单'
+      },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    const texts = wrapper.findAll('.el-radio-button-stub').map((b: any) => b.text())
+    expect(texts).toContain('数据表')
+    expect(texts).toContain('清单')
+    expect(texts).not.toContain('表格')
+    expect(texts).not.toContain('列表')
+    wrapper.unmount()
+  })
+
+  it('表格/列表清单模式：tab 形态点击分段按钮切换视图并 emit mode-change', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, modeSwitch: true, modeSwitchType: 'tab' },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    // 默认表格视图
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(false)
+
+    // 点击「列表」-> 卡片视图
+    const cardTab = wrapper
+      .findAll('.el-radio-button-stub')
+      .find((b: any) => b.text() === '列表')
+    await cardTab.trigger('click')
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(true)
+    expect(wrapper.find('.el-table-stub').exists()).toBe(false)
+    expect(wrapper.find('.my-card-item').text()).toBe('张三')
+    expect(wrapper.emitted('mode-change')?.[0]).toEqual(['card'])
+
+    // 点击「表格」-> 切回表格视图
+    const tableTab = wrapper
+      .findAll('.el-radio-button-stub')
+      .find((b: any) => b.text() === '表格')
+    await tableTab.trigger('click')
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(false)
+    expect(wrapper.emitted('mode-change')?.[1]).toEqual(['table'])
+    wrapper.unmount()
+  })
+
+  it('表格/列表清单模式：默认 icon 形态不受新增属性影响（回归）', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, modeSwitch: true },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    expect(wrapper.find('.el-radio-group-stub').exists()).toBe(false)
+    expect(findModeBtn(wrapper)).toBeTruthy()
     wrapper.unmount()
   })
 

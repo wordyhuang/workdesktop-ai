@@ -120,6 +120,18 @@
               <el-icon v-if="isIconFontClass(g.icon)"><i :class="g.icon" /></el-icon>
               <el-icon v-else-if="resolveStationIcon(g.icon)"><component :is="resolveStationIcon(g.icon)" /></el-icon>
               {{ g.title }}
+              <!-- 分导台徽标：dot=组内任一菜单 badge>0 显示红点 / number=组内菜单 badge 递归累加（封顶 99） -->
+              <el-badge
+                v-if="badgeType === 'dot' && navBadges[g.key]?.hasBadge"
+                is-dot
+                class="wd-station__nav-badge"
+              />
+              <el-badge
+                v-else-if="badgeType === 'number' && navBadges[g.key]?.sum"
+                :value="navBadges[g.key]?.sum ?? 0"
+                :max="99"
+                class="wd-station__nav-badge"
+              />
             </span>
           </nav>
           <span v-else-if="showHeaderTitle" class="wd-station__header-title">{{ title }}</span>
@@ -247,10 +259,11 @@ import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, type 
 import { Fold, Expand, ArrowUp, ArrowDown, Refresh, Setting, Close, FullScreen } from '@element-plus/icons-vue'
 import { filterProp } from '../common/props'
 import { registerStation, notifyStationChange } from '../../lib/core/station-linkage'
+import { refreshDrawers } from '../../lib/core/drawer-linkage'
 import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 import StationMenuNode from './StationMenuNode.vue'
 import type { MenuChainItem } from '../../lib/core/station-linkage'
-import type { StationMenuGroup, StationTab, StationToolbarConfig } from './types'
+import type { StationMenuItem, StationMenuGroup, StationTab, StationToolbarConfig } from './types'
 
 defineOptions({ name: 'WdStation' })
 
@@ -266,6 +279,8 @@ const props = defineProps({
   menus: { type: [Array, String] as PropType<any[] | string>, default: undefined },
   /** 头部中央模式：nav=分导台 / title=标题（此时侧边渲染全量菜单并带组标题）/ both=分导台+标题并存（顶部显示分导台，侧边按分组标题渲染全量菜单） */
   headerMode: { type: String as PropType<'nav' | 'title' | 'both'>, default: 'nav' },
+  /** 分导台徽标类型：none=关闭（永不显示）/ dot=组内任一菜单 badge>0 显示红点 / number=组内菜单 badge 递归累加（封顶 99 显示 99+） */
+  badgeType: { type: String as PropType<'none' | 'dot' | 'number'>, default: 'dot' },
   /** 是否显示头部中央标题（headerMode 非 nav 时的 fallback 标题；需自绘 header-center 时可关闭） */
   showHeaderTitle: { type: Boolean, default: true },
   /** 菜单位置：side=左侧 / top=顶部 / none=不启用 */
@@ -403,6 +418,30 @@ const groups = computed<StationMenuGroup[]>(() => {
   list = list.map((g) => ({ ...g, menus: assignKeys(g.menus, g.key) }))
   checkMenuDepth(list)
   return list
+})
+
+/* 各分组徽标聚合：递归遍历组内菜单（含 children），badge 数值化后 NaN/≤0 不参与 */
+const navBadges = computed<Record<string, { hasBadge: boolean; sum: number }>>(() => {
+  const map: Record<string, { hasBadge: boolean; sum: number }> = {}
+  for (const g of groups.value) {
+    let hasBadge = false
+    let sum = 0
+    const walk = (items: StationMenuItem[]) => {
+      for (const item of items) {
+        if (item.badge !== undefined && item.badge !== '') {
+          const n = Number(item.badge)
+          if (!Number.isNaN(n) && n > 0) {
+            hasBadge = true
+            sum += n
+          }
+        }
+        if (item.children?.length) walk(item.children)
+      }
+    }
+    walk(g.menus)
+    map[g.key] = { hasBadge, sum }
+  }
+  return map
 })
 
 /* ---------- 分组（分导台） ---------- */
@@ -650,8 +689,10 @@ function toggleCollapsed() {
 }
 
 /* ---------- 内容刷新（强制重挂载） ---------- */
+// 优先刷新当前可见的同组 Drawer（drawer-linkage 注册中心）；没有可见抽屉才刷新内容页
 const contentKey = ref(0)
 function refresh() {
+  if (refreshDrawers(props.filter) > 0) return
   contentKey.value += 1
   emit('refresh')
 }
@@ -903,6 +944,7 @@ defineExpose({ refresh, openTab, closeTab })
   gap: 4px;
 }
 .wd-station__nav-item {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -912,6 +954,13 @@ defineExpose({ refresh, openTab, closeTab })
   color: var(--wd-text-color-regular);
   font-size: var(--wd-font-size-base);
   white-space: nowrap;
+}
+/* 分导台徽标：钉在条目右上角内侧（badgeType=dot 红点 / number 累加值），px 偏移不依赖徽标自身尺寸 */
+.wd-station__nav-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(0, -2px);
 }
 .wd-station__nav-item:hover {
   color: var(--wd-color-primary);

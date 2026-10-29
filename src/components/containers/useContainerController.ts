@@ -78,6 +78,30 @@ export function useContainerController(options: {
     return () => beforeCloseGuards.delete(guard)
   }
 
+  // 内容组件注册的刷新函数（如 DataGrid.refresh）；容器 refresh 优先走这里，无注册才 key 重挂载
+  const contentRefreshers = new Set<() => any>()
+
+  function registerRefresh(fn: () => any) {
+    contentRefreshers.add(fn)
+    return () => contentRefreshers.delete(fn)
+  }
+
+  /**
+   * 刷新容器内容：逐个调用内容组件注册的刷新函数
+   * @returns 是否有注册的刷新函数被调用（false = 无注册，调用方可回退 key 重挂载）
+   */
+  function refreshContent(): boolean {
+    if (!contentRefreshers.size) return false
+    contentRefreshers.forEach((fn) => {
+      try {
+        fn()
+      } catch (e) {
+        console.error('[WorkDesktop] container refreshContent error:', e)
+      }
+    })
+    return true
+  }
+
   /** 执行全部内容守卫，任一返回 false 则中止 */
   async function runGuards(): Promise<boolean> {
     for (const guard of beforeCloseGuards) {
@@ -218,7 +242,8 @@ export function useContainerController(options: {
   provideContainer({
     data: props.data,
     requestClose,
-    addBeforeClose
+    addBeforeClose,
+    registerRefresh
   } as ContainerContext)
 
   return {
@@ -228,6 +253,8 @@ export function useContainerController(options: {
     addBeforeClose,
     handleBeforeClose,
     onClosed,
+    // 内容刷新（非 iframe 模式优先走内容组件注册的 refresh）
+    refreshContent,
     // iframe 桥接暴露
     setIframeRef,
     sendToIframe,

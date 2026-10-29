@@ -368,6 +368,46 @@
       </wd-data-grid>
     </demo-block>
 
+    <demo-block title="表格 / 列表清单模式（tab 形态）"
+      desc="mode-switch-type='tab' 时切换控件以分段按钮（tab）呈现，点击「表格 / 列表」直切对应视图（icon 形态为取反切换）；table-text / card-text 可自定义两段文字（默认「表格」「列表」）"
+      :code="codeModeTab">
+      <wd-data-grid :data-source="staticRows" :mode-switch="true" mode-switch-type="tab"
+        table-text="数据表" card-text="清单" row-key="code"
+        @mode-change="(m: string) => ElMessage.info(m === 'card' ? '已切换为清单视图' : '已切换为数据表视图')">
+        <el-table-column prop="code" label="项目编号" width="110" />
+        <el-table-column prop="name" label="项目名称" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="owner" label="负责人" width="90" />
+        <el-table-column prop="priority" label="优先级" width="90">
+          <template #default="{ row }">
+            <el-tag :type="priorityType(row.priority)" size="small" effect="dark">{{ row.priority }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="progress" label="进度" width="170">
+          <template #default="{ row }">
+            <el-progress :percentage="row.progress" :stroke-width="10" :status="row.done ? 'success' : ''" />
+          </template>
+        </el-table-column>
+        <!-- 列表清单（卡片）模式：单卡片内容自定义 -->
+        <template #card-item="{ row }">
+          <div class="prj-card">
+            <div class="prj-card__head">
+              <span class="prj-card__name">{{ row.name }}</span>
+              <el-tag :type="projectStatusType(row.status)" size="small">{{ projectStatusText(row.status) }}</el-tag>
+            </div>
+            <div class="prj-card__meta">
+              <span>{{ row.code }}</span>
+              <span>负责人 {{ row.owner }}</span>
+              <span>截止 {{ row.deadline }}</span>
+            </div>
+            <div class="prj-card__foot">
+              <el-progress :percentage="row.progress" :stroke-width="8" :status="row.done ? 'success' : ''" style="flex:1" />
+              <el-tag :type="priorityType(row.priority)" size="small" effect="dark">{{ row.priority }}</el-tag>
+            </div>
+          </div>
+        </template>
+      </wd-data-grid>
+    </demo-block>
+
     <demo-block title="方法调用（ref）"
       desc="给组件加 ref 后，可通过 grid.refresh() / grid.search(params) / grid.getSelection() / getCartList() / clearCart() / clearSelection() 等方法编程式操作表格，同时演示：<br/>1. 多选 + 选中回显（selectionKey）：v-model:model-value 双向绑定选中项回显勾选<br/>2. 跨页选择「购物车」：勾选行跨页累计，翻页/搜索不清空"
       :code="code4">
@@ -989,6 +1029,40 @@ const codeMode = `<!-- 开启 mode-switch + card-item 插槽：工具栏出现�
 
 <script setup>
 // mode-change 回传当前视图：'table' | 'card'，可做视图偏好持久化
+function onModeChange(mode) {}
+<\/script>`
+
+const codeModeTab = `<!-- mode-switch-type="tab"：切换控件以分段按钮（tab）呈现，点击直切对应视图 -->
+<!-- table-text / card-text 自定义两段文字（默认「表格」「列表」） -->
+<wd-data-grid :data-source="rows" :mode-switch="true" mode-switch-type="tab"
+  table-text="数据表" card-text="清单" row-key="code"
+  @mode-change="onModeChange">
+  <el-table-column prop="code" label="项目编号" width="110" />
+  <el-table-column prop="name" label="项目名称" min-width="200" show-overflow-tooltip />
+  <el-table-column prop="owner" label="负责人" width="90" />
+
+  <!-- 列表清单（卡片）模式：单卡片内容完全自定义，入参 { row, index } -->
+  <template #card-item="{ row }">
+    <div class="prj-card">
+      <div class="prj-card__head">
+        <span class="prj-card__name">{{ row.name }}</span>
+        <el-tag size="small">{{ row.status }}</el-tag>
+      </div>
+      <div class="prj-card__meta">
+        <span>{{ row.code }}</span>
+        <span>负责人 {{ row.owner }}</span>
+        <span>截止 {{ row.deadline }}</span>
+      </div>
+      <div class="prj-card__foot">
+        <el-progress :percentage="row.progress" :stroke-width="8" style="flex:1" />
+        <el-tag size="small" effect="dark">{{ row.priority }}</el-tag>
+      </div>
+    </div>
+  </template>
+</wd-data-grid>
+
+<script setup>
+// mode-change 回传当前视图：'table' | 'card'（tab 形态点击哪段就切哪个视图）
 function onModeChange(mode) {}
 <\/script>`
 

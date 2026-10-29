@@ -19,7 +19,9 @@
       class="wd-container__iframe wd-container__iframe--drawer"
       frameborder="0"
     />
-    <slot v-else />
+    <div v-else :key="contentKey" class="wd-container__content">
+      <slot />
+    </div>
     <template v-if="$slots.footer" #footer>
       <slot name="footer" :close="requestClose" />
     </template>
@@ -43,7 +45,9 @@
       class="wd-container__iframe wd-container__iframe--dialog"
       frameborder="0"
     />
-    <slot v-else />
+    <div v-else :key="contentKey" class="wd-container__content">
+      <slot />
+    </div>
     <template v-if="$slots.footer" #footer>
       <slot name="footer" :close="requestClose" />
     </template>
@@ -51,9 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, type PropType } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount, type PropType } from 'vue'
 import { useContainerController } from './useContainerController'
 import { filterProp, headRefreshDatagridProp } from '../common/props'
+import { registerDrawer } from '../../lib/core/drawer-linkage'
 
 defineOptions({ name: 'WdDrawer', inheritAttrs: false })
 
@@ -97,6 +102,7 @@ const {
   requestClose,
   handleBeforeClose,
   onClosed,
+  refreshContent,
   setIframeRef,
   sendToIframe,
   targetOrigin
@@ -114,6 +120,39 @@ watch(
     }
   }
 )
+
+/** 非 iframe 内容重挂载 key：内容组件未注册自身 refresh 时，refresh() 回退强制重挂载 */
+const contentKey = ref(0)
+
+/**
+ * 刷新抽屉内容（Station 顶部刷新按钮 / 外部 ref 调用）：
+ * - iframe 模式：iframeKey++ 重建 iframe（src 重载）
+ * - 非 iframe 模式：优先调用内容组件注册的 refresh（只重拉数据，不销毁组件）；
+ *   无注册时回退 contentKey++ 强制重挂载插槽内容
+ */
+function refresh() {
+  if (props.url) {
+    iframeKey.value += 1
+    return
+  }
+  if (!refreshContent()) {
+    contentKey.value += 1
+  }
+}
+
+// 注册到 drawer-linkage：Station 顶部刷新按钮优先刷新可见抽屉
+let unregisterLinkage: (() => void) | null = null
+onMounted(() => {
+  unregisterLinkage = registerDrawer({
+    filter: props.filter,
+    isVisible: () => visible.value,
+    refresh
+  })
+})
+onBeforeUnmount(() => {
+  unregisterLinkage?.()
+  unregisterLinkage = null
+})
 
 // 同步 ref 到 controller
 watch(iframeRef, (newRef) => {
@@ -144,6 +183,8 @@ const resolvedUrl = computed(() => {
 
 defineExpose({
   open: () => (visible.value = true),
+  /** 刷新抽屉内容：iframe 重载 / 内容组件 refresh 优先 / key 重挂载 */
+  refresh,
   /** 向 iframe 内发送指令（如 wd-container:submit 触发表单提交） */
   sendToIframe
 })
