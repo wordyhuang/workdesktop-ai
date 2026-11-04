@@ -1,13 +1,13 @@
 # 通用页面规范
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-19\
-> **当前版本**：V\_1.4\
+> **最后修改时间**：2026-11-04\
+> **当前版本**：V\_1.5\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：跨场景通用编码约定（布局/交互/反馈/按钮选型）\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.24）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
 >
-> **版本变更**：V_1.3 → V_1.4：新增「页面跳转原则」——非必要不做直接跳转，新内容展示优先用 `wd-drawer-button` 抽屉完成；确需独立工作区时用 `wd-station` 联动（`content-mode="tabs"` + `openTab` / `v-model:open-tabs` / `v-model:active-menu`）打开新标签页；非常不建议 `window.open` / `target="_blank"` 新开浏览器窗口或当前页直接跳转。
+> **版本变更**：V\_1.3 → V\_1.4：新增「页面跳转原则」——非必要不做直接跳转，新内容展示优先用 `wd-drawer-button` 抽屉完成；确需独立工作区时用 `wd-station` 联动（`content-mode="tabs"` + `openTab` / `v-model:open-tabs` / `v-model:active-menu`）打开新标签页；非常不建议 `window.open` / `target="_blank"` 新开浏览器窗口或当前页直接跳转。
 
 ### 0.1 页面介绍与注意事项
 
@@ -109,19 +109,19 @@ const result = await RequestAPI.request({
 - **标题规则**：只有**一个** wd-panel 时，或页面\*\*只有「搜索 + 表格」\*\*的常见情形，panel **不使用 title**（`show-header=false`）；当存在多个不同逻辑的 panel 时才用 title 区分语义。
 - **表格固定高度**：当内页**只有一个表格**，且**页面布局固定以此表格结尾**（结尾指表格之后不再有随内容滚动的静态内容块，弹出层等动态元素不计入），则开启 DataGrid 的 `height="fix"` 让表格铺满剩余高度、行区内滚动。
 
-| 规范要点    | 说明                                                                           |
-| ------- | ---------------------------------------------------------------------------- |
-| 外框架     | 整页用 `wd-station` 包裹（菜单、头部、内容滚动、footer 由它承担）                                  |
-| 一级容器    | 内页功能块一律用 `wd-panel`，作为一级容器；**外层不再有其他包裹容器**                                   |
-| 容器划分    | 功能逻辑相同的块放一个容器；不同 UI 逻辑内容（搜索/表格/统计）分别用独立 `wd-panel`                           |
-| 容器间距    | 相邻 wd-panel 之间用 margin 分隔（建议 `16px` 左右）                                      |
-| 面板标题    | **仅一个 panel、或仅「搜索+表格」情形：不使用 title（`show-header=false`）**；多逻辑时才用 title        |
-| 容器组件    | 优先使用 wd-panel 无标题模式；确有必要才用带标题模式                                              |
-| 嵌套限制    | **Panel 尽量只作一级容器，不建议 Panel 嵌套 Panel**；除非确实需要较大间距否则不嵌套                        |
-| 搜索面板容器  | 多条件搜索（≥3 个）时，`wd-search-panel` **单独占用一个 `wd-panel`**（`show-header=false`），不再嵌套在其他外层容器内；搜索面板与表格面板相邻排列，结构清晰。仅 1–2 个条件才走「简要搜索免容器」 |
-| 简要搜索免容器 | 搜索条件仅 1–2 个时，搜索与表格合并在一个容器——直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽，不再单独包 wd-panel |
-| 按钮归属    | 操作表格数据的按钮（新增/导出/批量删除等）放进**对应 DataGrid 的** **`#toolbar`** **插槽**；页面只有一个 DataGrid 时，所有操作按钮统一放进该表的 `#toolbar`。详见下方「操作按钮归属原则」 |
-| 表格固定高度  | 内页仅一个表格且**布局固定以该表格结尾**（不含弹出层等动态元素）时，开 DataGrid `height="fix"` 铺满剩余高、行区滚动     |
+| 规范要点    | 说明                                                                                                                                 |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 外框架     | 整页用 `wd-station` 包裹（菜单、头部、内容滚动、footer 由它承担）                                                                                        |
+| 一级容器    | 内页功能块一律用 `wd-panel`，作为一级容器；**外层不再有其他包裹容器**                                                                                         |
+| 容器划分    | 功能逻辑相同的块放一个容器；不同 UI 逻辑内容（搜索/表格/统计）分别用独立 `wd-panel`                                                                                 |
+| 容器间距    | 相邻 wd-panel 之间用 margin 分隔（建议 `16px` 左右）                                                                                            |
+| 面板标题    | **仅一个 panel、或仅「搜索+表格」情形：不使用 title（`show-header=false`）**；多逻辑时才用 title                                                              |
+| 容器组件    | 优先使用 wd-panel 无标题模式；确有必要才用带标题模式                                                                                                    |
+| 嵌套限制    | **Panel 尽量只作一级容器，不建议 Panel 嵌套 Panel**；除非确实需要较大间距否则不嵌套                                                                              |
+| 搜索面板容器  | 多条件搜索（≥3 个）时，`wd-search-panel` **单独占用一个** **`wd-panel`**（`show-header=false`），不再嵌套在其他外层容器内；搜索面板与表格面板相邻排列，结构清晰。仅 1–2 个条件才走「简要搜索免容器」 |
+| 简要搜索免容器 | 搜索条件仅 1–2 个时，搜索与表格合并在一个容器——直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽，不再单独包 wd-panel                                                       |
+| 按钮归属    | 操作表格数据的按钮（新增/导出/批量删除等）放进**对应 DataGrid 的** **`#toolbar`** **插槽**；页面只有一个 DataGrid 时，所有操作按钮统一放进该表的 `#toolbar`。详见下方「操作按钮归属原则」          |
+| 表格固定高度  | 内页仅一个表格且**布局固定以该表格结尾**（不含弹出层等动态元素）时，开 DataGrid `height="fix"` 铺满剩余高、行区滚动                                                           |
 
 布局骨架：
 
@@ -196,15 +196,15 @@ const result = await RequestAPI.request({
 
 #### 操作按钮归属原则
 
-对表格数据进行操作的按钮（新增、导出、批量删除、批量启用、导入等），**应当放进对应 DataGrid 的 `#toolbar` 插槽**，而不是悬浮在页面独立区域或外层 panel 标题栏。
+对表格数据进行操作的按钮（新增、导出、批量删除、批量启用、导入等），**应当放进对应 DataGrid 的** **`#toolbar`** **插槽**，而不是悬浮在页面独立区域或外层 panel 标题栏。
 
-| 页面情形 | 按钮归属                                      |
-| ---- | ----------------------------------------- |
-| 页面对应操作的表格数量 | 按钮放进**被操作那张表**的 `#toolbar` 插槽            |
-| 页面仅一个 DataGrid | 页面**所有**操作按钮统一放进这张表的 `#toolbar` 插槽，不在外层另设按钮区 |
-| 操作不针对任何表格（如「返回上级」「页面级全局设置」） | 可放在页面外，不属于本原则约束                           |
+| 页面情形                        | 按钮归属                                         |
+| --------------------------- | -------------------------------------------- |
+| 页面对应操作的表格数量                 | 按钮放进**被操作那张表**的 `#toolbar` 插槽                |
+| 页面仅一个 DataGrid              | 页面**所有**操作按钮统一放进这张表的 `#toolbar` 插槽，不在外层另设按钮区 |
+| 操作不针对任何表格（如「返回上级」「页面级全局设置」） | 可放在页面外，不属于本原则约束                              |
 
-**为什么放 DataGrid 的 `#toolbar`**：
+**为什么放 DataGrid 的** **`#toolbar`**：
 
 - 按钮与表格视觉一体，用户一眼就知道按钮作用于这张表（「一致性」「状态可预期」原则，见 §0.4）；
 - 工具栏高度被 `height="fix"` 自动扣除，按钮多时不会撑破表格余高布局；
@@ -290,17 +290,17 @@ const result = await RequestAPI.request({
 
 | 规则        | 要求                                                                                                                                                                                                                 |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 搜索面板组件选型  | 多条件搜索（≥3 个）一律用 `wd-search-panel` 包裹，**不要**手写 `<el-form>` + 自拼按钮；它自带「搜索 / 重置 / 展开收起」操作列（`with-actions` 默认 true），不需要额外添加按钮 |
-| 常用条件外露    | 常用/重要的搜索条件放 `wd-search-panel` **默认插槽**（一行外露，≤ 3–4 个）                                                                                                                                                          |
-| 低频条件折叠    | 不常用/次要的搜索条件放 `wd-search-panel` 的 **`#more` 插槽**，默认收起，点「展开」滑出；超过一行的条件自动进入折叠态                                                                                                             |
-| 声明式联动刷新   | `wd-search-panel` 通过 `:head-refresh-datagrid="gridRef"` 声明式联动——点「搜索」自动带参刷新目标 DataGrid（重置到第一页）、点「重置」自动清空条件并重查；**不需要手写 `@search` 事件 / `@reset` 事件 / `searchParams` 双向绑定** |
+| 搜索面板组件选型  | 多条件搜索（≥3 个）一律用 `wd-search-panel` 包裹，**不要**手写 `<el-form>` + 自拼按钮；它自带「搜索 / 重置 / 展开收起」操作列（`with-actions` 默认 true），不需要额外添加按钮                                                                                           |
+| 常用条件外露    | 常用/重要的搜索条件放 `wd-search-panel` **默认插槽**（一行外露，≤ 3–4 个）                                                                                                                                                               |
+| 低频条件折叠    | 不常用/次要的搜索条件放 `wd-search-panel` 的 **`#more`** **插槽**，默认收起，点「展开」滑出；超过一行的条件自动进入折叠态                                                                                                                                    |
+| 声明式联动刷新   | `wd-search-panel` 通过 `:head-refresh-datagrid="gridRef"` 声明式联动——点「搜索」自动带参刷新目标 DataGrid（重置到第一页）、点「重置」自动清空条件并重查；**不需要手写** **`@search`** **事件 /** **`@reset`** **事件 /** **`searchParams`** **双向绑定**                    |
 | 简要搜索免容器   | 仅 1–2 个搜索条件时，可不包 wd-panel，直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽（搜索与表格一体，少一层容器，见下方示例）                                                                                                                                  |
 | 统计口径解释    | 页面/指标/合计行中出现的统计数据，**紧接标签文字后用** **`wd-tips type="word"`** **加问号图标**，悬停说明计算口径与包含范围（例：数量合计 = 已审核行数量总和，不含草稿；金额合计 = 含税金额）                                                                                               |
 | 关键字段/操作解释 | 含义不直观的字段 label 旁用 `wd-form-item :tip="说明文字"`（表单内）或 `wd-tips type="word"`（详情页原生 item label）；操作区域的标题/状态标签旁用 `wd-tips type="word"` 说明含义（按钮本体 tooltip 用 TipsButton）                                                    |
 | 选项形态选型    | 选项数量少时（单选 ≤ 6 个 / 多选 ≤ 6 个，选项文案较短），用按钮形态的列表组件 `wd-radio-list` / `wd-checkbox-list`（开 `buttonStyle`）——选项一目了然、少一次点击；选项多、文案长或需搜索时再用 select                                                                            |
 | 列多优化      | 大列表列多时按下述策略降列数 + 省宽度 + 提可读：唯一标识列固定宽 + `show-overflow-tooltip`；短状态/分类用 Tag 与名称合并成一列；低频操作收进「更多」下拉；备注列用 wd-tips + 固定窄宽；维护者用「时间icon+姓名」悬停显时间；长内容列固定宽 + 悬停看全文；仍放不下再考虑默认 list 卡片（需 card-item 插槽 + modeSwitch）。完整规范见 §1.9 |
-| 查询触发      | 点击「查询」按钮触发；输入框支持回车触发（`wd-search-panel` 内置 el-form 提交处理）                                                                                                                                                              |
-| 重置行为      | 重置 = 清空条件 + 立即重新查询（`wd-search-panel` 内置逻辑，调用 `resetSearchDataGrid`）                                                                                                                                                      |
+| 查询触发      | 点击「查询」按钮触发；输入框支持回车触发（`wd-search-panel` 内置 el-form 提交处理）                                                                                                                                                            |
+| 重置行为      | 重置 = 清空条件 + 立即重新查询（`wd-search-panel` 内置逻辑，调用 `resetSearchDataGrid`）                                                                                                                                                |
 | 条件记忆      | 列表页跳转详情再返回时，查询条件和页码保持（路由 keep-alive）                                                                                                                                                                               |
 | 工具栏布局     | 业务操作按钮（新增/导出/批量）放表格**左上角**——即放进对应 DataGrid 的 `#toolbar` 插槽；页面只有一个 DataGrid 时所有操作按钮统一放进该表 `#toolbar`（归属原则见 §0.3「操作按钮归属原则」）；刷新、调整大小、列设置放**右上角**（DataGrid 内置 tools，无需手写）                                              |
 | 不可用操作隐藏   | 按行状态永远无法执行的操作**直接不渲染**（如状态=完成时不显示「编辑」），不用 disabled 占位；仅临时不可用（权限/处理中）才用禁用并说明原因                                                                                                                                      |
@@ -550,11 +550,11 @@ async function handleSubmit() {
 
 **页面跳转原则——非必要不做直接跳转**：
 
-| 展示方式 | 优先级 | 适用情形 | 说明 |
-| --- | --- | --- | --- |
-| Drawer 弹层 | **首选** | 非必要不跳转——新增/编辑/详情等新内容展示，优先在当前页以抽屉完成 | 优先用 `wd-drawer-button`（触发按钮 + 弹层一体：默认插槽内嵌 DataForm、`url` 模式 iframe 内嵌页面；关闭后 `head-refresh-datagrid` 声明式刷新列表）——保留列表上下文，操作完即回，搜索条件与页码不丢 |
-| 新标签页 | 次选 | 内容确实需要独立工作区（复杂表单、需长时间停留或多页面并排对照） | 用 `wd-station` 的联动能力打开：`content-mode="tabs"` 下 ref 调用 `openTab({ key, title, path })`（同 key 去重并激活），或受控绑定 `v-model:open-tabs` / `v-model:active-menu` 由菜单与路由自动联动成标签页 |
-| 浏览器级跳转 | 强烈不建议 | —— | **非常不建议** `window.open` / `target="_blank"` 打开新浏览器窗口，或当前页面直接跳转——丢失上下文、多窗口难管理；仅外部系统链接等确有必要时例外（用 `wd-route-button`） |
+| 展示方式      | 优先级    | 适用情形                               | 说明                                                                                                                                                                  |
+| --------- | ------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Drawer 弹层 | **首选** | 非必要不跳转——新增/编辑/详情等新内容展示，优先在当前页以抽屉完成 | 优先用 `wd-drawer-button`（触发按钮 + 弹层一体：默认插槽内嵌 DataForm、`url` 模式 iframe 内嵌页面；关闭后 `head-refresh-datagrid` 声明式刷新列表）——保留列表上下文，操作完即回，搜索条件与页码不丢                               |
+| 新标签页      | 次选     | 内容确实需要独立工作区（复杂表单、需长时间停留或多页面并排对照）   | 用 `wd-station` 的联动能力打开：`content-mode="tabs"` 下 ref 调用 `openTab({ key, title, path })`（同 key 去重并激活），或受控绑定 `v-model:open-tabs` / `v-model:active-menu` 由菜单与路由自动联动成标签页 |
+| 浏览器级跳转    | 强烈不建议  | ——                                 | **非常不建议** `window.open` / `target="_blank"` 打开新浏览器窗口，或当前页面直接跳转——丢失上下文、多窗口难管理；仅外部系统链接等确有必要时例外（用 `wd-route-button`）                                                   |
 
 代码示例：
 
@@ -709,12 +709,12 @@ async function handleBatchDelete(rows: any[]) {
 
 **主文案命名规律**：`<暂无/未找到> + <业务对象名> + <数据/结果>`。
 
-| 场景 | 主文案（description） | 副文案（可选） | 主行动按钮 | 次行动按钮 |
-| --- | --- | --- | --- | --- |
-| 列表初始空（一次筛选都没点过） | 「暂无{业务对象}数据」（如「暂无用户数据」「暂无订单数据」） | 「点击右上角「新增」，开始创建第一条{业务对象}」 | 「立即新增{业务对象}」（type=primary） | — |
-| 搜索/筛选后空 | 「未找到匹配结果」 | 「试试调整搜索条件，或清空筛选」 | — | 「清空筛选条件」 |
-| 加载失败 | 「数据加载失败」 | 「网络或服务器异常，请稍后重试」 | 「重新加载」（type=primary） | — |
-| 无权限 | 「暂无访问权限」 | 「请联系管理员开通{模块名}权限」 | — | 「返回上一页」「联系管理员」 |
+| 场景              | 主文案（description）                | 副文案（可选）                   | 主行动按钮                      | 次行动按钮          |
+| --------------- | ------------------------------- | ------------------------- | -------------------------- | -------------- |
+| 列表初始空（一次筛选都没点过） | 「暂无{业务对象}数据」（如「暂无用户数据」「暂无订单数据」） | 「点击右上角「新增」，开始创建第一条{业务对象}」 | 「立即新增{业务对象}」（type=primary） | —              |
+| 搜索/筛选后空         | 「未找到匹配结果」                       | 「试试调整搜索条件，或清空筛选」          | —                          | 「清空筛选条件」       |
+| 加载失败            | 「数据加载失败」                        | 「网络或服务器异常，请稍后重试」          | 「重新加载」（type=primary）       | —              |
+| 无权限             | 「暂无访问权限」                        | 「请联系管理员开通{模块名}权限」         | —                          | 「返回上一页」「联系管理员」 |
 
 ```html
 <wd-datagrid ref="gridRef" api="/api/users" :columns="columns">
@@ -742,6 +742,7 @@ async function handleBatchDelete(rows: any[]) {
 ```
 
 > **规范要点**：
+>
 > - **主文案必须点明业务对象**（如「暂无用户数据」而非空泛的「暂无数据」），用户一眼知道在看哪个模块的空态。
 > - **副文案用灰色小字**（`--el-text-color-secondary`），字号 13px，不要喧宾夺主。
 > - **按钮顺序**：主行动按钮 `type="primary"` 放左侧，次行动按钮放右侧（默认 type）；只有一个按钮时不强制居右。
@@ -799,7 +800,7 @@ async function handleBatchDelete(rows: any[]) {
 
 ### 0.13 按钮组件选型与使用场景
 
-WorkDesktop 提供 8 个按钮组件，全部继承自 TipsButton（自带 `tips/tipsType/placement` 悬停提示能力，透传 el-button 全部属性），但核心能力分工不同。选型时从 **"我需要做什么"** 出发，而非按组件名直觉选择。
+WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips/tipsType/placement` 悬停提示能力，透传 el-button 全部属性），但核心能力分工不同。选型时从 **"我需要做什么"** 出发，而非按组件名直觉选择。其中 WdStationTabButton 用于打开/激活 WdStation 的标签页（导航类，不发请求、不开弹层），不参与下述业务操作按钮选型，API 见 [ai-api/wd-station-tab-button.md](../ai-api/wd-station-tab-button.md)。
 
 #### 选型决策树
 
@@ -854,6 +855,7 @@ WorkDesktop 提供 8 个按钮组件，全部继承自 TipsButton（自带 `tips
 | **PopconfirmButton** | 气泡确认 → 请求          | ✅                          | ❌                         | ✅    | 行内删除、单条启停（不想打断上下文）      | `title` / `confirmButtonText`                  |
 | **DrawerButton**     | 点开 Drawer          | 内部嵌 DataForm 时由 DataForm 发 | ✅（Drawer）                 | ✅    | 新增 / 编辑 / 导入流程（4-15 字段） | `title` / `data` / `size`                      |
 | **DialogButton**     | 点开 Dialog          | 内部嵌 DataForm 时由 DataForm 发 | ✅（Dialog）                 | ✅    | 弹窗选择器 / 轻量录入（≤3 字段）     | `title` / `data` / `size`                      |
+| **StationTabButton** | 打开/激活 Station 标签页 | ❌                          | ❌（开 Station 标签页）       | ❌    | 工作台快捷入口、任意位置打开主框架标签页 | `path` 或 `tabKey` / `tabTitle` / `filter`     |
 
 #### 各按钮典型场景代码
 
@@ -1021,14 +1023,14 @@ WorkDesktop 提供 8 个按钮组件，全部继承自 TipsButton（自带 `tips
 
 ##### DrawerButton —— 打开 Drawer 弹层
 
-点击打开右侧 Drawer（默认 size="50%"，500px），内部**内嵌一个插槽**，插槽里放什么都可以——最常见是 WdDataForm（新增/编辑），也可以是 iframe（`drawerUrl` 模式嵌入外部页面）。关闭后通过 `headCloseDrawer` 自动联动刷新目标 DataGrid。
+点击打开右侧 Drawer（抽屉尺寸 prop 为 `drawer-size`，默认 `'50%'`，数字按 px 处理），内部**内嵌一个插槽**，插槽里放什么都可以——最常见是 WdDataForm（新增/编辑），也可以是 iframe（`url` 模式嵌入外部页面）。关闭后通过 `headCloseDrawer` 自动联动刷新目标 DataGrid。
 
 **与 DialogButton 的边界**：DrawerButton 打开 Drawer（保留列表上下文、从右侧滑出），适合 **4-15 字段的表单**（新增/编辑）；DialogButton 打开居中 Dialog，适合 **3 字段以内的轻量录入或选择器**。
 
 ```html
 <!-- 新增：DrawerButton 内嵌 DataForm（create 模式，保存后可连续新增） -->
 <template #toolbar>
-  <wd-drawer-button label="新增用户" title="新增用户" size="50%" type="primary">
+  <wd-drawer-button label="新增用户" title="新增用户" drawer-size="50%" type="primary">
     <wd-data-form
       mode="create"
       submit-api="/api/users/save"
@@ -1045,7 +1047,7 @@ WorkDesktop 提供 8 个按钮组件，全部继承自 TipsButton（自带 `tips
 <!-- 编辑：DrawerButton 带 data 传给 DataForm（edit 模式，自动回填） -->
 <el-table-column label="操作">
   <template #default="{ row }">
-    <wd-drawer-button label="编辑" title="编辑用户" size="50%" :data="row" link>
+    <wd-drawer-button label="编辑" title="编辑用户" drawer-size="50%" :data="row" link>
       <wd-data-form
         mode="edit"
         api="/api/users/detail"
@@ -1063,11 +1065,11 @@ WorkDesktop 提供 8 个按钮组件，全部继承自 TipsButton（自带 `tips
 </el-table-column>
 ```
 
-> **Prop 名说明**：DrawerButton / DialogButton 的弹层相关 props 不带前缀——`title` 是弹层标题、`size` 是弹层尺寸（Drawer 默认 `'50%'` 宽 / Dialog 默认 `'50%'` 宽）、`data` 是传给内部表单的数据（edit 模式下 DataForm 用它回填）。按钮自己的文案用 `label` prop 或默认插槽，按钮尺寸用 `buttonSize`（避免与弹层 size 冲突）。
+> **Prop 名说明**：DrawerButton 与 DialogButton 的 `title`（弹层标题）、`data`（传给内部表单的数据，edit 模式下 DataForm 用它回填）同名同义；但**弹层尺寸与按钮尺寸的 prop 名两个组件不同**——DrawerButton：`drawer-size` 是弹层尺寸（默认 `'50%'`，数字按 px 处理）、`size` 是按钮尺寸（large/default/small）；DialogButton：`size` 是弹层尺寸（默认 `'50%'`）、`button-size` 是按钮尺寸。按钮文案统一用 `label` prop 或默认插槽。
 
 ##### DialogButton —— 打开 Dialog 弹层
 
-点击打开居中 Dialog（默认 size="50%"，约 400px），与 DrawerButton 同构但弹层不同。适用场景：**3 字段以内的轻量录入 / 弹窗选择器**（见场景六：弹窗选择器）。
+点击打开居中 Dialog（弹层尺寸 prop 为 `size`，默认 `'50%'`），与 DrawerButton 同为弹层按钮但 prop 命名不同（见下方 Prop 名说明）。适用场景：**3 字段以内的轻量录入 / 弹窗选择器**（见场景六：弹窗选择器）。
 
 ```html
 <!-- 弹窗选择器：点"选择用户"打开 Dialog，内嵌 DataGrid 供选择 -->

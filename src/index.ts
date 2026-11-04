@@ -40,16 +40,17 @@ export {
   clearLinkageRegistry
 } from './lib/core/linkage'
 
-// Station 联动（底栏信息 / 内容刷新 / 菜单链读取 / 变更订阅）
+// Station 联动（底栏信息 / 内容刷新 / 菜单链读取 / 打开标签 / 变更订阅）
 export {
   registerStation,
   setStationFooter,
   refreshStationView,
   getStationMenuChain,
+  openStationTab,
   subscribeStationChange,
   notifyStationChange
 } from './lib/core/station-linkage'
-export type { StationInstance, MenuChainItem } from './lib/core/station-linkage'
+export type { StationInstance, StationTabInput, MenuChainItem } from './lib/core/station-linkage'
 
 // Anchor 联动（跨组件菜单内容指定 / 刷新通知 / 菜单读取）
 export {

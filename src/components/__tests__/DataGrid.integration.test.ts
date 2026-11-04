@@ -448,6 +448,38 @@ describe('DataGrid 集成（组件 + useDataGrid + linkage + http mock）', () =
     wrapper.unmount()
   })
 
+  it('defaultMode=card 且提供 card-item 插槽时默认展示卡片视图，可切回表格', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, modeSwitch: true, defaultMode: 'card' },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    // 初始即卡片视图：表格不渲染、自定义卡片内容生效
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(true)
+    expect(wrapper.find('.el-table-stub').exists()).toBe(false)
+    expect(wrapper.find('.my-card-item').text()).toBe('张三')
+    // 切换按钮仍可见，点击切回表格并 emit mode-change
+    await findModeBtn(wrapper).trigger('click')
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(false)
+    expect(wrapper.emitted('mode-change')?.[0]).toEqual(['table'])
+    wrapper.unmount()
+  })
+
+  it('defaultMode=card 但未提供 card-item 插槽时仍展示表格视图', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, defaultMode: 'card' },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('表格/列表清单模式：modeSwitchType=tab 时渲染分段按钮组（不渲染 icon 切换按钮），默认文字为表格/列表', async () => {
     const wrapper = mount(DataGrid, {
       props: { api: '/users', active: true, modeSwitch: true, modeSwitchType: 'tab' },

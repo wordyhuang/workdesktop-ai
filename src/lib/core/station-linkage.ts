@@ -18,6 +18,22 @@ export interface StationInstance {
   refresh: () => void
   /** 当前激活菜单的路径链（分组标题 → 菜单 → 子菜单），供 WdPath 自动模式读取 */
   getActiveMenuChain?: () => MenuChainItem[]
+  /** 打开并激活一个标签页（WdStationTabButton 联动） */
+  openTab?: (tab: StationTabInput) => void
+}
+
+/** 外部联动打开的标签页入参（key / title 可缺省：仅给 path 时由 Station 反查菜单补齐） */
+export interface StationTabInput {
+  /** 标签唯一标识（与 Station 菜单项 key 一致；缺省时按 path 反查） */
+  key?: string
+  /** 标签标题（缺省时按 path 反查菜单标题，仍未取到则回退 key） */
+  title?: string
+  /** 标签对应路由路径 */
+  path?: string
+  /** 标签图标（EP 图标名 / 图标字体 class / 组件） */
+  icon?: string | object
+  /** 固定标签（不可关闭） */
+  affix?: boolean
 }
 
 /** 菜单链节点（面包屑自动模式的菜单段） */
@@ -126,6 +142,32 @@ export function getStationMenuChain(
     }
   }
   return []
+}
+
+/**
+ * 打开目标 Station 的一个标签页并激活（WdStationTabButton 使用）
+ * @param target true=同 filter 组；字符串=定向该 filter 组
+ * @param tab 标签入参（key 可缺省，仅给 path 时由 Station 反查菜单补齐）
+ * @param selfFilter 发起方自身 filter
+ * @returns 成功打开的实例数量（同组多个 Station 时按注册顺序尝试，首个成功即返回）
+ */
+export function openStationTab(
+  target: string | boolean | undefined,
+  tab: StationTabInput,
+  selfFilter?: string
+): number {
+  if (!tab.key && !tab.path) return 0
+  const targets = resolveTargets(target, selfFilter)
+  for (const station of targets) {
+    if (!station.openTab) continue
+    try {
+      station.openTab(tab)
+      return 1
+    } catch (e) {
+      console.error('[WorkDesktop] openStationTab error:', e)
+    }
+  }
+  return 0
 }
 
 /** filter 分组 → 路径组件刷新回调集合（Station 菜单变化时通知同组 Path 重新读取菜单链） */

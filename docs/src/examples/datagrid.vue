@@ -408,6 +408,30 @@
       </wd-data-grid>
     </demo-block>
 
+    <demo-block title="默认展示列表清单（default-mode）"
+      desc="default-mode='card' 时初始即展示卡片视图；该属性仅在提供 card-item 插槽时生效——无插槽时忽略，仍展示表格。切换按钮照常可用，可在表格与清单间来回切换"
+      :code="codeDefaultCard">
+      <wd-data-grid :data-source="staticRows" :mode-switch="true" default-mode="card" row-key="code"
+        @mode-change="(m: string) => ElMessage.info(m === 'card' ? '已切换为列表清单视图' : '已切换为表格视图')">
+        <el-table-column prop="code" label="项目编号" width="110" />
+        <el-table-column prop="name" label="项目名称" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="owner" label="负责人" width="90" />
+        <template #card-item="{ row }">
+          <div class="prj-card">
+            <div class="prj-card__head">
+              <span class="prj-card__name">{{ row.name }}</span>
+              <el-tag :type="projectStatusType(row.status)" size="small">{{ projectStatusText(row.status) }}</el-tag>
+            </div>
+            <div class="prj-card__meta">
+              <span>{{ row.code }}</span>
+              <span>负责人 {{ row.owner }}</span>
+              <span>截止 {{ row.deadline }}</span>
+            </div>
+          </div>
+        </template>
+      </wd-data-grid>
+    </demo-block>
+
     <demo-block title="方法调用（ref）"
       desc="给组件加 ref 后，可通过 grid.refresh() / grid.search(params) / grid.getSelection() / getCartList() / clearCart() / clearSelection() 等方法编程式操作表格，同时演示：<br/>1. 多选 + 选中回显（selectionKey）：v-model:model-value 双向绑定选中项回显勾选<br/>2. 跨页选择「购物车」：勾选行跨页累计，翻页/搜索不清空"
       :code="code4">
@@ -1063,6 +1087,33 @@ const codeModeTab = `<!-- mode-switch-type="tab"：切换控件以分段按钮�
 
 <script setup>
 // mode-change 回传当前视图：'table' | 'card'（tab 形态点击哪段就切哪个视图）
+function onModeChange(mode) {}
+<\/script>`
+
+const codeDefaultCard = `<!-- default-mode="card"：初始即展示卡片视图（仅在提供 card-item 插槽时生效） -->
+<wd-data-grid :data-source="rows" :mode-switch="true" default-mode="card" row-key="code"
+  @mode-change="onModeChange">
+  <el-table-column prop="code" label="项目编号" width="110" />
+  <el-table-column prop="name" label="项目名称" min-width="200" show-overflow-tooltip />
+  <el-table-column prop="owner" label="负责人" width="90" />
+
+  <template #card-item="{ row }">
+    <div class="prj-card">
+      <div class="prj-card__head">
+        <span class="prj-card__name">{{ row.name }}</span>
+        <el-tag size="small">{{ row.status }}</el-tag>
+      </div>
+      <div class="prj-card__meta">
+        <span>{{ row.code }}</span>
+        <span>负责人 {{ row.owner }}</span>
+        <span>截止 {{ row.deadline }}</span>
+      </div>
+    </div>
+  </template>
+</wd-data-grid>
+
+<script setup>
+// 初始为 card 视图；切换后回传 'table' | 'card'
 function onModeChange(mode) {}
 <\/script>`
 

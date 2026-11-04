@@ -135,10 +135,10 @@ export const containerData: ComponentMeta[] = [
       note: '纯自研卡片容器（根节点 div.wd-panel，内部仅使用 el-icon），没有可透传的 Element Plus 组件。',
     },
     title: 'Panel 面板',
-    desc: '带标题/描述的内容面板，作为表单分组与详情分区容器；支持折叠、内容超限自动折叠、描述对齐与悬停动效、标题右侧操作区与阴影策略',
+    desc: '带标题/描述的内容面板，作为表单分组与详情分区容器；支持常规面板与信息卡片两种模式、折叠、内容超限自动折叠、描述对齐与悬停动效、标题标识条长短形态、标题图标、标题右侧操作区与阴影策略',
     group: '容器',
     intro: {
-      overview: 'WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情分区的容器。标题左侧带品牌色标识条，支持点击标题区折叠/展开主体内容、内容超过指定高度时自动折叠（`collapseHeight`）、控制描述在标题右侧空白区居左或居右对齐（`descriptionAlign`）、描述折叠展示时的悬停淡入动效（`descriptionExpandable`）、在标题右侧放置操作区（extra 插槽），并提供 always / hover / never 三种阴影策略以适应不同层级的视觉分区需求。',
+      overview: 'WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情分区的容器。标题左侧带品牌色标识条（高度形态可调：`titleBar` 长条与头部同高 / 短条与标题行同高、顶部对齐标题行，短条下描述换行显示在标题下方），支持点击标题区折叠/展开主体内容、内容超过指定高度时自动折叠（`collapseHeight`）、控制描述在标题右侧空白区居左或居右对齐（`descriptionAlign`）、描述折叠展示时的悬停淡入动效（`descriptionExpandable`）、为标题配置图标（`icon`，设置后左侧标识条自动隐藏、由图标承担视觉锚点）、在标题右侧放置操作区（extra 插槽），并提供 always / hover / never 三种阴影策略以适应不同层级的视觉分区需求；还可通过 `mode` 切换信息卡片形态（`card`：白底大圆角、头部整体带浅色背景、描述显示在标题下方，适合 flex 容器一行并行多卡）。',
       whenToUse: [
         '详情页需要按「基本信息 / 联系信息 / 其他」等分区组织内容时。',
         '表单较长，需要分组展示并允许用户收起暂不关注的分组时（`collapsible`）。',
@@ -146,6 +146,8 @@ export const containerData: ComponentMeta[] = [
         '分区标题旁需要放置「刷新 / 更多」等轻量操作入口时（`extra` 插槽）。',
         '标题与右侧操作区之间有大片空白，希望描述信息靠右与操作区呼应时（`descriptionAlign="right"`）。',
         '描述属于补充信息、不希望常驻占位，希望悬停标题时以轻量动效提示出来时（`descriptionExpandable`）。',
+        '分区标题需要更强的视觉辨识度，希望用图标替代默认的品牌色标识条时（`icon`）。',
+        '信息聚合页需要一行并排展示多块独立信息，希望卡片化外观（头部带浅色背景、描述在标题下方）时（`mode="card"`）。',
         '不建议：需要弹出式承载内容（应使用 WdDrawer 抽屉/对话框容器）。',
         '不建议：页面最外层整体布局（应使用 WdStation 中后台外框架）。'
       ],
@@ -154,6 +156,9 @@ export const containerData: ComponentMeta[] = [
         '`opened` 只在 `collapsible` 开启后生效；未开启折叠时面板始终展开。',
         '`descriptionAlign="right"` 时描述吸收标题右侧剩余空白贴到面板右端；与 `descriptionExpandable` 可叠加使用（悬停标题显示的描述同样靠右）。',
         '`descriptionExpandable=true` 时描述以 0.24s 淡入 + 4px 滑入的入场动效出现（`right` 对齐时从右侧滑入），纯 CSS 实现；无需开关，如需关闭可在业务侧覆盖 `animation`。',
+        '`titleBar="short"` 时左侧标识条变为与标题行同高的短条（默认 22px，可用 --wd-panel-title-bar-height 令牌调整），顶部对齐标题行（--wd-panel-title-bar-top 令牌默认 12px，与 header 上内边距一致），并与左侧边框留有间距（--wd-panel-title-bar-left 令牌默认 10px，浮动短条四角均圆角），此时描述自动换行显示在标题下方独占整行（与 card 模式表现一致，DOM 顺序不变）；无描述时头部保持单行，短条与标题行重合。长条（默认 `long`）与头部同高、贴左边框。短条形态下 --wd-panel-title-bar-inset 令牌不再生效；`icon` 或 `mode="card"` 下标识条本身隐藏，该属性无效。',
+        '`icon` 支持 @element-plus/icons-vue 图标名字符串、图标字体 class（如 \'fa-solid fa-user\'，需自行引入对应字体 CSS）、组件对象三种形态；设置后标题前显示图标，左侧品牌色标识条自动隐藏，由图标承担视觉锚点角色。',
+        '`mode="card"` 时组件呈现信息卡片形态：白底大圆角、头部（标题区）整体带浅色背景（默认 #e4e9f0，三级回退：--wd-panel-card-header-bg → 皮肤的 --wd-panel-header-bg → 默认值，皮肤设置 panel 头部背景后 card 自动联动；另有 --wd-panel-card-header-padding / --wd-panel-card-radius / --wd-panel-card-title-gap 令牌可调）、description 换行显示在标题下方、隐藏品牌色标识条与头部底部分割线；外层用 flex 容器（gap 控制间距）即可一行并行多个卡片。',
         '`collapseHeight` 需配合 `collapsible` 使用：内容实际高度超过阈值时渲染完成后自动收起一次，用户可点击标题重新展开；后续内容变化不再重复触发自动折叠。',
         '`extra` 插槽区域的点击事件已被拦截（`@click.stop`），点击里面的按钮不会误触面板的折叠/展开。',
         '折叠时主体（default）与底部（footer）会一并收起，展开带高度过渡动画；不要把需要常驻的操作只放在 footer 里。',
@@ -177,6 +182,9 @@ export const containerData: ComponentMeta[] = [
       { name: 'border', type: 'boolean', default: 'true', desc: '是否显示外边框（嵌套在卡片/弹层等容器内时可关闭）' },
       { name: 'descriptionExpandable', type: 'boolean', default: 'false', desc: '描述展示模式：false=直接显示在标题旁；true=标题下出现虚线，鼠标悬停标题时才以淡入动效显示描述' },
       { name: 'descriptionAlign', type: "'left' | 'right'", default: "'left'", desc: '描述在标题右侧空白区的对齐方式：left=紧跟标题；right=吸收剩余空白贴到面板头部右端' },
+      { name: 'titleBar', type: "'long' | 'short'", default: "'long'", desc: '标题左侧品牌色标识条高度形态：long=与头部同高（默认）；short=与标题行同高（约 22px）、顶部对齐标题行，描述换行显示在标题下方；icon 或 mode="card" 下标识条隐藏，该属性无效' },
+      { name: 'icon', type: 'string | Component', default: "''", desc: '标题图标：@element-plus/icons-vue 图标名（如 Setting）/ 图标字体 class（如 fa-solid fa-user）/ 组件对象；设置后标题前显示图标，左侧品牌色标识条隐藏' },
+      { name: 'mode', type: "'panel' | 'card'", default: "'panel'", desc: "展示模式：panel=常规分区面板；card=信息卡片（白底大圆角、头部整体带浅色背景、description 显示在标题下方，配合 flex 容器可一行并行多卡）" },
       { name: 'collapseHeight', type: 'number', default: '0', desc: '内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时渲染完成后自动折叠；0=不自动折叠（完全撑开）' }
     ],
     emits: [

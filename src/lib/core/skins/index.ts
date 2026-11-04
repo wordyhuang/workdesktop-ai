@@ -12,6 +12,7 @@ import { governanceSkin } from './governance'
 import { appleSkin } from './apple'
 import { arcoSkin } from './arco'
 import { antdSkin } from './antd'
+import { softSkin } from './soft'
 
 /**
  * 预设皮肤库（接入全局配置能力）
@@ -35,7 +36,8 @@ export const SKIN_PRESETS: Record<SkinName, SkinPreset> = {
   governance: governanceSkin,
   apple: appleSkin,
   arco: arcoSkin,
-  antd: antdSkin
+  antd: antdSkin,
+  soft: softSkin
 }
 
 /** 查询皮肤预设；未传 key 或未知 key 返回 undefined（由调用方回退默认行为） */

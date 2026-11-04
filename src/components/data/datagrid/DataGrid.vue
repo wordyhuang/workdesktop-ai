@@ -366,6 +366,8 @@ const props = defineProps({
   tableText: { type: String, default: '表格' },
   /** tab 形态下「列表」段文字 */
   cardText: { type: String, default: '列表' },
+  /** 默认展示视图：'table' 表格（默认）/ 'card' 卡片（仅在提供 card-item 插槽时生效） */
+  defaultMode: { type: String as PropType<'table' | 'card'>, default: 'table' },
   dynamicColumn: { type: Boolean, default: false },
   columnStorageKey: { type: String, default: '' },
   // 表格展示
@@ -486,7 +488,9 @@ const emit = defineEmits([
 
 const slots = useSlots()
 const tableRef = ref<any>(null)
-const viewMode = ref<'table' | 'card'>('table')
+const viewMode = ref<'table' | 'card'>(
+  props.defaultMode === 'card' && !!slots['card-item'] ? 'card' : 'table'
+)
 
 // tools 配置合并默认值
 const toolsConf = computed(() => ({

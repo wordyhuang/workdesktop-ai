@@ -4,6 +4,7 @@ import {
   setStationFooter,
   refreshStationView,
   getStationMenuChain,
+  openStationTab,
   subscribeStationChange,
   notifyStationChange,
   clearStationRegistry,
@@ -93,6 +94,43 @@ describe('getStationMenuChain（面包屑自动模式读取菜单链）', () => 
     makeStation('g', [{ title: '正常组' }])
     const chain = getStationMenuChain(true, 'g')
     expect(chain.map((c) => c.title)).toEqual(['正常组'])
+  })
+})
+
+describe('openStationTab（WdStationTabButton 联动打开标签）', () => {
+  it('调用同 filter 组实例的 openTab 并返回 1', () => {
+    const openTab = vi.fn()
+    registerStation({ filter: 'g', setFooterInfo: vi.fn(), refresh: vi.fn(), openTab })
+    const n = openStationTab('g', { key: 'k', title: '标签' })
+    expect(n).toBe(1)
+    expect(openTab).toHaveBeenCalledWith({ key: 'k', title: '标签' })
+  })
+
+  it('target 为 true 时按 selfFilter 定位同组', () => {
+    const openTab = vi.fn()
+    registerStation({ filter: '', setFooterInfo: vi.fn(), refresh: vi.fn(), openTab })
+    expect(openStationTab(true, { path: '/a' }, '')).toBe(1)
+    expect(openTab).toHaveBeenCalledTimes(1)
+  })
+
+  it('key 与 path 都缺省、或组内无实例时不打开', () => {
+    const openTab = vi.fn()
+    registerStation({ filter: 'g', setFooterInfo: vi.fn(), refresh: vi.fn(), openTab })
+    expect(openStationTab('g', { title: '无 key' })).toBe(0)
+    expect(openTab).not.toHaveBeenCalled()
+    expect(openStationTab('nope', { path: '/a' })).toBe(0)
+  })
+
+  it('组内首个实例抛错时继续尝试下一个实例', () => {
+    const first = vi.fn(() => {
+      throw new Error('boom')
+    })
+    const second = vi.fn()
+    registerStation({ filter: 'g', setFooterInfo: vi.fn(), refresh: vi.fn(), openTab: first })
+    registerStation({ filter: 'g', setFooterInfo: vi.fn(), refresh: vi.fn(), openTab: second })
+    expect(openStationTab('g', { path: '/a' })).toBe(1)
+    expect(first).toHaveBeenCalledTimes(1)
+    expect(second).toHaveBeenCalledTimes(1)
   })
 })
 

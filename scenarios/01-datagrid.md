@@ -1,12 +1,13 @@
 # 场景一：分页数据展示页面（DataGrid 标准场景）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-24\
-> **当前版本**：V\_1.1\
+> **最后修改时间**：2026-11-04\
+> **当前版本**：V\_1.2\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：搜索 + 分页表格的标准结构与交互规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。\
-> **版本变更**：V_1.0 → V_1.1：策略七升级为「默认 list 卡片展示（列多 / 长内容时优先考虑）」——新增触发条件（列较多 / 多数列是较长内容时做 `#card-item` 插槽并默认 list 展示）与五类适合 list 形态的情形表（以图为主 / 主从结构 / 浏览型任务 / 窄屏 / 低密度留白页）；口径从「降列兜底」调整为「表格强在跨行对比、list 强在单条完整呈现，触发条件成立时默认 list」；补记当前版本无「初始即卡片」prop 的限制与 `defaultMode` 组件增强需求（§1.6 / 99-spec-requests.md）。
+> **版本变更**：V_1.1 → V_1.2：策略二新增 Tag 选型建议——表格中分类/类别等需要区别显示的内容，Tag 建议用 `wd-tag` 的 `type="auto"` 模式（按内容自动配色，同一类内容颜色稳定一致，免维护映射表）；示例 Tag 统一 `size="mini"` 对齐表格内元素尺寸规范。\
+> 历史变更：V_1.0 → V_1.1：策略七升级为「默认 list 卡片展示（列多 / 长内容时优先考虑）」——新增触发条件（列较多 / 多数列是较长内容时做 `#card-item` 插槽并默认 list 展示）与五类适合 list 形态的情形表（以图为主 / 主从结构 / 浏览型任务 / 窄屏 / 低密度留白页）；口径从「降列兜底」调整为「表格强在跨行对比、list 强在单条完整呈现，触发条件成立时默认 list」；补记当前版本无「初始即卡片」prop 的限制与 `defaultMode` 组件增强需求（§1.6 / 99-spec-requests.md）。
 
 ### 1.1 场景描述
 
@@ -353,17 +354,27 @@ ID、单号、编码等唯一标识属于低频精确值，不必全量展示。
 
 状态、分类这类**短字段不单独占一列**，以 Tag 形式与主列（名称/型号）放在同一列内，紧跟主文本之后。既保留语义色，又省一列宽度。
 
+**Tag 选型——表格中分类、类别等需要区别显示的内容，建议用 `wd-tag` 的 `type="auto"` 模式**：按展示内容自动配色（先按语义关键词命中 success/danger/warning…，未命中走稳定 hash），**同一类内容颜色稳定一致**（刷新/翻页后不变），且免维护「值 → type」映射表——内容由接口返回、类别多且会新增时尤其省事：
+
 ```html
 <el-table-column prop="name" label="名称" min-width="220">
   <template #default="{ row }">
     <div class="name-cell">
       <span>{{ row.name }}</span>
-      <el-tag v-if="row.status === 1" type="success" size="small">启用</el-tag>
-      <el-tag v-else type="info" size="small">停用</el-tag>
+      <wd-tag type="auto" size="mini">{{ row.categoryName }}</wd-tag>
     </div>
   </template>
 </el-table-column>
 ```
+
+语义固定且明确的少数状态（如 启用/停用）仍可直接用预设 type：
+
+```html
+<el-tag v-if="row.status === 1" type="success" size="mini">启用</el-tag>
+<el-tag v-else type="info" size="mini">停用</el-tag>
+```
+
+> `wd-tag` auto 的匹配源为标签内容文本；需要精确控色时用 12 种预设 type 或 `color` 属性。表格内 Tag 统一 `size="mini"`。
 
 #### 策略三：操作按钮低频项收进「更多」下拉
 

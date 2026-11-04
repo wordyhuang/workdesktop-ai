@@ -400,5 +400,58 @@ export const buttonData: ComponentMeta[] = [
       { name: 'default', params: '{ data, close }', desc: '弹层内容（通常为 DataForm）' },
       { name: 'footer', params: 'footerProps', desc: '弹层底部' }
     ]
+  },
+  {
+    path: 'station-tab-button',
+    name: 'WdStationTabButton',
+    passthrough: {
+      target: 'el-button',
+      intercept: ['click'],
+      note: '$attrs 全部透传给 el-button（悬停提示由组件内部 el-tooltip 承载）；点击事件被组件接管，打开结果经 `open` 事件抛出（载荷 `{ tab, opened }`）。',
+    },
+    title: 'StationTabButton 标签页按钮',
+    desc: '点击按 filter 联动打开并激活 WdStation 的一个标签页；只给 path 时由 Station 反查菜单补齐 key / 标题 / 图标',
+    group: '按钮',
+    intro: {
+      overview: 'WdStationTabButton 用于从页面任意位置驱动 WdStation 的标签页：点击后按 `filter` 找到同组的 Station 实例，调用其 `openTab` 能力打开并激活一个标签页。标签入参来源有两种：①只给 `path`，Station 按路径反查菜单项，自动补齐标签 key、标题与图标；②给 `tabKey` / `tabTitle` / `tabIcon`，打开不依赖菜单的独立标签。`affix` 可让该标签打开后不可关闭。组件继承 TipsButton 的悬停提示能力（`tips` / `tipsType` / `placement`）与 el-button 的全部属性（经 `$attrs` 透传）。',
+      whenToUse: [
+        '工作台 / 首页的快捷入口：点击「任务列表」「用户管理」等卡片按钮，直接打开 Station 中对应标签页。',
+        '弹窗、表单、消息通知里的跳转动作：需要切换到主框架某个标签页而非浏览器新页面时。',
+        '需要打开非菜单来源的独立标签（如「数据统计」「公告通知」）时，用 `tabKey` + `tabTitle` 自定义。',
+        '不建议：仅需路由跳转（不需要 Station 标签页）时使用 WdRouteButton；打开弹层用 WdDrawerButton。'
+      ],
+      notes: [
+        '**filter 定位目标 Station**：`filter` 为空串时按钮按「空 filter 组」联动（与同为默认 filter 的 Station 匹配）；填了值时只作用于同 filter 组的 Station 实例；同组存在多个 Station 时按注册顺序尝试，首个成功即返回。',
+        '**只给 path 的联动**：Station 内部 `findMenuByPath` 反查菜单，标签 key 取菜单项 key、标题取菜单标题、图标取菜单图标，并自动切到该菜单所属分组；router 模式下同时 `router.push(path)` 同步路由。',
+        '**自定义标签 key 建议带命名空间**（如 `custom:stats`），避免与菜单项 key（`分组key:菜单名/路径/标题`）冲突。',
+        '`tabTitle` 缺省规则：只给 `path`（未给 `tabKey`）时不透传按钮 `label`，由 Station 反查菜单标题；给了 `tabKey` 时回退按钮 `label`，再回退 `tabKey` 本身。',
+        '`tabIcon` 与 el-button 的 `icon` 是两回事：前者是标签页图标（支持 EP 图标名 / 图标字体 class / 组件），后者是按钮自身的图标。',
+        '`key` 与 `path` 都未提供时不做任何打开动作，`open` 事件载荷中 `opened` 为 `0`；`opened` 为成功打开的 Station 实例数量（0 或 1）。',
+        '只有 Station 处于 `content-mode="tabs"` 时标签页才可见；其它内容模式下 `openTab` 仍会记录标签并激活菜单。'
+      ],
+      faq: [
+        { q: '按钮和 Station 必须写同一个 filter 吗？', a: '是的。按钮的 `filter` 决定它去哪个分组找 Station，只有同 filter 的 Station 才会响应；两者都不写则都落在默认空分组，也能联动。' },
+        { q: '只写 path 为什么也能打开？', a: 'Station 侧会用 path 反查菜单树，自动取到菜单项 key、标题与图标；无需知道内部 key 生成规则。' },
+        { q: '打开后用 `router.push` 了吗？', a: '`router-mode` 下会同步跳转该标签的 path，保证内容区真正切到对应页面；html 模式下只切换标签与激活菜单。' },
+        { q: '如何打开一个不在菜单里的标签？', a: '用 `tab-key` + `tab-title`（可选 `tab-icon`）自定义标签，例如 `tab-key="custom:stats" tab-title="数据统计"`。' },
+        { q: '标签可以不允许关闭吗？', a: '加 `affix` 属性，打开的标签即为固定标签，Station 的关闭/批量关闭都会跳过它。' }
+      ]
+    },
+    props: [
+      buttonLabelProp,
+      ...elButtonProps,
+      ...tipsProp,
+      { name: 'filter', type: 'string', default: "''", desc: '联动分组标识（定位同组的 WdStation）' },
+      { name: 'tabKey', type: 'string', default: "''", desc: '标签唯一标识（与 Station 菜单项 key 一致；缺省时按 path 反查）' },
+      { name: 'tabTitle', type: 'string', default: "''", desc: '标签标题（只给 path 时由 Station 反查菜单标题；自定义 tabKey 时回退按钮 label）' },
+      { name: 'path', type: 'string', default: "''", desc: '标签对应路由路径（Station 据此反查菜单补齐 key / 标题 / 图标）' },
+      { name: 'tabIcon', type: 'string | Component', default: "''", desc: '标签图标（EP 图标名 / 图标字体 class / 组件；缺省取菜单项图标）' },
+      { name: 'affix', type: 'boolean', default: 'false', desc: '固定标签（打开后不可关闭）' }
+    ],
+    emits: [
+      { name: 'click', payload: 'event', desc: '按钮点击' },
+      { name: 'open', payload: '{ tab, opened }', desc: '尝试打开标签后触发；tab 为换算后的标签入参，opened 为成功打开的 Station 实例数量（0 未打开 / 1 已打开）' }
+    ],
+    slots: [{ name: 'default', params: '—', desc: '按钮内容（未设 label 时）' }]
   }
 ]

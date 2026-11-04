@@ -11,3 +11,4 @@ dist-docs/
 .env.*
 !.env.example
 .npmrc
+AGENTS.md

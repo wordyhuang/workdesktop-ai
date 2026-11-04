@@ -148,6 +148,60 @@
     </demo-block>
 
     <demo-block
+      title="标题图标"
+      desc="icon 设置标题图标：支持 EP 图标名、图标字体 class、直接传组件三种形态；设置后标题前显示图标，左侧品牌色标识条自动隐藏"
+      :code="code9"
+    >
+      <wd-panel title="EP 图标名" description="icon='Setting'" icon="Setting">
+        <p>icon 传 @element-plus/icons-vue 的图标名字符串（如 Setting），组件查表解析渲染。</p>
+      </wd-panel>
+
+      <wd-panel
+        title="直接传组件"
+        description="icon 也可传组件或图标字体 class"
+        :icon="User"
+        style="margin-bottom: 0"
+      >
+        <p>icon 支持直接传图标组件；图标字体 class（如 'fa-solid fa-user'）同样支持。</p>
+      </wd-panel>
+    </demo-block>
+
+    <demo-block
+      title="标识条形态"
+      desc="titleBar 控制标题左侧品牌色竖条高度：long 与头部同高、贴边（默认）；short 与标题行同高、顶部对齐标题行且与边框留有间距，描述换行显示在标题下方"
+      :code="code11"
+    >
+      <wd-panel title="长条（默认）" description="与头部同高">
+        <p>titleBar 未设（long）：竖条与头部同高，保持默认表现。</p>
+      </wd-panel>
+
+      <wd-panel title="短条" description="与标题行同高" title-bar="short" style="margin-bottom: 0">
+        <p>titleBar="short"：竖条与标题行同高、顶部对齐标题行、与边框留有间距；描述换行显示在标题下方。</p>
+      </wd-panel>
+    </demo-block>
+
+    <demo-block
+      title="卡片模式"
+      desc="mode='card' 切换为信息卡片：白底大圆角、头部整体带浅色背景、description 显示在标题下方；配合 flex 容器可一行并行多卡"
+      :code="code10"
+    >
+      <div class="demo-card-row">
+        <wd-panel mode="card" title="账号信息" description="用户基础资料">
+          <template #extra>
+            <el-button link type="primary" size="small">编辑资料</el-button>
+          </template>
+          <p>姓名：张三</p>
+          <p>部门：技术部</p>
+        </wd-panel>
+
+        <wd-panel mode="card" title="通知设置" description="选择你希望接收的通知方式和内容">
+          <p>任务变更通知：已开启</p>
+          <p>项目动态通知：已开启</p>
+        </wd-panel>
+      </div>
+    </demo-block>
+
+    <demo-block
       title="内容超限自动折叠"
       desc="collapseHeight 指定内容高度阈值（px）：开启 collapsible 且内容实际高度超过该值时，渲染完成后自动收起，可点击标题重新展开；默认 0 表示不折叠、完全撑开"
       :code="code7"
@@ -177,6 +231,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { User } from '@element-plus/icons-vue'
 
 const code1 = `<wd-panel title="基本信息" description="用户基础资料">
   <el-descriptions :column="2" border>
@@ -261,6 +316,41 @@ const code8 = `<!-- 默认 left：描述紧跟标题 -->
   <p>主体内容</p>
 </wd-panel>`
 
+const code9 = `<!-- EP 图标名：@element-plus/icons-vue 组件名字符串，组件查表解析 -->
+<wd-panel title="EP 图标名" icon="Setting">
+  <p>标题前显示图标，左侧品牌色标识条自动隐藏。</p>
+</wd-panel>
+
+<!-- 直接传组件；也支持图标字体 class（如 icon="fa-solid fa-user"，需自行引入对应字体 CSS） -->
+<wd-panel title="直接传组件" :icon="User">
+  <p>icon 三种形态：EP 图标名 / 图标字体 class / 组件对象。</p>
+</wd-panel>`
+
+const code10 = `<!-- card 模式：白底大圆角、头部整体带浅色背景、description 显示在标题下方 -->
+<!-- 外层用 flex 容器（gap 控制间距）即可一行并行多个卡片 -->
+<div style="display: flex; gap: 12px">
+  <wd-panel mode="card" title="账号信息" description="用户基础资料">
+    <template #extra>
+      <el-button link type="primary" size="small">编辑资料</el-button>
+    </template>
+    <p>卡片主体内容。</p>
+  </wd-panel>
+
+  <wd-panel mode="card" title="通知设置" description="选择你希望接收的通知方式和内容">
+    <p>卡片主体内容。</p>
+  </wd-panel>
+</div>`
+
+const code11 = `<!-- 默认 long：竖条与头部同高 -->
+<wd-panel title="长条（默认）" description="与头部同高">
+  <p>主体内容</p>
+</wd-panel>
+
+<!-- short：竖条与标题行同高、顶部对齐标题行且与边框留有间距，描述换行显示在标题下方 -->
+<wd-panel title="短条" description="与标题行同高" title-bar="short">
+  <p>主体内容</p>
+</wd-panel>`
+
 const form = reactive({ name: '', dept: '', email: '' })
 
 const opened = ref(true)
@@ -279,6 +369,13 @@ function onChange(v: boolean) {
   padding: 12px;
   margin-bottom: 12px;
   border-radius: var(--wd-radius-base, 4px);
+}
+.demo-card-row {
+  display: flex;
+  gap: 12px;
+}
+.demo-card-row .wd-panel {
+  margin-bottom: 0;
 }
 .example-page p {
   margin: 0;

@@ -262,7 +262,7 @@ import { registerStation, notifyStationChange } from '../../lib/core/station-lin
 import { refreshDrawers } from '../../lib/core/drawer-linkage'
 import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 import StationMenuNode from './StationMenuNode.vue'
-import type { MenuChainItem } from '../../lib/core/station-linkage'
+import type { MenuChainItem, StationTabInput } from '../../lib/core/station-linkage'
 import type { StationMenuItem, StationMenuGroup, StationTab, StationToolbarConfig } from './types'
 
 defineOptions({ name: 'WdStation' })
@@ -749,9 +749,35 @@ function getActiveMenuChain(): MenuChainItem[] {
   return findMenuChain(currentKey.value)?.chain || []
 }
 
+/**
+ * 供外部联动（WdStationTabButton 等）打开标签：
+ * key 缺省时按 path 反查菜单，补齐 key / title / icon；router 模式同步跳转路径。
+ */
+function openTabFromLink(input: StationTabInput) {
+  const fromMenu = !input.key && input.path ? findMenuByPath(input.path) : null
+  // 反查到菜单时切到其所属分组，左侧菜单与标签页保持同一分组
+  if (fromMenu) innerActiveGroup.value = fromMenu.group.key
+  const tab: StationTab = {
+    key: input.key || fromMenu?.item._key || '',
+    title: input.title || fromMenu?.item.title || input.key || '',
+    path: input.path || fromMenu?.item.path,
+    icon: input.icon || fromMenu?.item.icon,
+    affix: input.affix
+  }
+  if (!tab.key) return
+  openTab(tab)
+  if (isRouterMode.value && tab.path) router.push(tab.path)
+}
+
 let unregister: (() => void) | null = null
 onMounted(() => {
-  unregister = registerStation({ filter: props.filter, setFooterInfo, refresh, getActiveMenuChain })
+  unregister = registerStation({
+    filter: props.filter,
+    setFooterInfo,
+    refresh,
+    getActiveMenuChain,
+    openTab: openTabFromLink
+  })
   // 通知同 filter 组的面包屑：本站已就绪，可读取菜单链
   notifyStationChange(props.filter)
   // tabs 模式：affix 菜单挂载时自动开启

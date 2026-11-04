@@ -7,6 +7,7 @@ import Drawer from '../containers/Drawer.vue'
 import {
   setStationFooter,
   refreshStationView,
+  openStationTab,
   clearStationRegistry
 } from '../../lib/core/station-linkage'
 import { clearDrawerLinkageRegistry } from '../../lib/core/drawer-linkage'
@@ -1217,5 +1218,40 @@ describe('WdStation 集成', () => {
     expect(wrapper.find('.slot-logo').text()).toBe('collapsed=true')
     expect(wrapper.find('.slot-mt').text()).toBe('collapsed=true')
     expect(wrapper.find('.slot-mb').text()).toBe('collapsed=true')
+  })
+
+  it('外部打开标签（openStationTab）：只由指定 filter 组响应，只传 path 时反查菜单补齐 key/title 并切分组', async () => {
+    const w1 = mountStation({ menuGroups: menuGroupsFixture, filter: 'f1', contentMode: 'tabs', routerMode: 'html' })
+    const w2 = mountStation({ menuGroups: menuGroupsFixture, filter: 'f2', contentMode: 'tabs', routerMode: 'html' })
+    await nextTick()
+    expect(openStationTab('f1', { path: '/sys/role' })).toBe(1)
+    await nextTick()
+    // path 反查菜单 → key / title 取自菜单项
+    const panes = w1.findAll('.el-tab-pane-stub')
+    expect(panes.map((p) => p.attributes('data-name'))).toContain('system:/sys/role')
+    expect(w1.find('.wd-station__tabs-bar').text()).toContain('角色管理')
+    // 切到菜单所属分组（system）
+    expect(w1.findAll('.wd-station__nav-item')[1].classes()).toContain('is-active')
+    // 异组 Station 不受影响
+    expect(w2.findAll('.el-tab-pane-stub').map((p) => p.attributes('data-name'))).not.toContain('system:/sys/role')
+  })
+
+  it('外部打开标签（openStationTab）：显式 key/title/affix 原样生效，router 模式同步推送路由', async () => {
+    const { wrapper, push } = mountWithRouter({
+      menuGroups: menuGroupsFixture,
+      contentMode: 'tabs',
+      filter: 'f1'
+    })
+    await nextTick()
+    expect(openStationTab('f1', { key: 'custom:k', title: '自定义页面', path: '/custom', affix: true })).toBe(1)
+    await nextTick()
+    expect(push).toHaveBeenCalledWith('/custom')
+    const tabs = wrapper.emitted('update:open-tabs')!.pop()![0] as any[]
+    expect(tabs.find((t) => t.key === 'custom:k')).toMatchObject({
+      title: '自定义页面',
+      path: '/custom',
+      affix: true
+    })
+    expect(wrapper.find('.el-tabs-stub').attributes('data-active')).toBe('custom:k')
   })
 })

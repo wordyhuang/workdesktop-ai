@@ -44,7 +44,7 @@
     <el-drawer v-model="skinVisible" title="全站主题皮肤" size="420px">
       <div class="skin-picker">
         <p class="skin-picker__tip">
-          组件库 12 套系统预设皮肤，选择后经 <code>theme.skin</code> 一键套用，全站实时换肤（Element 组件联动）。
+          组件库 13 套系统预设皮肤，选择后经 <code>theme.skin</code> 一键套用，全站实时换肤（Element 组件联动）。
           <el-tag size="small" type="info" effect="plain">刷新恢复默认</el-tag>
         </p>
         <div v-for="s in SITE_SKINS" :key="s.key" class="skin-item" :class="{ 'is-active': s.key === currentSkinKey }"
@@ -92,8 +92,73 @@ const toolbarConfig = { refresh: 'none', settings: 'none', user: 'none', login: 
  *   菜单显示名去掉 Wd 前缀，如 WdDataGrid → DataGrid）；
  *   「核心基础设施」组末尾额外挂独立页「全局样式 / 主题」（/theme）与「组件联动」（/linkage）
  * - 工具指南：Playground / 场景搭建指引
+ * - 场景示例：可运行的业务场景完整页面（工作台等），菜单链随 Path 自动联动
  * 菜单项 path 与路由一致，router 模式点击跳转。
  */
+/** 一级分组图标（分组 label → @element-plus/icons-vue 名称） */
+const GROUP_ICONS: Record<string, string> = {
+  核心基础设施: 'Cpu',
+  数据组件: 'DataAnalysis',
+  表单组件: 'Tickets',
+  按钮组件: 'Pointer',
+  容器组件: 'Box',
+  表单元素: 'EditPen',
+  页面元素: 'Files',
+  布局组件: 'Grid'
+}
+
+/** 组件菜单图标（菜单 path → 图标名），覆盖全部组件页与独立页 */
+const COMPONENT_ICONS: Record<string, string> = {
+  // 核心基础设施
+  'use-config': 'Tools',
+  'use-request': 'RefreshRight',
+  'custom-skin': 'Brush',
+  // 数据组件
+  datagrid: 'List',
+  'editable-grid': 'Operation',
+  viewer: 'View',
+  requester: 'DataLine',
+  // 表单组件
+  dataform: 'Document',
+  // 按钮组件
+  'api-button': 'Promotion',
+  'confirm-button': 'CircleCheck',
+  'dialog-button': 'ChatDotRound',
+  'popconfirm-button': 'QuestionFilled',
+  'prompt-button': 'ChatLineRound',
+  'route-button': 'Position',
+  'tips-button': 'InfoFilled',
+  'drawer-button': 'Expand',
+  'station-tab-button': 'CollectionTag',
+  // 容器组件
+  drawer: 'Fold',
+  iframe: 'Film',
+  panel: 'Memo',
+  'search-panel': 'Search',
+  // 表单元素
+  'form-item': 'Edit',
+  'search-item': 'Filter',
+  select: 'Select',
+  'auto-complete': 'Connection',
+  'checkbox-list': 'Checked',
+  'radio-list': 'Aim',
+  switch: 'Switch',
+  'date-range-picker': 'Calendar',
+  upload: 'Upload',
+  'image-upload': 'Picture',
+  // 页面元素
+  guide: 'Compass',
+  path: 'Location',
+  anchor: 'Flag',
+  tips: 'ChatRound',
+  tag: 'PriceTag',
+  // 布局组件
+  station: 'OfficeBuilding',
+  // 独立页
+  '/theme': 'Sunny',
+  '/linkage': 'Share'
+}
+
 interface DocMenuNode {
   title: string
   path?: string
@@ -110,17 +175,25 @@ const menuGroups: { key: string; title?: string; menus: DocMenuNode[] }[] = [
       { title: '首页', path: '/', icon: 'HomeFilled' },
       ...componentNav.map((g) => ({
         title: g.label,
+        icon: GROUP_ICONS[g.label],
         children: [
-          ...g.items.map((c) => ({ title: c.name.replace(/^Wd/, ''), path: `/components/${c.path}` })),
+          ...g.items.map((c) => ({ title: c.name.replace(/^Wd/, ''), path: `/components/${c.path}`, icon: COMPONENT_ICONS[c.path] })),
           // 「全局样式 / 主题」「组件联动」独立页挂在核心基础设施分组下
           ...(g.label === '核心基础设施'
             ? [
-                { title: '全局样式 / 主题', path: '/theme' },
-                { title: '组件联动', path: '/linkage' }
+                { title: '全局样式 / 主题', path: '/theme', icon: COMPONENT_ICONS['/theme'] },
+                { title: '组件联动', path: '/linkage', icon: COMPONENT_ICONS['/linkage'] }
               ]
             : [])
         ]
       })),
+      {
+        title: '场景示例',
+        icon: 'Menu',
+        children: [
+          { title: '工作台', path: '/scenario/workbench', icon: 'Monitor' }
+        ]
+      },
       {
         title: '工具指南',
         icon: 'Collection',

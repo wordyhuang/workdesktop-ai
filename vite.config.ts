@@ -64,6 +64,7 @@ const cssChunkToEntry: Record<string, string> = {
   Viewer: 'viewer',
   Station: 'station',
   Path: 'path',
+  Tag: 'tag',
   Guide: 'guide'
 }
 

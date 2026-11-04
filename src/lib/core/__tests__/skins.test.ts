@@ -14,9 +14,9 @@ describe('skins 预设皮肤库', () => {
     vi.restoreAllMocks()
   })
 
-  it('内置 12 套皮肤，结构完整（key/label/desc/theme）', () => {
+  it('内置 13 套皮肤，结构完整（key/label/desc/theme）', () => {
     const skins = listSkins()
-    expect(skins).toHaveLength(12)
+    expect(skins).toHaveLength(13)
     expect(Object.keys(SKIN_PRESETS)).toEqual([
       'default',
       'fashion',
@@ -29,7 +29,8 @@ describe('skins 预设皮肤库', () => {
       'governance',
       'apple',
       'arco',
-      'antd'
+      'antd',
+      'soft'
     ])
     for (const skin of skins) {
       expect(skin.key).toBeTruthy()
@@ -611,6 +612,96 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--el-table-header-text-color: #595959')
     expect(css).toContain('--el-table-border-color: #f0f0f0')
     expect(css).toContain('--el-table-row-hover-bg-color: #fafafa')
+  })
+
+  it('soft 柔和拟物风：品红主色 + 蓝灰黑文字（对比度压深）+ 8px 控件大圆角 + 白卡浅蓝灰底', () => {
+    applyTheme({ skin: 'soft' })
+    const css = themeCss()
+    // Creative Tim Soft UI Dashboard 官方色板：primary 品红 #cb0c9f（白字 ≈5.1 达 AA）、success 黄绿、info 青
+    expect(css).toContain('--wd-color-primary: #cb0c9f')
+    expect(css).toContain('--el-color-primary: #cb0c9f')
+    expect(css).toContain('--wd-color-success: #82d616')
+    expect(css).toContain('--wd-color-warning: #fbcf33')
+    expect(css).toContain('--wd-color-danger: #ea0606')
+    expect(css).toContain('--wd-color-info: #17c1e8')
+    // 蓝灰黑文字体系：官方 text-primary #344767、text-secondary #67748e（≈4.7 达 AA）；
+    // placeholder 官方 0.6 透明 ≈#868c97 仅 ≈3.5 不达标，压深至 #66708a ≈4.8
+    expect(css).toContain('--wd-bg-color-page: #f4f6fa')
+    expect(css).toContain('--wd-text-color-primary: #344767')
+    expect(css).toContain('--wd-text-color-regular: #425475')
+    expect(css).toContain('--wd-text-color-secondary: #67748e')
+    expect(css).toContain('--wd-text-color-placeholder: #66708a')
+    // 蓝灰调边框（区别于 Ant 暖灰）
+    expect(css).toContain('--wd-border-color: #d5dbe3')
+    expect(css).toContain('--wd-border-color-light: #e9edf3')
+    // Soft UI 大圆角：控件 8px、小 6px
+    expect(css).toContain('--wd-radius-base: 8px')
+    expect(css).toContain('--wd-radius-small: 6px')
+    // 主色按 EP 公式推导色阶（混白 30% → #db55bc，混黑 20% → #a20a7f）
+    expect(css).toContain('--el-color-primary-light-3: #db55bc')
+    expect(css).toContain('--el-color-primary-dark-2: #a20a7f')
+  })
+
+  it('soft 组件级：白卡 12px 大圆角 + Soft UI 招牌柔影 + 标识条归零 + 纯白侧栏', () => {
+    applyTheme({ skin: 'soft' })
+    const css = themeCss()
+    expect(css).toContain('--wd-panel-radius: 12px')
+    expect(css).toContain('--wd-panel-border-color: #e9edf3')
+    expect(css).toContain('--wd-panel-shadow-sm: 0 20px 27px 0 rgba(0, 0, 0, 0.05)')
+    expect(css).toContain('--wd-panel-title-bar-width: 0')
+    expect(css).toContain('--wd-datagrid-radius: 12px')
+    expect(css).toContain('--wd-datagrid-border-color: #e9edf3')
+    expect(css).toContain('--wd-editable-grid-border-color: #e9edf3')
+    // 导航区：Soft UI 官方 sidenav bg-white 纯白侧栏（选中态为品紫渐变胶囊，见 cssRules）
+    expect(css).toContain('--wd-station-aside-bg: #ffffff')
+  })
+
+  it('soft cssRules：主按钮变深+品色柔影 + 白底蓝灰边默认按钮 + 胶囊徽章 + 焦点光晕 + 白侧栏品紫渐变胶囊选中 + 表头浅灰', () => {
+    applyTheme({ skin: 'soft' })
+    const css = themeCss()
+    // 主按钮：Soft UI 官方 hover 变深（#ad0a87 ≈ dark-2 档）+ 招牌品色柔影（色阶随覆盖联动）
+    expect(css).toContain('.el-button--primary {')
+    expect(css).toContain('--el-button-hover-bg-color: var(--el-color-primary-dark-2)')
+    expect(css).toContain('--el-button-active-bg-color: var(--el-color-primary-dark-2)')
+    expect(css).toContain('box-shadow: 0 4px 6px -1px rgba(203, 12, 159, 0.2)')
+    // 默认按钮：白底 + 蓝灰描边 + 蓝灰黑字，hover 边框/文字变主色
+    expect(css).toContain(".el-button:not([class*='el-button--']):not(.is-text):not(.is-link) {")
+    expect(css).toContain('--el-button-bg-color: #fff')
+    expect(css).toContain('--el-button-border-color: #d5dbe3')
+    expect(css).toContain('--el-button-text-color: #344767')
+    // 徽章胶囊化（Soft UI pill 徽标）+ primary 浅品底品字无边框（底色取 light-9 随覆盖联动）
+    expect(css).toContain('.el-tag {')
+    expect(css).toContain('border-radius: 999px')
+    expect(css).toContain('.el-tag.el-tag--primary {')
+    expect(css).toContain('--el-tag-bg-color: var(--el-color-primary-light-9)')
+    expect(css).toContain('--el-tag-text-color: var(--el-color-primary)')
+    // 输入框聚焦：主色柔光晕（color-mix 随主色覆盖联动）
+    expect(css).toContain('.el-input__wrapper.is-focus {')
+    expect(css).toContain('color-mix(in srgb, var(--el-color-primary) 12%, transparent)')
+    // 顶栏菜单：浅色 hover 浅灰 + 选中浅品底品字
+    expect(css).toContain('.wd-station__top-menu .el-menu {')
+    expect(css).toContain('--el-menu-hover-bg-color: #f8f9fa')
+    expect(css).toContain('.wd-station__top-menu .el-menu-item.is-active {')
+    // 白侧栏：去右边框（scoped 特异性需 .wd-station 前缀压过）+ 菜单蓝灰黑字 + 浅品 hover 晕染
+    expect(css).toContain('.wd-station .wd-station__aside {')
+    expect(css).toContain('border-right: none')
+    expect(css).toContain('.wd-station__menu {')
+    expect(css).toContain('--el-menu-text-color: #344767')
+    expect(css).toContain('--el-menu-hover-bg-color: rgba(203, 12, 159, 0.06)')
+    // 选中态：Soft UI 招牌品紫渐变胶囊白字（菜单项圆角化 + 内边距营造胶囊）
+    expect(css).toContain('.wd-station__menu .el-menu-item {')
+    expect(css).toContain('border-radius: 8px')
+    expect(css).toContain('background: linear-gradient(310deg, #cb0c9f, #7928ca)')
+    expect(css).toContain('.wd-station__menu .el-menu-item.is-active {')
+    expect(css).toContain('color: #fff')
+    expect(css).toContain('.wd-station__menu .el-sub-menu.is-active > .el-sub-menu__title {')
+    expect(css).toContain('color: var(--el-color-primary)')
+    // 表格：表头浅灰底 + 蓝灰黑字 + 浅边（同选择器级覆盖）
+    expect(css).toContain('.el-table {')
+    expect(css).toContain('--el-table-header-bg-color: #f8f9fa')
+    expect(css).toContain('--el-table-header-text-color: #344767')
+    expect(css).toContain('--el-table-border-color: #e9edf3')
+    expect(css).toContain('--el-table-row-hover-bg-color: #f8f9fa')
   })
 
   it('tech 深空霓虹青：深空蓝底 + 青色描边辉光 + 青蓝标识条 + 导航区压黑 + El 深色联动', () => {

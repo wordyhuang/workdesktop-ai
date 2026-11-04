@@ -66,6 +66,7 @@ WdDataGrid 是 WorkDesktop 组件库的旗舰组件，内部封装 el-table + el
 | modeSwitchType | `'icon' \| 'tab'` | 'icon' | 模式切换控件形态：icon 图标按钮（默认）/ tab 分段按钮（点击直切对应视图） |
 | tableText | `string` | '表格' | tab 形态下「表格」段文字 |
 | cardText | `string` | '列表' | tab 形态下「列表」段文字 |
+| defaultMode | `'table' \| 'card'` | 'table' | 默认展示视图：card 时初始即卡片视图（仅在提供 card-item 插槽时生效，无插槽时忽略） |
 | dynamicColumn | `boolean` | false | 启用列设置（隐藏/排序/持久化） |
 | columnStorageKey | `string` | '' | 列设置与尺寸持久化 key（localStorage） |
 | border | `boolean` | false | 表格边框 |

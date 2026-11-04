@@ -1,5 +1,5 @@
 /**
- * 组件汇总导出（33 个组件）
+ * 组件汇总导出（34 个组件）
  */
 // 指引组件
 export { default as WdGuide } from './guide/Guide.vue'
@@ -15,13 +15,14 @@ export { default as WdSearchPanel } from './form/SearchPanel.vue'
 export { default as WdFormItem } from './form/FormItem.vue'
 export { default as WdSearchItem } from './form/SearchItem.vue'
 
-// 按钮组（8 个）
+// 按钮组（9 个）
 export { default as WdApiButton } from './buttons/ApiButton.vue'
 export { default as WdConfirmButton } from './buttons/ConfirmButton.vue'
 export { default as WdDialogButton } from './buttons/DialogButton.vue'
 export { default as WdPopconfirmButton } from './buttons/PopconfirmButton.vue'
 export { default as WdPromptButton } from './buttons/PromptButton.vue'
 export { default as WdRouteButton } from './buttons/RouteButton.vue'
+export { default as WdStationTabButton } from './buttons/StationTabButton.vue'
 export { default as WdTipsButton } from './buttons/TipsButton.vue'
 export { default as WdDrawerButton } from './buttons/DrawerButton.vue'
 
@@ -29,7 +30,7 @@ export { default as WdDrawerButton } from './buttons/DrawerButton.vue'
 export { default as WdDrawer } from './containers/Drawer.vue'
 export { default as WdIframe } from './containers/Iframe.vue'
 
-// 输入选择组（7 个）
+// 输入选择组（6 个）
 export { default as WdSelect } from './inputs/Select.vue'
 export { default as WdAutoComplete } from './inputs/AutoComplete.vue'
 export { default as WdCheckboxList } from './inputs/CheckboxList.vue'
@@ -44,10 +45,11 @@ export { default as WdImageUpload } from './upload/ImageUpload.vue'
 // 样式组（1 个）
 export { default as WdPanel } from './styles/Panel.vue'
 
-// 页面元素组（3 个）
+// 页面元素组（4 个）
 export { default as WdPath } from './styles/Path.vue'
 export { default as WdAnchor } from './styles/Anchor.vue'
 export { default as WdTips } from './styles/Tips.vue'
+export { default as WdTag } from './styles/Tag.vue'
 
 // 布局组（1 个）
 export { default as WdStation } from './layout/Station.vue'
