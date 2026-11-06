@@ -130,7 +130,7 @@
 
     <demo-block
       title="描述对齐方式"
-      desc="descriptionAlign 控制 description 在标题右侧空白区的对齐：默认 left 紧跟标题；right 时吸收剩余空白贴到面板头部右端"
+      desc="descriptionAlign 控制 description 对齐：默认 left 紧跟标题；right 时贴到面板头部右端。card 模式下 left=描述换行显示在标题下方，right=描述与标题同行、垂直居中"
       :code="code8"
     >
       <wd-panel title="居左（默认）" description="紧跟标题显示">
@@ -144,6 +144,26 @@
         style="margin-bottom: 0"
       >
         <p>descriptionAlign="right"：描述吸收标题右侧剩余空白，贴到面板右端。</p>
+      </wd-panel>
+
+      <wd-panel
+        mode="card"
+        title="卡片 · 左侧对齐"
+        description="card 模式下描述换行显示在标题下方"
+        description-align="left"
+        style="margin-bottom: 0"
+      >
+        <p>card + left：描述独占一行，显示在标题下方。</p>
+      </wd-panel>
+
+      <wd-panel
+        mode="card"
+        title="卡片 · 右侧对齐"
+        description="card 模式下与标题同行、垂直居中"
+        description-align="right"
+        style="margin-bottom: 0"
+      >
+        <p>card + right：描述不换行，与标题同行贴右端并垂直居中。</p>
       </wd-panel>
     </demo-block>
 
@@ -197,6 +217,24 @@
         <wd-panel mode="card" title="通知设置" description="选择你希望接收的通知方式和内容">
           <p>任务变更通知：已开启</p>
           <p>项目动态通知：已开启</p>
+        </wd-panel>
+      </div>
+    </demo-block>
+
+    <demo-block
+      title="卡片模式 · 描述右对齐"
+      desc="card 模式下 description-align='right'：描述不换行、与标题同行并垂直居中，贴到卡片头部右端；配合 flex 容器多卡并行时各自的描述右对齐"
+      :code="code12"
+    >
+      <div class="demo-card-row">
+        <wd-panel mode="card" title="账号信息" description="用户基础资料" description-align="right">
+          <p>姓名：张三</p>
+          <p>部门：技术部</p>
+        </wd-panel>
+
+        <wd-panel mode="card" title="月度销售" description="数据截至今日" description-align="right">
+          <p>累计 $128,400</p>
+          <p>环比 +12.6%</p>
         </wd-panel>
       </div>
     </demo-block>
@@ -314,6 +352,16 @@ const code8 = `<!-- 默认 left：描述紧跟标题 -->
 <!-- right：描述吸收剩余空白，贴到面板头部右端 -->
 <wd-panel title="居右" description="贴到面板头部右端" description-align="right">
   <p>主体内容</p>
+</wd-panel>
+
+<!-- card 模式：left=描述换行显示在标题下方 -->
+<wd-panel mode="card" title="卡片 · 左侧对齐" description="描述换行显示在标题下方" description-align="left">
+  <p>主体内容</p>
+</wd-panel>
+
+<!-- card 模式：right=描述与标题同行、垂直居中 -->
+<wd-panel mode="card" title="卡片 · 右侧对齐" description="与标题同行、垂直居中" description-align="right">
+  <p>主体内容</p>
 </wd-panel>`
 
 const code9 = `<!-- EP 图标名：@element-plus/icons-vue 组件名字符串，组件查表解析 -->
@@ -337,6 +385,18 @@ const code10 = `<!-- card 模式：白底大圆角、头部整体带浅色背景
   </wd-panel>
 
   <wd-panel mode="card" title="通知设置" description="选择你希望接收的通知方式和内容">
+    <p>卡片主体内容。</p>
+  </wd-panel>
+</div>`
+
+const code12 = `<!-- card 模式 + description-align="right"：描述不换行，与标题同行垂直居中，贴到卡片头部右端 -->
+<!-- 配合 flex 容器（gap 控制间距）一行并行多卡，各自的描述右对齐 -->
+<div style="display: flex; gap: 12px">
+  <wd-panel mode="card" title="账号信息" description="用户基础资料" description-align="right">
+    <p>卡片主体内容。</p>
+  </wd-panel>
+
+  <wd-panel mode="card" title="月度销售" description="数据截至今日" description-align="right">
     <p>卡片主体内容。</p>
   </wd-panel>
 </div>`

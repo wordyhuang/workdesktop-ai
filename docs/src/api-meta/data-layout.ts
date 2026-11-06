@@ -113,6 +113,7 @@ export const layoutData: ComponentMeta[] = [
       { name: 'openTabs', type: 'array', default: '—', desc: '标签页列表 [{ key, title, icon?, path?, affix? }]（v-model:open-tabs，传入即受控）' },
       { name: 'tabIcon', type: 'boolean', default: 'true', desc: 'tabs 标签标题是否显示菜单图标（true 时菜单项 icon 随 tab 显示在标题前）' },
       { name: 'activatePreviousTab', type: 'boolean', default: 'true', desc: '关闭当前激活标签后是否跳回上一次激活的标签（true=按 MRU 激活历史回跳；false=跳相邻标签，先右后左）' },
+      { name: 'tabsStyle', type: "'card' | 'slider'", default: "'slider'", desc: 'tabs 条样式：slider=滑块下划线式（默认；激活项主色文字加粗 + 底部主色滑块，切换时滑块横向平移过渡；激活色/浅底走 --wd-station-tabs-active-color / --wd-station-tabs-active-bg 皮肤变量）；card=EP 原生卡片式' },
       { name: 'userName', type: 'string', default: "''", desc: '用户名（非空显示用户下拉含退出登录；为空显示登录按钮）' },
       { name: 'userAvatar', type: 'string', default: "''", desc: '用户头像 URL（空显示用户名首字）' },
       { name: 'copyright', type: 'string', default: "''", desc: '底部版权信息' },

@@ -191,7 +191,9 @@ const menuGroups: { key: string; title?: string; menus: DocMenuNode[] }[] = [
         title: '场景示例',
         icon: 'Menu',
         children: [
-          { title: '工作台', path: '/scenario/workbench', icon: 'Monitor' }
+          { title: '工作台', path: '/scenario/workbench', icon: 'Monitor' },
+          { title: '专注工作台', path: '/scenario/focus', icon: 'Timer' },
+          { title: '统计中心', path: '/scenario/stats', icon: 'DataAnalysis' }
         ]
       },
       {

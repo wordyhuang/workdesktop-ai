@@ -82,6 +82,7 @@ WdStation 是一站式中后台外框架组件：顶部「分导台」按业务�
 | openTabs | `array` | — | 标签页列表 [{ key, title, icon?, path?, affix? }]（v-model:open-tabs，传入即受控） |
 | tabIcon | `boolean` | true | tabs 标签标题是否显示菜单图标（true 时菜单项 icon 随 tab 显示在标题前） |
 | activatePreviousTab | `boolean` | true | 关闭当前激活标签后是否跳回上一次激活的标签（true=按 MRU 激活历史回跳；false=跳相邻标签，先右后左） |
+| tabsStyle | `'card' \| 'slider'` | 'slider' | tabs 条样式：slider=滑块下划线式（默认；激活项主色文字加粗 + 底部主色滑块，切换时滑块横向平移过渡；激活色/浅底走 --wd-station-tabs-active-color / --wd-station-tabs-active-bg 皮肤变量）；card=EP 原生卡片式 |
 | userName | `string` | '' | 用户名（非空显示用户下拉含退出登录；为空显示登录按钮） |
 | userAvatar | `string` | '' | 用户头像 URL（空显示用户名首字） |
 | copyright | `string` | '' | 底部版权信息 |

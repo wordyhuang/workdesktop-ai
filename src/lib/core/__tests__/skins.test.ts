@@ -849,6 +849,15 @@ describe('config 集成：theme.skin 经全局配置生效', () => {
     expect(css).toContain('--wd-datagrid-radius: 14px')
     // 标题回归纯文字：彩色标识条宽度归零
     expect(css).toContain('--wd-panel-title-bar-width: 0')
+    // 面板空间感：padding 整体加大 3px（出厂 header 12/16/12/18、body/card-header 16）+ 面板下间距 12→15
+    expect(css).toContain('--wd-panel-header-padding: 15px 19px 15px 21px')
+    expect(css).toContain('--wd-panel-body-padding: 19px')
+    expect(css).toContain('--wd-panel-card-header-padding: 19px')
+    expect(css).toContain('--wd-panel-margin-bottom: 15px')
+    // 字体整体加大 1px（出厂 base/small/large 14/12/16）
+    expect(css).toContain('--wd-font-size-base: 15px')
+    expect(css).toContain('--wd-font-size-small: 13px')
+    expect(css).toContain('--wd-font-size-large: 17px')
     // 导航区：半透奶油白侧栏 + 半透白顶栏 / tabs 条（毛玻璃）
     expect(css).toContain('--wd-station-aside-bg: rgba(251, 247, 240, 0.72)')
     expect(css).toContain('--wd-station-header-bg: rgba(255, 255, 255, 0.65)')

@@ -4,7 +4,7 @@
 >
 > - 数据源：`docs/src/api-meta/`（文档站组件页与本目录的共同单一源）
 > - 生成命令：`npm run gen:ai-api`
-> - 生成时间：2026-11-04 12:37:52（Asia/Shanghai）
+> - 生成时间：2026-11-06 21:36:55（Asia/Shanghai）
 > - 组件源码：`src/components/**/*.vue`；类型声明：`dist/types/`
 >
 > 覆盖 34 个组件（Wd 前缀）的 Props / Events / Slots / 暴露方法与自定义数据类型，

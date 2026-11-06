@@ -5,7 +5,8 @@
       :class="{ 'is-collapsible': collapsible, 'is-icon': !!icon, 'is-short-bar': titleBar === 'short' }" role="heading"
       :aria-expanded="collapsible ? openedState : undefined" @click="onHeaderClick"
       @keydown.enter.prevent="onHeaderClick" @keydown.space.prevent="onHeaderClick">
-      <div class="wd-panel__header-main">
+      <div class="wd-panel__header-main"
+        :class="{ 'is-desc-inline': mode === 'card' && descriptionAlign === 'right' }">
         <el-icon v-if="isIconFontClass(icon)" class="wd-panel__title-icon"><i :class="icon" /></el-icon>
         <el-icon v-else-if="resolveStationIcon(icon)" class="wd-panel__title-icon">
           <component :is="resolveStationIcon(icon)" />
@@ -130,7 +131,7 @@ onMounted(async () => {
 <style scoped>
 .wd-panel {
   width: 100%;
-  margin-bottom: var(--wd-spacing-base, 12px);
+  margin-bottom: var(--wd-panel-margin-bottom, var(--wd-spacing-base, 12px));
   /* 组件级令牌回退链：--wd-panel-* 未设时回落全局令牌，皮肤可单独定制 Panel */
   background: var(--wd-panel-bg, var(--wd-bg-color, #fff));
   /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
@@ -375,5 +376,15 @@ onMounted(async () => {
 
 .wd-panel--card .wd-panel__description {
   width: 100%;
+}
+
+/* card 模式 descriptionAlign='right'：描述不换行，与标题同行贴头部右端并垂直居中
+   （覆盖上方「描述独占整行」的换行表现；left 时仍保持描述在标题下方） */
+.wd-panel--card .wd-panel__header-main.is-desc-inline {
+  align-items: center;
+}
+
+.wd-panel--card .wd-panel__header-main.is-desc-inline .wd-panel__description {
+  width: auto;
 }
 </style>

@@ -53,7 +53,7 @@
 
     <demo-block
       title="Tabs 内容模式"
-      desc="content-mode=tabs 开启多标签页：点菜单自动开标签，affix 菜单为固定标签（自动开启、不可关闭），关闭激活标签后跳回上一次激活的标签（activate-previous-tab 可关闭）"
+      desc="content-mode=tabs 开启多标签页：点菜单自动开标签，affix 菜单为固定标签（自动开启、不可关闭），关闭激活标签后跳回上一次激活的标签（activate-previous-tab 可关闭）；tabs 样式默认 slider 滑块下划线式（tabs-style=card 为 EP 原生卡片式），切换标签时主色滑块横向平移过渡"
       :code="code3"
     >
       <div class="station-stage">
@@ -62,6 +62,7 @@
           logo="Platform"
           :menu-groups="menuGroups"
           content-mode="tabs"
+          tabs-style="slider"
           user-name="张管理员"
           copyright="© 2026 WorkDesktop"
           router-mode="html"

@@ -368,6 +368,8 @@ const props = defineProps({
   cardText: { type: String, default: '列表' },
   /** 默认展示视图：'table' 表格（默认）/ 'card' 卡片（仅在提供 card-item 插槽时生效） */
   defaultMode: { type: String as PropType<'table' | 'card'>, default: 'table' },
+  /** v-model:model 受控当前视图：'table' | 'card'，优先于 defaultMode（card 同样仅在提供 card-item 插槽时生效；切换时 emit update:model） */
+  model: { type: String as PropType<'table' | 'card'>, default: undefined },
   dynamicColumn: { type: Boolean, default: false },
   columnStorageKey: { type: String, default: '' },
   // 表格展示
@@ -473,6 +475,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
+  'update:model',
   'add',
   'export',
   'row-action',
@@ -488,8 +491,19 @@ const emit = defineEmits([
 
 const slots = useSlots()
 const tableRef = ref<any>(null)
+// 当前视图：model（受控）优先于 defaultMode；card 仅在提供 card-item 插槽时生效
 const viewMode = ref<'table' | 'card'>(
-  props.defaultMode === 'card' && !!slots['card-item'] ? 'card' : 'table'
+  (props.model ?? props.defaultMode) === 'card' && !!slots['card-item'] ? 'card' : 'table'
+)
+
+// v-model:model 受控同步：外部更新 model 时视图跟随（card 无 card-item 插槽时忽略）
+watch(
+  () => props.model,
+  (v) => {
+    if (!v || v === viewMode.value) return
+    if (v === 'card' && !slots['card-item']) return
+    viewMode.value = v
+  }
 )
 
 // tools 配置合并默认值
@@ -958,14 +972,16 @@ function onChangePagesize(val: number) {
 
 function toggleMode() {
   viewMode.value = viewMode.value === 'table' ? 'card' : 'table'
+  emit('update:model', viewMode.value)
   emit('mode-change', viewMode.value)
 }
 
-/** tab 形态：直设目标视图并广播 mode-change（与当前视图一致时不动） */
+/** tab 形态：直设目标视图并广播 mode-change / update:model（与当前视图一致时不动） */
 function setViewMode(mode: string | number | boolean | undefined) {
   const next = mode === 'card' ? 'card' : 'table'
   if (viewMode.value === next) return
   viewMode.value = next
+  emit('update:model', next)
   emit('mode-change', next)
 }
 

@@ -41,7 +41,10 @@ export const softSkin: SkinPreset = {
       '--wd-datagrid-border-color': '#e9edf3',
       '--wd-editable-grid-border-color': '#e9edf3',
       // 导航区：Soft UI 官方 sidenav 纯白侧栏（选中态为品紫渐变胶囊，见 cssRules）
-      '--wd-station-aside-bg': '#ffffff'
+      '--wd-station-aside-bg': '#ffffff',
+      // Station tabs 滑块样式（tabsStyle=slider）：品红激活色 + 浅品红激活底，与 Soft 品红主色一体
+      '--wd-station-tabs-active-color': '#cb0c9f',
+      '--wd-station-tabs-active-bg': '#fbeaf9'
     }
   },
   cssRules: `

@@ -17,8 +17,11 @@
         </div>
         <el-progress :percentage="72" :stroke-width="8" :show-text="false" class="wb-topbar__bar" />
       </div>
-      <!-- 日期时间 -->
-      <div class="wb-topbar__time">{{ todayText }}</div>
+      <!-- AI 生成提示词入口 + 日期时间 -->
+      <div class="wb-topbar__right">
+        <ScenarioPromptButton scene="workbench" title="工作台" />
+        <div class="wb-topbar__time">{{ todayText }}</div>
+      </div>
     </header>
 
     <!-- 欢迎横幅 -->
@@ -264,6 +267,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, type Component } from 'vue'
 import { ElMessage } from 'element-plus'
+import ScenarioPromptButton from '../components/ScenarioPromptButton.vue'
 import {
   Aim, AlarmClock, ArrowLeft, ArrowRight, Bell, BottomRight, Calendar, Checked, Clock,
   DataLine, EditPen, Grid, List, Money, OfficeBuilding, Odometer,
@@ -530,6 +534,12 @@ function openApp(label: string) {
 .wb-topbar__tasks {
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+/* AI 提示词入口 + 日期时间 */
+.wb-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 /* 顶栏右侧日期时间 */
 .wb-topbar__time {

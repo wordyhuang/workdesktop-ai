@@ -44,7 +44,11 @@ const ElMenuItemGroup = defineComponent({
   props: { title: String },
   setup(p, { slots }) {
     return () =>
-      h('li', { class: 'el-menu-item-group-stub', 'data-title': p.title }, slots.default?.())
+      h('li', { class: 'el-menu-item-group-stub', 'data-title': p.title }, [
+        // 复刻 EP 结构：title 插槽优先渲染（分组标题红点场景），无插槽回退 title prop 文本
+        h('div', { class: 'el-menu-item-group__title' }, slots.title?.() ?? (p.title || undefined)),
+        slots.default?.()
+      ])
   }
 })
 const ElTabs = defineComponent({
@@ -208,6 +212,46 @@ const badgeGroupsFixture = [
       { title: '菜单F', path: '/f', badge: 50 }
     ]
   }
+]
+
+/* both 模式分组标题红点夹具：一级菜单作分组标题，子树含/不含 badge>0 */
+const bothBadgeGroupsFixture = [
+  {
+    key: 'sys',
+    title: '系统设置',
+    menus: [
+      {
+        title: '用户管理',
+        path: '/sys/user',
+        children: [
+          { title: '用户列表', path: '/sys/user/list', badge: 4 },
+          { title: '用户角色', path: '/sys/user/role' }
+        ]
+      },
+      {
+        title: '菜单管理',
+        path: '/sys/menu',
+        children: [{ title: '菜单列表', path: '/sys/menu/list' }]
+      }
+    ]
+  }
+]
+
+/* hideEmptyNav / hideEmptyGroup 夹具：混合非空组、全空组与深层空叶组（孙菜单为实际叶子） */
+const emptyGroupsFixture = [
+  { key: 'full', title: '有货组', menus: [{ title: '菜单A', path: '/a' }] },
+  { key: 'blank', title: '占位组', menus: [] },
+  {
+    key: 'deep',
+    title: '深空组',
+    menus: [{ title: '壳菜单', path: '/shell', children: [{ title: '孙菜单', path: '/leaf', children: [] }] }]
+  }
+]
+
+/* 全空分组夹具：两组成员菜单均为空（hideEmptyNav 隐藏分导台场景） */
+const allEmptyGroupsFixture = [
+  { key: 'ea', title: '甲组', menus: [] },
+  { key: 'eb', title: '乙组', menus: [] }
 ]
 
 const flatMenusFixture = [
@@ -587,6 +631,34 @@ describe('WdStation 集成', () => {
     await affixLabel.trigger('click')
     expect(wrapper.emitted('tab-click')!.pop()![0]).toMatchObject({ key: 'system:/sys/user' })
     expect(wrapper.emitted('update:active-menu')!.pop()![0]).toBe('system:/sys/user')
+  })
+
+  it('tabs 样式默认 slider：滑块下划线式且挂 slider 修饰类', async () => {
+    const wrapper = mountStation({ menuGroups: menuGroupsFixture, contentMode: 'tabs', routerMode: 'html' })
+    await nextTick()
+    const tabs = wrapper.find('.wd-station__tabs')
+    expect(tabs.classes()).toContain('wd-station__tabs--slider')
+    expect(tabs.classes()).not.toContain('wd-station__tabs--card')
+    // slider 走 el-tabs 默认形态（无 type）→ 内置 active-bar 滑块，切换时横向平移过渡
+    expect(wrapper.find('.el-tabs-stub').attributes('type')).toBeUndefined()
+    // slider 形态 tabs-bar 挂 slider 修饰类：底部通栏线由 bar 层承担（覆盖 tabs-left/right 两侧，两端对称）
+    expect(wrapper.find('.wd-station__tabs-bar').classes()).toContain('wd-station__tabs-bar--slider')
+  })
+
+  it('tabsStyle=card：EP 原生卡片式（card 类型，不挂 slider 修饰类）', async () => {
+    const wrapper = mountStation({
+      menuGroups: menuGroupsFixture,
+      contentMode: 'tabs',
+      routerMode: 'html',
+      tabsStyle: 'card'
+    })
+    await nextTick()
+    const tabs = wrapper.find('.wd-station__tabs')
+    expect(tabs.classes()).toContain('wd-station__tabs--card')
+    expect(tabs.classes()).not.toContain('wd-station__tabs--slider')
+    expect(wrapper.find('.el-tabs-stub').attributes('type')).toBe('card')
+    // card 形态 tabs-bar 不挂 slider 修饰类（底线由 EP header 原生承担）
+    expect(wrapper.find('.wd-station__tabs-bar').classes()).not.toContain('wd-station__tabs-bar--slider')
   })
 
   it('tabs 模式：菜单带 icon 时 tab 标题渲染该 icon，open-tabs 回传 tab.icon', async () => {
@@ -1089,6 +1161,73 @@ describe('WdStation 集成', () => {
     const badge3 = navItems[2].find('.el-badge-stub.wd-station__nav-badge')
     expect(badge3.exists()).toBe(true)
     expect(badge3.text()).toBe('99+')
+  })
+
+  it('分组标题红点（headerMode=title）：组内任一菜单 badge>0 时分组标题渲染 is-dot 红点', () => {
+    const wrapper = mountStation({ menuGroups: badgeGroupsFixture, headerMode: 'title' })
+    const groups = wrapper.findAll('.el-menu-item-group-stub')
+    expect(groups.length).toBe(3)
+    // 聚合组（badge 5 + children 3/2）→ 标题红点
+    const dot1 = groups[0].find('.el-menu-item-group__title .el-badge-stub.wd-station__group-badge')
+    expect(dot1.exists()).toBe(true)
+    expect(dot1.classes()).toContain('is-dot')
+    // 无效值组（'new' 非数值 / 0）→ 不触发
+    expect(groups[1].find('.el-menu-item-group__title .wd-station__group-badge').exists()).toBe(false)
+    // 封顶组（60 / 50）→ 红点
+    expect(groups[2].find('.el-menu-item-group__title .el-badge-stub.wd-station__group-badge.is-dot').exists()).toBe(true)
+    // 标题文字仍在（插槽替换 :title 后不丢文本）
+    expect(groups[0].find('.el-menu-item-group__title').text()).toContain('聚合组')
+  })
+
+  it('分组标题红点（headerMode=both）：一级菜单子树含 badge>0 时其分组标题渲染红点', () => {
+    const wrapper = mountStation({ menuGroups: bothBadgeGroupsFixture, headerMode: 'both' })
+    const groups = wrapper.findAll('.el-menu-item-group-stub')
+    expect(groups.length).toBe(2)
+    // 用户管理分组：children 内 badge 4 → 标题红点
+    const dot1 = groups[0].find('.el-menu-item-group__title .el-badge-stub.wd-station__group-badge')
+    expect(dot1.exists()).toBe(true)
+    expect(dot1.classes()).toContain('is-dot')
+    // 菜单管理分组：子树无 badge → 无红点
+    expect(groups[1].find('.el-menu-item-group__title .wd-station__group-badge').exists()).toBe(false)
+    // 标题文字仍在
+    expect(groups[0].find('.el-menu-item-group__title').text()).toContain('用户管理')
+  })
+
+  it('hideEmptyGroup：空分组隐藏——默认 false 照常渲染，true 时空组从分导台与 title 分组标题消失（递归叶子口径）', () => {
+    // 默认 false：空组（占位组）与深层空叶组（深空组，孙菜单算实际菜单）都渲染
+    const def = mountStation({ menuGroups: emptyGroupsFixture })
+    expect(def.findAll('.wd-station__nav-item')).toHaveLength(3)
+    def.unmount()
+    // true：占位组消失，有货组/深空组保留（深空组经递归判定含叶子菜单）
+    const wrapper = mountStation({ menuGroups: emptyGroupsFixture, hideEmptyGroup: true })
+    const items = wrapper.findAll('.wd-station__nav-item')
+    expect(items).toHaveLength(2)
+    expect(items.map((i) => i.text()).join()).not.toContain('占位组')
+    expect(items.map((i) => i.text()).join()).toContain('深空组')
+    wrapper.unmount()
+    // true + title 模式：空组的分组标题不渲染
+    const titleWrap = mountStation({ menuGroups: emptyGroupsFixture, headerMode: 'title', hideEmptyGroup: true })
+    const titles = titleWrap.findAll('.el-menu-item-group-stub').map((g) => g.attributes('data-title'))
+    expect(titles.join()).not.toContain('占位组')
+    expect(titles.join()).toContain('有货组')
+    titleWrap.unmount()
+  })
+
+  it('hideEmptyNav：分导台下所有分组均无实际菜单时隐藏分导台（默认 false 仍显示）', () => {
+    // 默认 false：空分导台照常渲染两个条目
+    const def = mountStation({ menuGroups: allEmptyGroupsFixture })
+    expect(def.find('.wd-station__nav').exists()).toBe(true)
+    expect(def.findAll('.wd-station__nav-item')).toHaveLength(2)
+    def.unmount()
+    // true：整个分导台隐藏，header 回退标题
+    const wrapper = mountStation({ menuGroups: allEmptyGroupsFixture, hideEmptyNav: true })
+    expect(wrapper.find('.wd-station__nav').exists()).toBe(false)
+    expect(wrapper.find('.wd-station__header-title').exists()).toBe(true)
+    wrapper.unmount()
+    // true 但存在含实际菜单的分组：分导台照常
+    const mixed = mountStation({ menuGroups: emptyGroupsFixture, hideEmptyNav: true })
+    expect(mixed.find('.wd-station__nav').exists()).toBe(true)
+    mixed.unmount()
   })
 
   it('slots：各固定点位渲染自定义内容且位置正确，传入的 logo/footer 替换默认内容', () => {

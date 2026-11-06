@@ -279,3 +279,29 @@ describe('WdPanel mode 卡片模式', () => {
     wrapper.unmount()
   })
 })
+
+describe('WdPanel card 模式描述对齐', () => {
+  it("mode='card' 默认 left：header-main 无 is-desc-inline（描述换行显示在标题下方）", async () => {
+    const wrapper = mountPanel({ mode: 'card' })
+    await nextTick()
+    expect(wrapper.find('.wd-panel__header-main').classes('is-desc-inline')).toBe(false)
+    expect(wrapper.find('.wd-panel__description').classes('is-right')).toBe(false)
+    wrapper.unmount()
+  })
+
+  it("mode='card' + descriptionAlign='right'：header-main 标记 is-desc-inline（描述与标题同行、垂直居中），description 标记 is-right", async () => {
+    const wrapper = mountPanel({ mode: 'card', descriptionAlign: 'right' })
+    await nextTick()
+    expect(wrapper.find('.wd-panel__header-main').classes('is-desc-inline')).toBe(true)
+    expect(wrapper.find('.wd-panel__description').classes('is-right')).toBe(true)
+    wrapper.unmount()
+  })
+
+  it("panel 模式 + descriptionAlign='right'：header-main 无 is-desc-inline（不影响既有同行贴右端表现）", async () => {
+    const wrapper = mountPanel({ descriptionAlign: 'right' })
+    await nextTick()
+    expect(wrapper.find('.wd-panel__header-main').classes('is-desc-inline')).toBe(false)
+    expect(wrapper.find('.wd-panel__description').classes('is-right')).toBe(true)
+    wrapper.unmount()
+  })
+})

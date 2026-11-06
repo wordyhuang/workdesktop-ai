@@ -409,9 +409,10 @@
     </demo-block>
 
     <demo-block title="默认展示列表清单（default-mode）"
-      desc="default-mode='card' 时初始即展示卡片视图；该属性仅在提供 card-item 插槽时生效——无插槽时忽略，仍展示表格。切换按钮照常可用，可在表格与清单间来回切换"
+      desc="default-mode='card' 时初始即展示卡片视图；该属性仅在提供 card-item 插槽时生效——无插槽时忽略，仍展示表格。v-model:model 可双向绑定当前视图（'table' | 'card'，优先于 default-mode）：内部切换时回写，外部赋值时视图跟随。切换按钮照常可用，可在表格与清单间来回切换"
       :code="codeDefaultCard">
-      <wd-data-grid :data-source="staticRows" :mode-switch="true" default-mode="card" row-key="code"
+      <wd-data-grid v-model:model="demoMode" :data-source="staticRows" :mode-switch="true" default-mode="card"
+        row-key="code"
         @mode-change="(m: string) => ElMessage.info(m === 'card' ? '已切换为列表清单视图' : '已切换为表格视图')">
         <el-table-column prop="code" label="项目编号" width="110" />
         <el-table-column prop="name" label="项目名称" min-width="200" show-overflow-tooltip />
@@ -1091,7 +1092,8 @@ function onModeChange(mode) {}
 <\/script>`
 
 const codeDefaultCard = `<!-- default-mode="card"：初始即展示卡片视图（仅在提供 card-item 插槽时生效） -->
-<wd-data-grid :data-source="rows" :mode-switch="true" default-mode="card" row-key="code"
+<!-- v-model:model：双向绑定当前视图，内部切换时回写、外部赋值时视图跟随 -->
+<wd-data-grid v-model:model="viewMode" :data-source="rows" :mode-switch="true" default-mode="card" row-key="code"
   @mode-change="onModeChange">
   <el-table-column prop="code" label="项目编号" width="110" />
   <el-table-column prop="name" label="项目名称" min-width="200" show-overflow-tooltip />
@@ -1113,7 +1115,11 @@ const codeDefaultCard = `<!-- default-mode="card"：初始即展示卡片视图�
 </wd-data-grid>
 
 <script setup>
-// 初始为 card 视图；切换后回传 'table' | 'card'
+import { ref } from 'vue'
+
+// 初始为 card 视图（default-mode + v-model:model）；切换后 viewMode 自动回写为 'table' | 'card'
+const viewMode = ref('card')
+
 function onModeChange(mode) {}
 <\/script>`
 
@@ -1263,6 +1269,8 @@ function onSaveEdit(row: any, close: () => void) {
 }
 
 /** 静态示例：2026 Q3 在研项目台账 */
+/** v-model:model：双向绑定当前视图（'table' | 'card'），初始 'card' 配合 default-mode */
+const demoMode = ref<'table' | 'card'>('card')
 const staticRows = [
   { code: 'PRJ-2026-001', name: 'WorkDesktop 低代码组件库 3.0', owner: '张伟', members: 6, priority: '高', progress: 92, deadline: '2026-09-30', status: 'doing', done: false },
   { code: 'PRJ-2026-002', name: '订单中台微服务拆分与重构', owner: '刘洋', members: 9, priority: '紧急', progress: 100, deadline: '2026-07-15', status: 'done', done: true },

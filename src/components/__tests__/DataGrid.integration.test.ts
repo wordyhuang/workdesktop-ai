@@ -480,6 +480,55 @@ describe('DataGrid 集成（组件 + useDataGrid + linkage + http mock）', () =
     wrapper.unmount()
   })
 
+  it('v-model:model=model 传 card 且提供 card-item 插槽时初始展示卡片视图，切换时 emit update:model', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, modeSwitch: true, model: 'card' },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    // 初始即卡片视图（model 优先于 defaultMode）
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(true)
+    expect(wrapper.find('.el-table-stub').exists()).toBe(false)
+    // 点击切回表格：emit update:model
+    await findModeBtn(wrapper).trigger('click')
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    expect(wrapper.emitted('update:model')?.[0]).toEqual(['table'])
+    wrapper.unmount()
+  })
+
+  it('v-model:model：外部更新 model 时视图跟随（受控同步）', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, model: 'table' },
+      slots: {
+        'card-item': ({ row }: any) => h('div', { class: 'my-card-item' }, row.name)
+      },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    // 外部改为 card → 视图跟随切换
+    await wrapper.setProps({ model: 'card' })
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(true)
+    // 外部改回 table → 跟随切回
+    await wrapper.setProps({ model: 'table' })
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('v-model:model=model 传 card 但未提供 card-item 插槽时忽略，仍展示表格', async () => {
+    const wrapper = mount(DataGrid, {
+      props: { api: '/users', active: true, model: 'card' },
+      global: { stubs, directives: { loading: {} } }
+    })
+    await flushPromises()
+    expect(wrapper.find('.el-table-stub').exists()).toBe(true)
+    expect(wrapper.find('.wd-datagrid__cards').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('表格/列表清单模式：modeSwitchType=tab 时渲染分段按钮组（不渲染 icon 切换按钮），默认文字为表格/列表', async () => {
     const wrapper = mount(DataGrid, {
       props: { api: '/users', active: true, modeSwitch: true, modeSwitchType: 'tab' },

@@ -19,6 +19,10 @@ export const fashionSkin: SkinPreset = {
       '--wd-text-color-primary': '#1d2129',
       // 原 #6b7280 对奶油页底对比度 4.30 不达标，加深至 #646b78（≈4.77）
       '--wd-text-color-secondary': '#646b78',
+      // 字体整体加大 1px（出厂 base 14 / small 12 / large 16），杂志风正文更从容
+      '--wd-font-size-base': '15px',
+      '--wd-font-size-small': '13px',
+      '--wd-font-size-large': '17px',
       '--wd-border-color': '#e9e1d6',
       '--wd-border-color-light': '#f2ebe0',
       '--wd-radius-base': '8px',
@@ -29,6 +33,12 @@ export const fashionSkin: SkinPreset = {
       '--wd-datagrid-radius': '14px',
       // 标题回归纯文字：彩色标识条宽度归零（伪元素隐藏，与参考图一致）
       '--wd-panel-title-bar-width': '0',
+      // 面板空间感：padding 整体加大 3px（出厂 header 12/16/12/18、body/card-header 16），杂志风留白更松弛
+      '--wd-panel-header-padding': '15px 19px 15px 21px',
+      '--wd-panel-body-padding': '19px',
+      '--wd-panel-card-header-padding': '19px',
+      // 面板下间距同步加大（出厂 12px，走 --wd-panel-margin-bottom 组件级令牌）
+      '--wd-panel-margin-bottom': '15px',
       // 容器类毛玻璃：面板 / 搜索 / 表格半透白底（配 cssRules 的 backdrop-filter 成磨砂，页面光斑隐约透出），面板亮边模拟玻璃高光
       '--wd-panel-bg': 'rgba(255, 255, 255, 0.62)',
       '--wd-panel-border-color': 'rgba(255, 255, 255, 0.7)',

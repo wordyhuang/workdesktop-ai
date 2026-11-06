@@ -6,6 +6,8 @@ import LinkageView from './views/LinkageView.vue'
 import GlobalStyleView from './views/GlobalStyleView.vue'
 import ScenarioGuideView from './views/ScenarioGuideView.vue'
 import ScenarioWorkbenchView from './views/ScenarioWorkbenchView.vue'
+import ScenarioFocusView from './views/ScenarioFocusView.vue'
+import ScenarioStatsView from './views/ScenarioStatsView.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
@@ -15,6 +17,8 @@ const routes = [
   { path: '/theme', name: 'GlobalStyle', component: GlobalStyleView },
   { path: '/scenario-guide', name: 'ScenarioGuide', component: ScenarioGuideView },
   { path: '/scenario/workbench', name: 'ScenarioWorkbench', component: ScenarioWorkbenchView },
+  { path: '/scenario/focus', name: 'ScenarioFocus', component: ScenarioFocusView },
+  { path: '/scenario/stats', name: 'ScenarioStats', component: ScenarioStatsView },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 

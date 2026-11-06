@@ -154,11 +154,11 @@ export const containerData: ComponentMeta[] = [
       notes: [
         '标题区仅在传了 `title` 或使用了 `title` 插槽时才渲染；两者都不传时整个头部（含 description、extra）不显示。`description` 需配合 `title` 属性使用——使用 `title` 插槽自定义标题时，`description` 不再渲染，请把描述写进插槽内容里。',
         '`opened` 只在 `collapsible` 开启后生效；未开启折叠时面板始终展开。',
-        '`descriptionAlign="right"` 时描述吸收标题右侧剩余空白贴到面板右端；与 `descriptionExpandable` 可叠加使用（悬停标题显示的描述同样靠右）。',
+        '`descriptionAlign="right"` 时描述吸收标题右侧剩余空白贴到面板右端；`mode="card"` 下 left=描述换行显示在标题下方，right=描述与标题同行、垂直居中贴右端；与 `descriptionExpandable` 可叠加使用（悬停标题显示的描述同样靠右）。',
         '`descriptionExpandable=true` 时描述以 0.24s 淡入 + 4px 滑入的入场动效出现（`right` 对齐时从右侧滑入），纯 CSS 实现；无需开关，如需关闭可在业务侧覆盖 `animation`。',
         '`titleBar="short"` 时左侧标识条变为与标题行同高的短条（默认 22px，可用 --wd-panel-title-bar-height 令牌调整），顶部对齐标题行（--wd-panel-title-bar-top 令牌默认 12px，与 header 上内边距一致），并与左侧边框留有间距（--wd-panel-title-bar-left 令牌默认 10px，浮动短条四角均圆角），此时描述自动换行显示在标题下方独占整行（与 card 模式表现一致，DOM 顺序不变）；无描述时头部保持单行，短条与标题行重合。长条（默认 `long`）与头部同高、贴左边框。短条形态下 --wd-panel-title-bar-inset 令牌不再生效；`icon` 或 `mode="card"` 下标识条本身隐藏，该属性无效。',
         '`icon` 支持 @element-plus/icons-vue 图标名字符串、图标字体 class（如 \'fa-solid fa-user\'，需自行引入对应字体 CSS）、组件对象三种形态；设置后标题前显示图标，左侧品牌色标识条自动隐藏，由图标承担视觉锚点角色。',
-        '`mode="card"` 时组件呈现信息卡片形态：白底大圆角、头部（标题区）整体带浅色背景（默认 #e4e9f0，三级回退：--wd-panel-card-header-bg → 皮肤的 --wd-panel-header-bg → 默认值，皮肤设置 panel 头部背景后 card 自动联动；另有 --wd-panel-card-header-padding / --wd-panel-card-radius / --wd-panel-card-title-gap 令牌可调）、description 换行显示在标题下方、隐藏品牌色标识条与头部底部分割线；外层用 flex 容器（gap 控制间距）即可一行并行多个卡片。',
+        '`mode="card"` 时组件呈现信息卡片形态：白底大圆角、头部（标题区）整体带浅色背景（默认 #e4e9f0，三级回退：--wd-panel-card-header-bg → 皮肤的 --wd-panel-header-bg → 默认值，皮肤设置 panel 头部背景后 card 自动联动；另有 --wd-panel-card-header-padding / --wd-panel-card-radius / --wd-panel-card-title-gap 令牌可调）、description 默认换行显示在标题下方（`descriptionAlign="right"` 时改为与标题同行、垂直居中贴右端）、隐藏品牌色标识条与头部底部分割线；外层用 flex 容器（gap 控制间距）即可一行并行多个卡片。',
         '`collapseHeight` 需配合 `collapsible` 使用：内容实际高度超过阈值时渲染完成后自动收起一次，用户可点击标题重新展开；后续内容变化不再重复触发自动折叠。',
         '`extra` 插槽区域的点击事件已被拦截（`@click.stop`），点击里面的按钮不会误触面板的折叠/展开。',
         '折叠时主体（default）与底部（footer）会一并收起，展开带高度过渡动画；不要把需要常驻的操作只放在 footer 里。',
@@ -181,10 +181,10 @@ export const containerData: ComponentMeta[] = [
       { name: 'shadow', type: "'always' | 'hover' | 'never'", default: "'hover'", desc: '阴影策略：常驻 / 悬停显示 / 无阴影' },
       { name: 'border', type: 'boolean', default: 'true', desc: '是否显示外边框（嵌套在卡片/弹层等容器内时可关闭）' },
       { name: 'descriptionExpandable', type: 'boolean', default: 'false', desc: '描述展示模式：false=直接显示在标题旁；true=标题下出现虚线，鼠标悬停标题时才以淡入动效显示描述' },
-      { name: 'descriptionAlign', type: "'left' | 'right'", default: "'left'", desc: '描述在标题右侧空白区的对齐方式：left=紧跟标题；right=吸收剩余空白贴到面板头部右端' },
+      { name: 'descriptionAlign', type: "'left' | 'right'", default: "'left'", desc: '描述对齐方式：left=紧跟标题（card 模式下换行显示在标题下方）；right=吸收剩余空白贴到面板头部右端（card 模式下与标题同行、垂直居中）' },
       { name: 'titleBar', type: "'long' | 'short'", default: "'long'", desc: '标题左侧品牌色标识条高度形态：long=与头部同高（默认）；short=与标题行同高（约 22px）、顶部对齐标题行，描述换行显示在标题下方；icon 或 mode="card" 下标识条隐藏，该属性无效' },
       { name: 'icon', type: 'string | Component', default: "''", desc: '标题图标：@element-plus/icons-vue 图标名（如 Setting）/ 图标字体 class（如 fa-solid fa-user）/ 组件对象；设置后标题前显示图标，左侧品牌色标识条隐藏' },
-      { name: 'mode', type: "'panel' | 'card'", default: "'panel'", desc: "展示模式：panel=常规分区面板；card=信息卡片（白底大圆角、头部整体带浅色背景、description 显示在标题下方，配合 flex 容器可一行并行多卡）" },
+      { name: 'mode', type: "'panel' | 'card'", default: "'panel'", desc: "展示模式：panel=常规分区面板；card=信息卡片（白底大圆角、头部整体带浅色背景、description 默认显示在标题下方，descriptionAlign=\"right\" 时与标题同行、垂直居中，配合 flex 容器可一行并行多卡）" },
       { name: 'collapseHeight', type: 'number', default: '0', desc: '内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时渲染完成后自动折叠；0=不自动折叠（完全撑开）' }
     ],
     emits: [

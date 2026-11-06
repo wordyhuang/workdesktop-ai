@@ -19,6 +19,11 @@
           <template v-if="headerMode === 'title'">
             <template v-if="groups.length > 1">
               <el-menu-item-group v-for="g in groups" :key="g.key" :title="g.title">
+                <template #title>
+                  <span>{{ g.title }}</span>
+                  <!-- 分组标题红点：组内任一菜单（递归）badge>0，口径与分导台 dot 一致（独立于 badgeType） -->
+                  <el-badge v-if="navBadges[g.key]?.hasBadge" is-dot class="wd-station__group-badge" />
+                </template>
                 <station-menu-node :items="g.menus" @select="onMenuSelect" />
               </el-menu-item-group>
             </template>
@@ -29,6 +34,10 @@
             <!-- both：左侧跟随激活分组，一级菜单作 title 分组，二级平铺全量；二级含三级才折叠；叶子一级直接为菜单项 -->
             <template v-for="one in currentGroupMenus" :key="one._key">
               <el-menu-item-group v-if="one.children && one.children.length" :title="one.title">
+                <template #title>
+                  <span>{{ one.title }}</span>
+                  <el-badge v-if="menuHasBadge(one)" is-dot class="wd-station__group-badge" />
+                </template>
                 <station-menu-node :items="one.children" @select="onMenuSelect" />
               </el-menu-item-group>
               <el-menu-item v-else :index="one._key" :disabled="one.disabled" @click="onMenuSelect(one)">
@@ -189,15 +198,16 @@
         </div>
       </div>
 
-      <!-- tabs 导航（contentMode=tabs）：整宽撑满，右侧下拉批量关闭；自绘 label 插槽，affix 无关闭图标 -->
-      <div v-if="contentMode === 'tabs'" class="wd-station__tabs-bar">
+      <!-- tabs 导航（contentMode=tabs）：整宽撑满，右侧下拉批量关闭；tabsStyle=card 用 el-tabs card 原生样式，tabsStyle=slider 用滑块下划线式（自带 active-bar 平移动画），自绘 label 插槽，affix 无关闭图标 -->
+      <div v-if="contentMode === 'tabs'" class="wd-station__tabs-bar" :class="{ 'wd-station__tabs-bar--slider': tabsStyle === 'slider' }">
         <div id="wd-station__tabs-left" class="wd-station__tabs-left">
           <slot name="tabs-left" />
         </div>
         <el-tabs
           :model-value="currentKey"
-          type="card"
+          :type="tabsStyle === 'card' ? 'card' : undefined"
           class="wd-station__tabs"
+          :class="`wd-station__tabs--${tabsStyle}`"
         >
           <el-tab-pane v-for="tab in tabs" :key="tab.key" :name="tab.key">
             <template #label>
@@ -281,6 +291,10 @@ const props = defineProps({
   headerMode: { type: String as PropType<'nav' | 'title' | 'both'>, default: 'nav' },
   /** 分导台徽标类型：none=关闭（永不显示）/ dot=组内任一菜单 badge>0 显示红点 / number=组内菜单 badge 递归累加（封顶 99 显示 99+） */
   badgeType: { type: String as PropType<'none' | 'dot' | 'number'>, default: 'dot' },
+  /** 分导台空隐藏：分导台下所有分组均无实际菜单（递归无叶子项）时，隐藏整个分导台（header 回退标题） */
+  hideEmptyNav: { type: Boolean, default: false },
+  /** 空分组隐藏：菜单分组下无实际子菜单（递归无叶子项）时，不渲染该分组（分导台条目与侧边分组标题同步消失） */
+  hideEmptyGroup: { type: Boolean, default: false },
   /** 是否显示头部中央标题（headerMode 非 nav 时的 fallback 标题；需自绘 header-center 时可关闭） */
   showHeaderTitle: { type: Boolean, default: true },
   /** 菜单位置：side=左侧 / top=顶部 / none=不启用 */
@@ -305,6 +319,8 @@ const props = defineProps({
   tabIcon: { type: Boolean, default: true },
   /** 关闭当前激活标签后是否跳回上一次激活的标签（true=MRU 历史；false=相邻，先右后左） */
   activatePreviousTab: { type: Boolean, default: true },
+  /** tabs 条样式：slider=滑块下划线式（默认；激活项主色文字 + 底部主色滑块，切换时滑块横向平移过渡；激活色/滑块色与激活底走皮肤变量 --wd-station-tabs-active-color / --wd-station-tabs-active-bg）；card=EP 原生卡片式 */
+  tabsStyle: { type: String as PropType<'card' | 'slider'>, default: 'slider' },
   /** 用户名（有值显示用户下拉，无值显示登录按钮） */
   userName: { type: String, default: '' },
   /** 用户头像地址 */
@@ -417,6 +433,8 @@ const groups = computed<StationMenuGroup[]>(() => {
   // 统一分配 _key 并检查层级
   list = list.map((g) => ({ ...g, menus: assignKeys(g.menus, g.key) }))
   checkMenuDepth(list)
+  // 空分组隐藏：组内无实际菜单（递归无叶子项）时不渲染该组（分导台条目/侧边分组标题同步消失）
+  if (props.hideEmptyGroup) list = list.filter((g) => hasActualMenus(g.menus))
   return list
 })
 
@@ -444,12 +462,32 @@ const navBadges = computed<Record<string, { hasBadge: boolean; sum: number }>>((
   return map
 })
 
+/* 菜单树是否含实际叶子菜单（无 children 的项，递归判定）：hideEmptyGroup / hideEmptyNav 的空组口径 */
+function hasActualMenus(items: StationMenuItem[]): boolean {
+  return items.some((item) => (item.children?.length ? hasActualMenus(item.children) : true))
+}
+
+/* 一级菜单子树是否含数值 badge>0（both 模式一级菜单作分组标题的红点判定，口径与 navBadges 一致：非数值/≤0 不参与） */
+function menuHasBadge(item: StationMenuItem): boolean {
+  if (item.badge !== undefined && item.badge !== '') {
+    const n = Number(item.badge)
+    if (!Number.isNaN(n) && n > 0) return true
+  }
+  return (item.children || []).some(menuHasBadge)
+}
+
 /* ---------- 分组（分导台） ---------- */
 const innerActiveGroup = ref('')
 const activeGroupKey = computed(
   () => props.activeGroup || innerActiveGroup.value || groups.value[0]?.key || ''
 )
-const showNav = computed(() => props.headerMode !== 'title' && groups.value.length > 1)
+const showNav = computed(
+  () =>
+    props.headerMode !== 'title' &&
+    groups.value.length > 1 &&
+    // 分导台空隐藏：所有分组均无实际菜单（递归无叶子项）时隐藏整个分导台
+    !(props.hideEmptyNav && groups.value.every((g) => !hasActualMenus(g.menus)))
+)
 const currentGroup = computed(
   () => groups.value.find((g) => g.key === activeGroupKey.value) || groups.value[0]
 )
@@ -858,6 +896,8 @@ defineExpose({ refresh, openTab, closeTab })
 
 /* 左侧菜单 title 分组标题（headerMode=title/both）：小型章节标题风格，与菜单项拉开层级 */
 .wd-station__aside :deep(.el-menu-item-group__title) {
+  display: flex;
+  align-items: center;
   margin-top: 12px;
   padding: 4px 0 4px 20px;
   font-size: 12px;
@@ -865,6 +905,14 @@ defineExpose({ refresh, openTab, closeTab })
   letter-spacing: 0.5px;
   line-height: 1.5;
   color: var(--wd-station-menu-group-color, var(--el-text-color-secondary));
+}
+/* 分组标题红点：行尾右对齐（与菜单项徽章同风格）；折叠时随分组标题 display:none 一并隐藏 */
+.wd-station__aside :deep(.wd-station__group-badge) {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 /* 首个分组标题不加大顶部间距 */
 .wd-station__aside :deep(.el-menu-item-group:first-child > .el-menu-item-group__title) {
@@ -1031,40 +1079,79 @@ defineExpose({ refresh, openTab, closeTab })
   min-width: 0;
 }
 
-/* tabs 条：整宽撑满，消左/上边框，右侧下拉批量关闭 */
+/* tabs 条：整宽撑满，右侧下拉批量关闭；card=el-tabs card 原生样式，slider=滑块下划线式 */
 .wd-station__tabs-bar {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding-top: 4px;
   background: var(--wd-station-tabs-bg, var(--wd-bg-color));
   /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
   background-image: var(--wd-station-tabs-bg-image, none);
-  border-bottom: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
 }
 .wd-station__tabs {
   flex: 1;
   min-width: 0;
 }
-.wd-station__tabs-bar :deep(.el-tabs--card > .el-tabs__header) {
+/* slider 形态：流行的滑块下划线式。激活文字/滑块主色与激活浅底走皮肤变量（默认回退全局主色），
+   滑块横向移动过渡由 EP 内置 active-bar transition 提供，无需 JS 计算 */
+.wd-station__tabs--slider :deep(.el-tabs__header) {
   margin-bottom: 0;
   border-bottom: none;
 }
-.wd-station__tabs-bar :deep(.el-tabs--card > .el-tabs__header .el-tabs__nav) {
-  border: none;
-  border-radius: 0;
+/* slider 形态：通栏底线由 tabs-bar 层承担（覆盖 tabs-left/right 与批量关闭区，两端对称无缺线），
+   隐藏 EP 的 nav-wrap::after——其只画到 el-tabs 区域，首尾两侧会出现断线 */
+.wd-station__tabs-bar--slider {
+  border-bottom: 1px solid var(--wd-border-color-light, var(--el-border-color-light));
 }
-/* 分隔线统一放右侧：每个 tab（含最后一个）默认带右边框，tabs 区右端封闭 */
-.wd-station__tabs-bar :deep(.el-tabs--card > .el-tabs__header .el-tabs__nav .el-tabs__item) {
-  border-left: none;
-  border-right: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light);
+.wd-station__tabs-bar--slider :deep(.el-tabs__nav-wrap::after) {
+  display: none;
 }
-/* 激活 tab 增强：顶部主色指示条 + 浅主色背景 + 主色加粗文字，强化激活辨识 */
-.wd-station__tabs-bar :deep(.el-tabs--card > .el-tabs__header .el-tabs__nav .el-tabs__item.is-active) {
-  color: var(--wd-color-primary, var(--el-color-primary));
-  background: var(--el-color-primary-light-9, var(--wd-bg-color-page));
+.wd-station__tabs--slider :deep(.el-tabs__item) {
+  color: var(--wd-text-color-regular);
+  font-weight: 400;
+  position: relative;
+  /* EP 原生对首签去左 padding、末签去右 padding（为 card 边框贴合设计），slider 下会导致首签贴死左缘、
+     末签贴死右缘，且滑块（宽=item−padding）与激活底左右锚点错位；统一归零 padding、改用 margin 拉开签间距，
+     内容盒/激活底/滑块三者保持等宽对齐，首尾留白对称 */
+  padding: 0;
+  margin: 0 14px;
+}
+/* 签间分割线：画在相邻签 28px 间隙的中点（item 左缘外 14px），激活/非激活签之间同样保留 */
+.wd-station__tabs--slider :deep(.el-tabs__item + .el-tabs__item::before) {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 14px;
+  background-color: var(--wd-border-color-light, var(--el-border-color-light));
+}
+.wd-station__tabs--slider :deep(.el-tabs__item:hover) {
+  color: var(--wd-station-tabs-active-color, var(--wd-color-primary));
+}
+.wd-station__tabs--slider :deep(.el-tabs__item.is-active) {
+  color: var(--wd-station-tabs-active-color, var(--wd-color-primary));
   font-weight: 600;
-  box-shadow: inset 0 3px 0 0 var(--wd-color-primary, var(--el-color-primary));
+  /* 激活浅底：默认透明（纯下划线轻度），皮肤可给浅主色/渐变底 */
+  background-color: var(--wd-station-tabs-active-bg, transparent);
+}
+.wd-station__tabs--slider :deep(.el-tabs__active-bar) {
+  height: 2px;
+  border-radius: 2px;
+  background-color: var(--wd-station-tabs-active-color, var(--wd-color-primary));
+}
+/* 滑块加宽：EP 用 JS 内联 style 计算 active-bar 宽度（=激活签内容宽），无法直接改宽；
+   用 ::after 左右各延伸 6px（background-color 继承主色），本体与动画不动，切换时滑块整体平移过渡 */
+.wd-station__tabs--slider :deep(.el-tabs__active-bar::after) {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  right: -6px;
+  border-radius: 2px;
+  background-color: inherit;
 }
 .wd-station__tabs-actions {
   flex-shrink: 0;
