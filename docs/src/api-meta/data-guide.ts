@@ -5,6 +5,7 @@ export const guideData: ComponentMeta[] = [
   {
     path: 'guide',
     name: 'WdGuide',
+    since: '1.2.2',
     passthrough: {
       target: '—（不透传）',
       note: '组件通过 Teleport 渲染自研遮罩与高亮层，内部仅使用 el-icon，外部属性/事件不会透传到任何 Element Plus 组件。',

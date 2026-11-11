@@ -95,6 +95,12 @@ function pad2(n: number) {
   return String(n).padStart(2, '0')
 }
 
+/** 当前时间文本 YYYY-MM-DD HH:mm:ss（流水记录用） */
+function nowText() {
+  const d = new Date()
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`
+}
+
 const store = {
   users: namePool.map(([name, gender], i): UserItem => {
     const id = i + 1
@@ -115,8 +121,13 @@ const store = {
       createTime: `2026-0${(i % 9) + 1}-${pad2((i % 27) + 1)}`
     }
   }),
-  files: [] as { id: number; name: string; url: string }[],
-  nextFileId: 1
+  /** 设置中心 · 变更记录（保存配置后追加流水） */
+  settingsLogs: [
+    { id: 3, section: '安全与登录', action: '修改了登录密码', time: '2026-11-09 18:24:10' },
+    { id: 2, section: '通知偏好', action: '开启了任务指派的短信提醒', time: '2026-11-06 10:32:45' },
+    { id: 1, section: '基本设置', action: '更新了「个人签名」', time: '2026-11-03 09:15:02' }
+  ] as { id: number; section: string; action: string; time: string }[],
+  nextLogId: 4
 }
 
 const routes: MockRoute[] = []
@@ -218,21 +229,13 @@ mock('post', /\/mock\/user\/status$/, ({ params }) => {
 mock('get', /\/mock\/options\/roles$/, () => ok(roles))
 mock('get', /\/mock\/options\/states$/, () => ok(states))
 
-// ---------- 文件上传 / 删除 ----------
+// ---------- 文件上传 / 删除（Upload / ImageUpload 文档示例） ----------
 mock('post', /\/mock\/file\/upload$/, () => {
-  const id = store.nextFileId++
-  const name = `demo-file-${id}.png`
-  const url = `https://picsum.photos/seed/wd${id}/200/120`
-  store.files.push({ id, name, url })
-  return ok({ id, name, url, path: url })
+  const url = 'https://picsum.photos/seed/wd-upload/200/120'
+  return ok({ id: 1, name: 'demo-file.png', url, path: url })
 })
 
-mock('delete', /\/mock\/file$/, ({ params }) => {
-  const id = Number(params.id)
-  const idx = store.files.findIndex((f) => f.id === id)
-  if (idx >= 0) store.files.splice(idx, 1)
-  return ok(null, '文件已删除')
-})
+mock('delete', /\/mock\/file$/, () => ok(null, '文件已删除'))
 
 // ---------- 部门树 ----------
 const treeData = [
@@ -275,10 +278,87 @@ mock('post', /\/mock\/user\/batch$/, ({ params }) => {
   return ok({ count: ids.length }, `批量操作完成（${ids.length} 条）`)
 })
 
-// ---------- 导出 ----------
+// ---------- 导出（ApiButton 文档示例） ----------
+// ApiButton 默认 apiMethod=post，get/post 双注册保证按钮不传 method 也能命中
 mock('get', /\/mock\/user\/export$/, () =>
   ok({ url: 'https://example.com/export/users.xlsx' }, '导出任务已创建')
 )
+mock('post', /\/mock\/user\/export$/, () =>
+  ok({ url: 'https://example.com/export/users.xlsx' }, '导出任务已创建')
+)
+
+// ---------- 设置中心（保存流水 / 变更记录 / 登录日志 / 安全操作） ----------
+const settingSectionNames: Record<string, string> = {
+  all: '全部设置',
+  basic: '基本设置',
+  security: '安全与登录',
+  notify: '通知偏好',
+  appearance: '外观与语言'
+}
+
+function handleSettingsSave(params: Record<string, any>) {
+  const sectionKey = String(params.section || 'basic')
+  const sectionName = settingSectionNames[sectionKey] || '设置'
+  store.settingsLogs.unshift({
+    id: store.nextLogId++,
+    section: sectionName,
+    action: `更新了「${sectionName}」配置`,
+    time: nowText()
+  })
+  return ok(null, '保存成功，变更已记录')
+}
+mock('get', /\/mock\/settings\/save$/, ({ params }) => handleSettingsSave(params))
+mock('post', /\/mock\/settings\/save$/, ({ params }) => handleSettingsSave(params))
+
+function querySettingsLogs(params: Record<string, any>) {
+  const p = params.param || params || {}
+  const currentPage = Number(p.currentPage ?? params.currentPage ?? 1) || 1
+  const pageSize = Number(p.pageSize ?? params.pageSize ?? 10) || 10
+  // 变更记录页 with-pager=false，一次返回全量（避免跨运行累积后只显示首页）
+  return {
+    list: store.settingsLogs,
+    total: store.settingsLogs.length,
+    currentPage,
+    pageSize
+  }
+}
+mock('get', /\/mock\/settings\/logs$/, ({ params }) => ok(querySettingsLogs(params)))
+mock('post', /\/mock\/settings\/logs$/, ({ params }) => ok(querySettingsLogs(params)))
+
+const loginLogs = [
+  { id: 1, time: '2026-11-11 09:12:38', device: 'Chrome · macOS', ip: '10.12.8.24', result: '登录成功' },
+  { id: 2, time: '2026-11-10 20:47:02', device: 'Safari · iPhone', ip: '10.12.8.61', result: '登录成功' },
+  { id: 3, time: '2026-11-10 14:05:19', device: 'Chrome · Windows', ip: '10.12.9.130', result: '登录成功' },
+  { id: 4, time: '2026-11-09 18:23:46', device: 'Edge · Windows', ip: '10.12.9.130', result: '密码错误' },
+  { id: 5, time: '2026-11-09 08:30:11', device: 'Feishu · iOS', ip: '10.12.8.61', result: '登录成功' }
+]
+mock('get', /\/mock\/settings\/login-logs$/, ({ params }) => {
+  const p = params.param || params || {}
+  const currentPage = Number(p.currentPage ?? params.currentPage ?? 1) || 1
+  const pageSize = Number(p.pageSize ?? params.pageSize ?? 10) || 10
+  const start = (currentPage - 1) * pageSize
+  return ok({
+    list: loginLogs.slice(start, start + pageSize),
+    total: loginLogs.length,
+    currentPage,
+    pageSize
+  })
+})
+mock('post', /\/mock\/settings\/login-logs$/, ({ params }) => {
+  const p = params.param || params || {}
+  const currentPage = Number(p.currentPage ?? params.currentPage ?? 1) || 1
+  const pageSize = Number(p.pageSize ?? params.pageSize ?? 10) || 10
+  const start = (currentPage - 1) * pageSize
+  return ok({
+    list: loginLogs.slice(start, start + pageSize),
+    total: loginLogs.length,
+    currentPage,
+    pageSize
+  })
+})
+
+mock('post', /\/mock\/settings\/sessions\/revoke$/, () => ok(null, '已强制下线其他设备'))
+mock('post', /\/mock\/settings\/deactivate$/, () => ok(null, '注销申请已提交'))
 
 // ---------- 任务列表（EditableGrid 接口分页 + 批量保存演示） ----------
 interface TaskItem {

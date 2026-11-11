@@ -1,5 +1,5 @@
 /**
- * 组件汇总导出（34 个组件）
+ * 组件汇总导出（35 个组件）
  */
 // 指引组件
 export { default as WdGuide } from './guide/Guide.vue'
@@ -45,11 +45,12 @@ export { default as WdImageUpload } from './upload/ImageUpload.vue'
 // 样式组（1 个）
 export { default as WdPanel } from './styles/Panel.vue'
 
-// 页面元素组（4 个）
+// 页面元素组（5 个）
 export { default as WdPath } from './styles/Path.vue'
 export { default as WdAnchor } from './styles/Anchor.vue'
 export { default as WdTips } from './styles/Tips.vue'
 export { default as WdTag } from './styles/Tag.vue'
+export { default as WdCardRail } from './styles/CardRail.vue'
 
 // 布局组（1 个）
 export { default as WdStation } from './layout/Station.vue'

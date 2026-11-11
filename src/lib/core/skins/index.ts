@@ -13,6 +13,7 @@ import { appleSkin } from './apple'
 import { arcoSkin } from './arco'
 import { antdSkin } from './antd'
 import { softSkin } from './soft'
+import { songSkin } from './song'
 
 /**
  * 预设皮肤库（接入全局配置能力）
@@ -37,7 +38,8 @@ export const SKIN_PRESETS: Record<SkinName, SkinPreset> = {
   apple: appleSkin,
   arco: arcoSkin,
   antd: antdSkin,
-  soft: softSkin
+  soft: softSkin,
+  song: songSkin
 }
 
 /** 查询皮肤预设；未传 key 或未知 key 返回 undefined（由调用方回退默认行为） */

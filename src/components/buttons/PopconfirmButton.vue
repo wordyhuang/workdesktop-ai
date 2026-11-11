@@ -46,6 +46,7 @@ import { ref, type Component, type PropType } from 'vue'
 import { useApiAction } from './useApiAction'
 import { filterProp, headRefreshDatagridProp, apiProps, buttonTextProp, tipsProp } from '../common/props'
 
+// 起始支持版本：V1.1.0
 defineOptions({ name: 'WdPopconfirmButton', inheritAttrs: false })
 
 const props = defineProps({

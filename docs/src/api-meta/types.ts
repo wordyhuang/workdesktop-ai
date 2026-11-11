@@ -90,6 +90,8 @@ export interface ComponentMeta {
   desc: string
   /** 分类分组 label */
   group: string
+  /** 起始支持版本（如 "1.1.0"）；尚未发布的新组件填 "待发布" */
+  since?: string
   /** 组件介绍（概述/何时使用/注意事项/FAQ） */
   intro?: ComponentIntro
   /** 数据类型（Props/Methods/Events 中出现的自定义类型定义） */

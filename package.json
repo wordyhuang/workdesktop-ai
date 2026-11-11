@@ -1,6 +1,6 @@
 {
   "name": "workdesktop-ai",
-  "version": "1.2.13",
+  "version": "1.2.14",
   "author": {
     "name": "wordyhuang",
     "email": "395051729@qq.com",
@@ -32,6 +32,11 @@
       "types": "./dist/types/src/entries/checkbox-list.d.ts",
       "import": "./dist/checkbox-list/index.mjs"
     },
+    "./card-rail": {
+      "types": "./dist/types/src/entries/card-rail.d.ts",
+      "import": "./dist/card-rail/index.mjs"
+    },
+    "./card-rail/style.css": "./dist/card-rail/style.css",
     "./confirm-button": {
       "types": "./dist/types/src/entries/confirm-button.d.ts",
       "import": "./dist/confirm-button/index.mjs"

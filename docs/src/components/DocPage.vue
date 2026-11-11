@@ -6,6 +6,13 @@
         <div class="doc-page__title-row">
           <h1 class="doc-page__title">{{ meta.title }}</h1>
           <span class="doc-page__name-tag">{{ meta.name }}</span>
+          <span
+            v-if="meta.since"
+            class="doc-page__since"
+            :title="meta.since === '待发布' ? '该组件尚未发布，将在下一个版本起支持' : `自 V${meta.since} 起支持`"
+          >
+            {{ meta.since === '待发布' ? '待发布' : `V${meta.since} 起支持` }}
+          </span>
         </div>
         <p class="doc-page__desc">{{ meta.desc }}</p>
       </div>
@@ -251,6 +258,18 @@ function inline(text: string): string {
   color: var(--wd-color-primary, #409eff);
   background: var(--el-color-primary-light-9, #ecf5ff);
   border: 1px solid var(--el-color-primary-light-7, #d9ecff);
+}
+.doc-page__since {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--el-color-danger, #f56c6c);
+  background: var(--el-color-danger-light-9, #fef0f0);
+  border: 1px solid var(--el-color-danger-light-7, #fab6b6);
 }
 .doc-page__desc {
   margin: 6px 0 0;

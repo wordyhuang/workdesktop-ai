@@ -65,6 +65,7 @@ const cssChunkToEntry: Record<string, string> = {
   Station: 'station',
   Path: 'path',
   Tag: 'tag',
+  CardRail: 'card-rail',
   Guide: 'guide'
 }
 

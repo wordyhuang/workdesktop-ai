@@ -57,6 +57,7 @@ import { getStationMenuChain, subscribeStationChange } from '../../lib/core/stat
 import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 import type { PathItem } from '../layout/types'
 
+// 起始支持版本：V1.2.1
 defineOptions({ name: 'WdPath' })
 
 const props = defineProps({

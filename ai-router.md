@@ -1,8 +1,8 @@
 ﻿﻿# WorkDesktop AI 编码路由（AI 阅读入口）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-04\
-> **当前版本**：V\_1.15\
+> **最后修改时间**：2026-11-11\
+> **当前版本**：V\_1.16\
 > **适用对象**：AI 编码助手（每次开发前必读的第一入口）\
 > **核心目标**：让 AI 按任务命中场景，只读对应子路由文件，避免通读全篇\
 > **文档简略描述**：本文件是编码场景指导的路由索引，供 AI 在每次开发前先阅读。内容按场景严格拆分为 `scenarios/` 目录下的子文件，小节编号（§x.y）与主文档 `document/scenarios_v1.0.md` 一致。组件精确 API（props/emits/slots/方法签名）统一查 [ai-api/](./ai-api/) 路由（主路由 [ai-api/README.md](./ai-api/README.md) 按组件名索引定位，只打开对应子文件，如 [wd-select.md](./ai-api/wd-select.md)），由 `docs/src/api-meta/` 自动生成、随包发布，不要翻组件源码。HTTP 请求的完整执行流程 / 配置全景 / 代码示例 / 排错表见手写版 [ai-api/use-request-guide.md](./ai-api/use-request-guide.md)。
@@ -15,7 +15,7 @@
 2. **通用规范必读**：[scenarios/00-common.md](./scenarios/00-common.md) 是地基（框架搭建/弹层选型/操作反馈/按钮选型），绝大多数任务都依赖它。
 3. **只读命中场景对应的子文件**，按「场景描述 → 结构示意 → 交互流程 → 代码示例 → 规范要点」顺序阅读，不要通读全部子文件。
 4. 子文件内若标注「补充需求」，再到 [scenarios/99-spec-requests.md](./scenarios/99-spec-requests.md) 核对对应组件条目。
-5. 子文件解决"怎么组合与交互约定"；需要组件的精确 API（props/emits/slots/方法签名/自定义类型）时，统一查 [ai-api/](./ai-api/) 路由——主路由 [ai-api/README.md](./ai-api/README.md) 含阅读约定、Element Plus 透传规则与按组件名的索引，**只打开目标组件对应的子文件**，不要通读整个目录。**子文件路径规律（知道组件名即可直接构造，不必先翻索引）**：Wd 组件 = `ai-api/wd-{组件名kebab}.md`（WdSelect → `wd-select.md`、WdApiButton → `wd-api-button.md`、WdImageUpload → `wd-image-upload.md`）；3 个基础设施页 = `ai-api/use-config.md` / `ai-api/use-request.md` / `ai-api/custom-skin.md`。覆盖全部 34 个组件与 3 个基础设施 API（全局配置 / HTTP 请求核心 / 皮肤主题），由 `docs/src/api-meta/` 经 `npm run gen:ai-api` 自动生成、随 npm 包发布，与源码保持同步。不要凭名称猜测参数，也不要逐个翻 `src/components/**/*.vue`；只有 ai-api/ 未覆盖的实现细节才去读源码或 `dist/types/`。
+5. 子文件解决"怎么组合与交互约定"；需要组件的精确 API（props/emits/slots/方法签名/自定义类型）时，统一查 [ai-api/](./ai-api/) 路由——主路由 [ai-api/README.md](./ai-api/README.md) 含阅读约定、Element Plus 透传规则与按组件名的索引，**只打开目标组件对应的子文件**，不要通读整个目录。**子文件路径规律（知道组件名即可直接构造，不必先翻索引）**：Wd 组件 = `ai-api/wd-{组件名kebab}.md`（WdSelect → `wd-select.md`、WdApiButton → `wd-api-button.md`、WdImageUpload → `wd-image-upload.md`）；3 个基础设施页 = `ai-api/use-config.md` / `ai-api/use-request.md` / `ai-api/custom-skin.md`。覆盖全部 35 个组件与 3 个基础设施 API（全局配置 / HTTP 请求核心 / 皮肤主题），由 `docs/src/api-meta/` 经 `npm run gen:ai-api` 自动生成、随 npm 包发布，与源码保持同步。不要凭名称猜测参数，也不要逐个翻 `src/components/**/*.vue`；只有 ai-api/ 未覆盖的实现细节才去读源码或 `dist/types/`。
 
 ## 二、场景判定速查表
 

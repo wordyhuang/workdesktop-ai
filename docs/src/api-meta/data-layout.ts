@@ -5,6 +5,7 @@ export const layoutData: ComponentMeta[] = [
   {
     path: 'station',
     name: 'WdStation',
+    since: '1.1.0',
     passthrough: {
       target: '—（不透传）',
       note: '厚封装布局组件，内部菜单、标签页等均为自研结构，el-container / el-menu 等 Element Plus 属性事件不可用。',
@@ -26,6 +27,7 @@ export const layoutData: ComponentMeta[] = [
         '`menuGroups` 与 `menus` 二选一，`menuGroups` 优先；两者均可传 JSON 字符串（UMD 属性式写法），JSON 解析失败会在控制台报错并回退默认值。',
         '菜单层级建议不超过两层；超过两层时控制台会给出警告（仍按原样渲染）。',
         '分导台（顶部中央分组切换条）在 `headerMode=nav` 或 `both` 且分组数大于 1 时显示；只有一个分组时顶部自动退化为系统标题。`both` 模式下顶部分导台负责切换激活分组，左侧联动显示该分组的一级菜单：一级菜单作为分组 title 展示，其二级菜单平铺全量显示，仅当二级菜单下再含三级时该二级才折叠为子菜单；一级为叶子菜单时直接显示为可点击菜单项。点击分导台中的分组，左侧即切换为该分组的一级菜单。',
+        '`hideEmptyNav` / `hideEmptyGroup`（均默认 `false`）：菜单或分组随数据动态留空时避免渲染空壳——`hideEmptyGroup` 让无实际子菜单（`menus: []` 或仅剩空壳层级）的分组从分导台与侧边分组标题同步消失；当**所有**分组都为空时 `hideEmptyNav` 隐藏整个分导台（header 回退系统标题）。判定口径：递归到无 `children` 的项视为叶子，存在任一叶子即算「有实际菜单」。',
         '菜单 key 规则为 ``分组key:name||path||title``（内部统一分配 `_key`），受控 `activeMenu` / `openTabs` 的 key 需按此规则书写；`menu-select` 事件的 `item` 上带有 `_key` 可直接使用。',
         'tabs 模式：`affix: true` 的菜单为固定标签，挂载时自动开启、不可关闭；关闭当前激活标签后自动跳转相邻标签（先右后左）；标签栏右侧下拉支持关闭当前/左侧/其他/全部的批量操作。传入 `openTabs` 即为受控模式，需自行维护标签列表。',
         '`group-change`（切分组）不触发路由跳转，路由跳转只发生在菜单选中（`menu-select`）时。',
@@ -102,6 +104,10 @@ export const layoutData: ComponentMeta[] = [
       { name: 'menuGroups', type: 'array | string', default: '—', desc: '分组菜单（优先）：[{ key, title, icon?, menus: 菜单项[] }]；传字符串按 JSON 解析' },
       { name: 'menus', type: 'array | string', default: '—', desc: '扁平菜单：按 groupKey / group 自动聚合分组，无组项归「默认」组；与 menuGroups 二选一' },
       { name: 'headerMode', type: "'nav' | 'title' | 'both'", default: "'nav'", desc: '顶栏中央：nav=分导台（多分组时显示，左侧随分组切换），title=系统标题（左侧展示全量分组菜单），both=并存（顶部显示分导台 + 左侧联动跟随激活分组，显示该分组一级菜单作 title 分组、二级平铺全量、二级含三级才折叠）' },
+      { name: 'badgeType', type: "'none' | 'dot' | 'number'", default: "'dot'", desc: '分导台徽标类型：none=关闭（永不显示）；dot=组内任一菜单 badge>0 显示红点；number=组内菜单 badge 递归累加（封顶 99 显示 99+）' },
+      { name: 'hideEmptyNav', type: 'boolean', default: 'false', desc: '分导台空隐藏：所有分组均无实际菜单（递归无叶子项）时隐藏整个分导台，顶栏回退系统标题' },
+      { name: 'hideEmptyGroup', type: 'boolean', default: 'false', desc: '空分组隐藏：无实际子菜单（`menus: []` 或仅剩空壳层级）的分组不渲染，分导台条目与侧边分组标题同步消失' },
+      { name: 'showHeaderTitle', type: 'boolean', default: 'true', desc: '是否显示顶栏中央标题（headerMode 非 nav 时的 fallback 标题；自绘 header-center 时可关闭）' },
       { name: 'menuMode', type: "'side' | 'top' | 'none'", default: "'side'", desc: '菜单位置：side=左侧栏，top=顶部横排，none=不启用菜单' },
       { name: 'menuAccordion', type: 'boolean', default: 'false', desc: '左侧菜单手风琴：true 时同时只展开一个子菜单（透传 el-menu unique-opened，仅 side 模式生效）' },
       { name: 'contentMode', type: "'page' | 'tabs'", default: "'page'", desc: '内容方式：page=单页，tabs=多标签页（affix 菜单为固定标签）' },

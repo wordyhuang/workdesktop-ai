@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-page">
-    <!-- 页面顶条：标题 / 今日完成度 / 日期时间 -->
-    <header class="wb-topbar">
+    <!-- 页面顶条：标题 / 今日完成度 / 日期时间（wd-panel 无标题形态，纯 body） -->
+    <wd-panel class="wb-topbar">
       <div class="wb-topbar__brand">
         <span class="wb-topbar__logo"><el-icon :size="22"><OfficeBuilding /></el-icon></span>
         <div>
@@ -22,10 +22,10 @@
         <ScenarioPromptButton scene="workbench" title="工作台" />
         <div class="wb-topbar__time">{{ todayText }}</div>
       </div>
-    </header>
+    </wd-panel>
 
-    <!-- 欢迎横幅 -->
-    <section class="wb-banner">
+    <!-- 欢迎横幅（wd-panel 无标题形态，渐变底） -->
+    <wd-panel class="wb-banner">
       <div class="wb-banner__text">
         <p class="wb-banner__headline">{{ greeting }}，让每一次审批都高效流转</p>
         <p class="wb-banner__flow">
@@ -39,22 +39,22 @@
         <li><el-icon><TrendCharts /></el-icon>数据驱动</li>
         <li><el-icon><Bell /></el-icon>消息提醒</li>
       </ul>
-    </section>
+    </wd-panel>
 
     <!-- 今日核心工作 -->
     <wd-panel title="今日核心工作" icon="AlarmClock" description="建议按顺序优先处理">
       <template #extra>
         <el-button link type="primary">全部任务</el-button>
       </template>
-      <div class="wb-core-wrap">
-        <div class="wb-core-viewport">
-          <ul class="wb-core" :style="{ transform: `translateX(calc(${corePage} * (-100% - 10px)))` }">
-          <li v-for="(t, i) in coreTasks" :key="t.title" class="wb-core__item">
-            <div class="wb-core__head">
-              <span class="wb-core__no">{{ String(i + 1).padStart(2, '0') }}</span>
-              <span class="wb-core__icon"><el-icon :size="15"><component :is="t.icon" /></el-icon></span>
-              <span class="wb-core__title">{{ t.title }}</span>
-            </div>
+      <wd-card-rail
+        v-model:page="corePage" :items="coreTasks"
+        :per-page="CORE_PAGE_SIZE" item-key="title">
+        <template #default="{ item: t, index: i }">
+          <div class="wb-core__head">
+            <span class="wb-core__no">{{ String(i + 1).padStart(2, '0') }}</span>
+            <span class="wb-core__icon"><el-icon :size="15"><component :is="t.icon" /></el-icon></span>
+            <span class="wb-core__title">{{ t.title }}</span>
+          </div>
           <div class="wb-core__foot">
             <el-progress
               v-if="t.percent > 0 && t.percent < 100"
@@ -65,20 +65,8 @@
               <wd-tag size="small" :type="stateType(t.state)">{{ t.state }}</wd-tag>
             </span>
           </div>
-          </li>
-          </ul>
-        </div>
-        <button
-          class="wb-core__nav is-prev" type="button" aria-label="上一页"
-          :disabled="corePage <= 0" @click="corePage--">
-          <el-icon :size="14"><ArrowLeft /></el-icon>
-        </button>
-        <button
-          class="wb-core__nav is-next" type="button" aria-label="下一页"
-          :disabled="corePage >= coreMaxPage" @click="corePage++">
-          <el-icon :size="14"><ArrowRight /></el-icon>
-        </button>
-      </div>
+        </template>
+      </wd-card-rail>
     </wd-panel>
 
     <!-- 今日数据总览 + 异常提醒 -->
@@ -269,7 +257,7 @@ import { computed, ref, watch, type Component } from 'vue'
 import { ElMessage } from 'element-plus'
 import ScenarioPromptButton from '../components/ScenarioPromptButton.vue'
 import {
-  Aim, AlarmClock, ArrowLeft, ArrowRight, Bell, BottomRight, Calendar, Checked, Clock,
+  Aim, AlarmClock, ArrowRight, Bell, BottomRight, Calendar, Checked, Clock,
   DataLine, EditPen, Grid, List, Money, OfficeBuilding, Odometer,
   ShoppingCart, Suitcase, TopRight, TrendCharts,
   Wallet, WarningFilled
@@ -312,7 +300,6 @@ const coreTasks: CoreTask[] = [
   { title: '本周运营数据周报', cat: '汇报', percent: 0, due: '今天 20:00', state: '待开始', icon: TrendCharts }
 ]
 const corePage = ref(0)
-const coreMaxPage = Math.max(0, Math.ceil(coreTasks.length / CORE_PAGE_SIZE) - 1)
 
 /** 今日数据总览（静态演示数据，真实业务由 requestAPI 提供）；trend=近 7 日迷你趋势柱（0-100 相对高度） */
 interface Stat { label: string; value: string; unit: string; delta?: number; trend: number[] }
@@ -459,19 +446,8 @@ function openApp(label: string) {
   gap: 10px;
 }
 
-/* 紧凑化：页面用自身 gap 控制节奏，抵消 Panel 自带外边距并收敛头部/正文留白 */
-.workbench-page :deep(.wd-panel) {
-  margin-bottom: 0;
-}
-.workbench-page :deep(.wd-panel__header) {
-  padding: 8px 14px;
-}
-.workbench-page :deep(.wd-panel__body) {
-  padding: 10px 14px 12px;
-}
-
-/* ===== 页面顶条 ===== */
-.wb-topbar {
+/* ===== 页面顶条（wd-panel 无标题形态，flex 行布局挂在 body 上） ===== */
+.wb-topbar :deep(.wd-panel__body) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -549,15 +525,16 @@ function openApp(label: string) {
   font-variant-numeric: tabular-nums;
 }
 
-/* ===== 欢迎横幅（压扁为单行细条） ===== */
+/* ===== 欢迎横幅（wd-panel 无标题形态：渐变底走 --wd-panel-bg-image 令牌——
+   Panel 在 background 简写后有独立的 background-image 声明，渐变属 image 类值须走该令牌；flex 行布局挂在 body 上） ===== */
 .wb-banner {
+  --wd-panel-bg-image: linear-gradient(120deg, var(--el-color-primary-light-8) 0%, var(--el-color-primary-light-9) 70%);
+}
+.wb-banner :deep(.wd-panel__body) {
   display: flex;
   align-items: center;
   gap: 8px 20px;
   flex-wrap: wrap;
-  padding: 8px 16px;
-  border-radius: 8px;
-  background: linear-gradient(120deg, var(--el-color-primary-light-8) 0%, var(--el-color-primary-light-9) 70%);
 }
 .wb-banner__text {
   display: flex;
@@ -605,63 +582,7 @@ function openApp(label: string) {
   font-size: 13px;
 }
 
-/* ===== 今日核心工作（一行三张卡片） ===== */
-/* 核心工作轮播：wrap 承载悬浮箭头，viewport 裁切溢出，track 横向滑动 */
-.wb-core-wrap {
-  position: relative;
-}
-.wb-core-viewport {
-  overflow: hidden;
-}
-.wb-core {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  gap: 10px;
-  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.wb-core__item {
-  flex: 0 0 calc((100% - 20px) / 3);
-  box-sizing: border-box;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--el-border-color-extra-light);
-  border-radius: 8px;
-  background: var(--el-bg-color);
-}
-/* 左右滑动箭头：半悬浮于卡片两侧，圆形白底 */
-.wb-core__nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1px solid var(--el-border-color-light);
-  background: var(--el-bg-color);
-  box-shadow: var(--el-box-shadow-light);
-  color: var(--el-text-color-regular);
-  cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-}
-.wb-core__nav:hover:not(:disabled) {
-  color: var(--el-color-primary);
-  border-color: var(--el-color-primary);
-}
-.wb-core__nav:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-.wb-core__nav.is-prev { left: -9px; }
-.wb-core__nav.is-next { right: -9px; }
+/* ===== 今日核心工作（一行三张卡片，轮播外壳由 WdCardRail 承载） ===== */
 .wb-core__head {
   display: flex;
   align-items: center;
@@ -741,7 +662,6 @@ function openApp(label: string) {
 .wb-row--fill :deep(.wd-panel) {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0;
 }
 .wb-row--fill :deep(.wd-panel__content),
 .wb-row--fill :deep(.wd-panel__content-inner),

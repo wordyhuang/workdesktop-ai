@@ -117,11 +117,59 @@ export const STATS_PROMPT = `# 需求：生成「统计中心」页面（Vue3 �
 - 图表几何统一封装 chartX / chartY / linePoints / chartDots 等小函数，hover 索引用 Math.min/max 收敛到有效区间。
 - 卡片与面板圆角 12px、细边框；悬浮 tooltip 白底带阴影圆角。`
 
+/** 设置中心（/scenario/settings） */
+export const SETTINGS_PROMPT = `# 需求：生成「设置中心」页面（Vue3 单文件组件）
+
+## 目标
+生成一个参照主流大厂设置中心形态的个人配置页：左侧分类导航、右侧单页长滚动分区，点击分类平滑定位并随滚动高亮；顶条唯一「保存更改」一次保存全部分区，经 head-refresh-datagrid 声明式自动刷新变更记录，零手写刷新代码。
+
+## 文档范围（重要）
+- 本文档只定义「用哪些元素、如何排布、遵守哪些规范」，不含任何具体数据项：人名、邮箱、设备信息、时间点、选项文案、日志行、提示语正文一律不写进文档。
+- 数据由实现者自拟：字段名按元素语义命名（昵称 / 签名 / 设备 / 日志等），演示数据写死在脚本里并用 interface 定义类型；mock 接口只约定路径与返回结构。
+- 文案同理：标题、说明、选项文案语义对齐对应元素功能即可，不必照搬。
+
+## 技术栈与硬约束
+- Vue3 <script setup lang="ts"> 单文件组件，TypeScript。
+- 组件库：workdesktop-ai（wd-panel / wd-switch / wd-radio-list / wd-select / wd-checkbox-list / wd-date-range-picker / wd-api-button / wd-popconfirm-button / wd-data-grid / wd-tips / wd-tag）；基础组件用 Element Plus（el-input / el-icon），图标用 @element-plus/icons-vue。
+- Mock 走文档站 /mock/* 内存接口：保存 POST /settings/save、变更记录 GET|POST /settings/logs、登录记录 GET|POST /settings/login-logs、强制下线 POST /settings/sessions/revoke、注销 POST /settings/deactivate。
+- 所有区块容器一律使用 wd-panel 且保持原生样式：禁止 :deep() 覆写面板 header / body 的内边距与外边距，换肤令牌全量跟随。
+- wd-panel 标题行只保留 title + description，不传 icon prop；图标只出现在分区头色块与左侧导航色块。
+- 声明式联动是核心：顶条唯一「保存更改」按钮（wd-api-button，:api-param 汇总全部分区状态）配 head-refresh-datagrid="settings-logs"，保存后变更记录表格自动刷新。
+- 仅设置区滚动：左导航与顶条固定，右侧内容区独立 overflow-y:auto；分类点击用容器 scrollTo 平滑定位，高亮监听该容器 scroll 事件（页面 scrollTop 保持不变）；≤1100px 回退整页滚动；组件卸载时移除监听。
+
+## 页面结构（自上而下，元素级）
+1. 顶条（wd-panel，无 title）：
+   - 左：h1 页面标题 + 一行副标题，与右侧操作区两端对齐。
+   - 右：唯一「保存更改」全局按钮（wd-api-button，type primary，:api-param 汇总全部分区）+ 同排「AI 提示词」按钮（ScenarioPromptButton）。
+   - 下方：三步流程胶囊行（圆形序号 + 文案 + ArrowRight 图标衔接），纯说明性元素：分类导航 → 单页滚动 → 保存留痕。
+2. 主体两栏（grid 236px 1fr，gap 12px，align-items: start）：
+   - 左「分类导航」panel（无 title）：导航项 = 28px tint 圆角图标色块 + 名称 + 一行灰色描述；激活项主色浅底 + 主色文字；导航项与右侧分区一一对应。
+   - 右内容区：每个分区 = 分区头 + 若干 wd-panel；分区头 = 30px tint 图标色块 + 17px 标题 + 灰色描述；分区根节点带 id（sec-{key}）供锚点定位。
+3. 资料与偏好分区：
+   - 身份信息 panel：头像块（首字占位）+ 姓名行（姓名 + 认证状态 wd-tag success）+ 一行元信息（邮箱 / 部门）+ 右侧文字按钮；下方两列表单网格（两个 el-input 字段）。
+   - 偏好 panel：若干开关行（左侧主文案 + 12px 灰色说明，右侧 wd-switch）。
+4. 安全与登录分区：
+   - 设备 panel：若干设备行（17px 图标 + 设备名 + 当前设备 wd-tag primary + 地域 / 最后活跃时间元信息）；#footer 右对齐放 wd-popconfirm-button（强制下线其他设备）。
+   - 登录记录 panel：wd-data-grid（api 指向 login-logs，:active="true"、:tools="{ refresh: true }"、:fix="false"、:with-index="false"、:with-pager="false"），列 = 时间 / 设备 / IP / 结果；结果列用 wd-tag 按成功 success、失败 danger 映射。
+5. 通知偏好分区：panel：若干渠道开关行 + 一组 wd-checkbox-list（静态 data-source）+ 开关与 wd-date-range-picker 的联动行（开关关闭时日期选择器 disabled）。
+6. 外观与语言分区：panel：一组 wd-radio-list（静态 data-source）+ 两个 wd-select（静态 data-source）。
+7. 操作日志分区：
+   - 变更记录 panel：顶部 wd-tips type="box" 说明声明式联动机制；wd-data-grid（api 指向 logs，filter="settings-logs"，:tools="{ refresh: true }"、:fix="false"、:with-index="false"、:with-pager="false"），列 = ID / 变更区块 / 操作说明 / 时间；与顶条保存按钮构成联动关系。
+   - 危险操作 panel：顶部 wd-tips type="danger" 警示盒；正文为一行危险操作项（主文案 + 说明 + 右侧 wd-popconfirm-button type="danger"）。
+8. 页脚：一行 12px 灰色注释，说明本页为演示数据。
+
+## 布局与响应式规范
+- 页面根 .settings-page：flex 纵向、height 100%、max-width 1440px 居中；纵向节奏依赖 wd-panel 原生 margin-bottom，分区之间额外留 22px。
+- 颜色全部使用 Element Plus / workdesktop CSS 变量；图标色块用 --el-color-primary-light-9 / success-light-9 / warning-light-9 / info-light-9 等 tint 底色。
+- 时间、序号等数字统一 tabular-nums；长文本单行省略。
+- 响应式：≤1100px 两栏变单列，此时整页滚动，导航滚动高亮允许降级。`
+
 /** 场景提示词集合 */
 export const SCENARIO_PROMPTS = {
   workbench: WORKBENCH_PROMPT,
   focus: FOCUS_PROMPT,
-  stats: STATS_PROMPT
+  stats: STATS_PROMPT,
+  settings: SETTINGS_PROMPT
 } as const
 
 export type ScenarioPromptKey = keyof typeof SCENARIO_PROMPTS

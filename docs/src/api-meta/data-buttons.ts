@@ -157,6 +157,7 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'popconfirm-button',
     name: 'WdPopconfirmButton',
+    since: '1.1.0',
     passthrough: {
       target: 'el-button / el-popconfirm',
       intercept: ['click', 'confirm', 'cancel', 'show', 'hide'],
@@ -404,6 +405,7 @@ export const buttonData: ComponentMeta[] = [
   {
     path: 'station-tab-button',
     name: 'WdStationTabButton',
+    since: '1.2.12',
     passthrough: {
       target: 'el-button',
       intercept: ['click'],

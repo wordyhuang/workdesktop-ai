@@ -657,7 +657,7 @@ function onSizeChange(cmd: 'large' | 'default' | 'small') {
 const rootRef = ref<HTMLElement | null>(null)
 /** fix 模式：可占用高度（祖先内容区剩余；无约束祖先时为 0 → 内容自适应） */
 const availFixHeight = ref(0)
-/** fix 模式：表格主体高（可占用高度扣除工具栏与分页占用，行区内滚动） */
+/** fix 模式：表格主体高（可占用高度扣除根内边距、工具栏与分页占用，行区内滚动） */
 const fixTableHeight = ref(0)
 const isFixMode = computed(() => props.height === 'fix')
 
@@ -741,9 +741,12 @@ function measureFixHeight() {
     return
   }
   availFixHeight.value = avail
+  // 根元素自身上下内边距（默认 3px 0）占据根内容区：gridTop 为 border-box 顶，表格高需额外扣除
+  const rootCs = getComputedStyle(el)
+  const selfPadV = (parseFloat(rootCs.paddingTop) || 0) + (parseFloat(rootCs.paddingBottom) || 0)
   const toolbar = el.querySelector('.wd-datagrid__toolbar') as HTMLElement | null
   const pager = el.querySelector('.wd-datagrid__pager') as HTMLElement | null
-  fixTableHeight.value = Math.max(40, avail - (toolbar?.offsetHeight ?? 0) - (pager?.offsetHeight ?? 0))
+  fixTableHeight.value = Math.max(40, avail - selfPadV - (toolbar?.offsetHeight ?? 0) - (pager?.offsetHeight ?? 0))
 }
 function onViewportResize() {
   measureFixHeight()
@@ -1086,8 +1089,12 @@ watch(
   position: relative;
   display: flex;
   flex-direction: column;
+  /* docs 站等环境可能没有全局 box-sizing reset，显式声明避免 padding 撑破 height:100% / fix 钉高 */
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
+  /* 默认上下 3px 内边距，避免表格边框/卡片贴容器边缘 */
+  padding: 3px 0;
   background: var(--wd-bg-color, #fff);
 }
 .wd-datagrid--auto-height {

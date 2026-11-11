@@ -116,6 +116,7 @@ export type SkinName =
   | 'arco'
   | 'antd'
   | 'soft'
+  | 'song'
 
 export interface ThemeConfig {
   /** 预设皮肤名，一键套用整套皮肤；colors/cssVars 可在皮肤基础上继续覆盖（优先级 cssVars > colors > skin） */

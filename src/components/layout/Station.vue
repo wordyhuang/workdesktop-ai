@@ -198,12 +198,13 @@
         </div>
       </div>
 
-      <!-- tabs 导航（contentMode=tabs）：整宽撑满，右侧下拉批量关闭；tabsStyle=card 用 el-tabs card 原生样式，tabsStyle=slider 用滑块下划线式（自带 active-bar 平移动画），自绘 label 插槽，affix 无关闭图标 -->
+      <!-- tabs 导航（contentMode=tabs）：整宽撑满，右侧下拉批量关闭；tabsStyle=card 用 el-tabs card 原生样式，tabsStyle=slider 用滑块下划线式（自带 active-bar 平移动画，量宽异常时由滑块自愈重测兜底），自绘 label 插槽，affix 无关闭图标 -->
       <div v-if="contentMode === 'tabs'" class="wd-station__tabs-bar" :class="{ 'wd-station__tabs-bar--slider': tabsStyle === 'slider' }">
         <div id="wd-station__tabs-left" class="wd-station__tabs-left">
           <slot name="tabs-left" />
         </div>
         <el-tabs
+          ref="tabsRef"
           :model-value="currentKey"
           :type="tabsStyle === 'card' ? 'card' : undefined"
           class="wd-station__tabs"
@@ -275,6 +276,7 @@ import StationMenuNode from './StationMenuNode.vue'
 import type { MenuChainItem, StationTabInput } from '../../lib/core/station-linkage'
 import type { StationMenuItem, StationMenuGroup, StationTab, StationToolbarConfig } from './types'
 
+// 起始支持版本：V1.1.0
 defineOptions({ name: 'WdStation' })
 
 const props = defineProps({
@@ -565,6 +567,29 @@ const tabs = computed<StationTab[]>(() =>
 )
 // 标签激活历史（MRU）：末尾为最近激活的 key，供关闭当前标签时回跳
 const tabHistory = ref<string[]>([])
+
+/* ---------- tabs 滑块自愈 ----------
+   EP active-bar 的量宽实现是 tabs.every() 遍历签列表：遍历途中任一签的 DOM ref 缺失（ref 为 null）
+   即提前终止，滑块宽度被写成 0（视觉上只剩滑块加宽阴影的一小截短横线），且 EP 内部
+   无事件兜底重测，错误样式会一直残留。tabs 集合 / 激活签 / tabsStyle 变化后，等 DOM
+   更新与量宽时机错开（双 setTimeout 强制走宏任务），再调用 EP 暴露的
+   tabNavRef.tabBarRef.update() 重测一次，消除陈旧的 0 宽滑块。链路均可选（EP 升级
+   暴露结构变化时静默降级为 EP 原生行为）。 */
+const tabsRef = ref<{ tabNavRef?: { tabBarRef?: { update?: () => void } } }>()
+let tabBarHealTimer: ReturnType<typeof setTimeout> | null = null
+function healTabBar() {
+  if (tabBarHealTimer) clearTimeout(tabBarHealTimer)
+  tabBarHealTimer = setTimeout(() => {
+    tabBarHealTimer = setTimeout(() => {
+      tabBarHealTimer = null
+      tabsRef.value?.tabNavRef?.tabBarRef?.update?.()
+    }, 0)
+  }, 0)
+}
+watch([tabs, currentKey, () => props.tabsStyle], healTabBar, { flush: 'post' })
+onUnmounted(() => {
+  if (tabBarHealTimer) clearTimeout(tabBarHealTimer)
+})
 
 function commitTabs(newTabs: StationTab[]) {
   if (!isTabsControlled.value) innerTabs.value = newTabs

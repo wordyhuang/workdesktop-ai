@@ -33,6 +33,7 @@ import { computed, useSlots, type PropType, type Component } from 'vue'
 import { TAG_PALETTE, matchAutoColor, type WdTagColor, type WdTagType } from './tag-palette'
 import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 
+// 起始支持版本：V1.2.12
 defineOptions({ name: 'WdTag', inheritAttrs: false })
 
 const props = defineProps({

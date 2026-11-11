@@ -131,7 +131,8 @@ onMounted(async () => {
 <style scoped>
 .wd-panel {
   width: 100%;
-  margin-bottom: var(--wd-panel-margin-bottom, var(--wd-spacing-base, 12px));
+  /* 默认 6px，皮肤/接入方可经 --wd-panel-margin-bottom 单独定制 */
+  margin-bottom: var(--wd-panel-margin-bottom, 6px);
   /* 组件级令牌回退链：--wd-panel-* 未设时回落全局令牌，皮肤可单独定制 Panel */
   background: var(--wd-panel-bg, var(--wd-bg-color, #fff));
   /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */

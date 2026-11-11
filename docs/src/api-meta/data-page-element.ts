@@ -1,10 +1,11 @@
 import type { ComponentMeta } from './types'
 
-/** 页面元素组（4 个）：路径导航 / 快速导航锚点 / 提示 / 标签 */
+/** 页面元素组（5 个）：路径导航 / 快速导航锚点 / 提示 / 标签 / 卡片滑轨 */
 export const pageElementData: ComponentMeta[] = [
   {
     path: 'path',
     name: 'WdPath',
+    since: '1.2.1',
     passthrough: {
       target: '—（不透传）',
       note: '内部 el-breadcrumb / el-breadcrumb-item 均为显式绑定（separator、to、click），外部属性/事件不会透传；节点配置与事件以本文档为准。',
@@ -71,6 +72,7 @@ export const pageElementData: ComponentMeta[] = [
   {
     path: 'anchor',
     name: 'WdAnchor',
+    since: '1.2.8',
     passthrough: {
       target: '—（不透传）',
       note: '内部为原生 nav/ul/li 列表，属性与事件以本文档为准；外部 class 会透传到根 nav 元素。',
@@ -190,6 +192,7 @@ export const pageElementData: ComponentMeta[] = [
   {
     path: 'tag',
     name: 'WdTag',
+    since: '1.2.12',
     passthrough: {
       target: '基于 el-tag 透传',
       note: 'el-tag 原生属性与事件（closable、effect、round、size、hit、disable-transitions、close/click 等）均可直接使用；外部 class 合并到标签根元素。',
@@ -240,6 +243,69 @@ export const pageElementData: ComponentMeta[] = [
     ],
     slots: [
       { name: 'default', params: '—', desc: '标签内容；提供 icon 时转为 tooltip 悬停展示（tips）' }
+    ]
+  },
+  {
+    path: 'card-rail',
+    name: 'WdCardRail',
+    since: '待发布',
+    passthrough: {
+      target: '根元素 div',
+      note: '未做 $attrs 显式透传；外部 class / style 会合并到根元素。卡片内单项内容完全由默认作用域插槽渲染，组件只负责分页轨道与外壳。',
+    },
+    title: 'CardRail 卡片滑轨',
+    desc: '横向分页卡片轨道：按 perPage 分页平移，左右翻页按钮位于预留槽位不遮挡卡片，边界自动禁用；默认作用域插槽定制单项内容，#nav 插槽接管翻页入口',
+    group: '页面元素',
+    intro: {
+      overview: 'WdCardRail 是一个横向分页卡片轨道组件：把一组数据按 `perPage`（默认 3）切成多页，横向平移切换；左右两侧的圆形按钮负责翻页，到达首/尾页时自动禁用。默认按钮渲染在轨道左右**预留的槽位**内（不压住卡片内容）；若需要换样式、换位置，用 `#nav` 插槽完全接管翻页入口。组件只负责「轨道 + 分页 + 卡片外壳」，每张卡片内部长什么样完全交给默认作用域插槽（`#default="{ item, index }"`）决定——可以是任务卡、商品卡、统计卡或任意自定义结构，因此同一组件可复用到多种业务场景。',
+      whenToUse: [
+        '一屏只能放下固定几张卡片、数据总量超过一屏，需要分期查看（如今日核心工作、推荐位、快捷入口）。',
+        '卡片内部结构差异大，希望统一分页交互但保留完全自定义的内容形态。',
+        '需要受控页码（`v-model:page`）或在业务代码中调用 `prev()/next()/goTo()` 驱动翻页。',
+        '默认圆按钮样式/位置不满足设计稿（例如想用工具栏按钮、页码指示、贴边箭头）：用 `#nav` 插槽自定义。',
+        '不建议：数据量很少且一屏可完整展示（无需翻页，直接用普通卡片布局）；需要自动播放或指示圆点的场景（本组件为手动分页步进，不含自动轮播）。'
+      ],
+      notes: [
+        '分页口径：总页数 = `ceil(items.length / perPage) - 1`（最大页码从 0 开始）；页宽由内联 CSS 变量 `--wd-rail-per` 与 `--wd-card-rail-gap` 共同决定，卡片宽度 = (100% - 间距 × (perPage - 1)) / perPage。',
+        '默认按钮不遮挡卡片：渲染默认按钮时根节点加 `has-nav` 类，`box-sizing: border-box` + `padding-inline: var(--wd-card-rail-nav-gutter)`（默认 34px）在轨道左右各预留一条槽位，按钮在槽位内垂直居中；卡片可视区相应变窄约 2 × gutter。',
+        '翻页位移 = `page × (-100% - gap)`，带 0.45s 缓动过渡；首/尾页按钮自动 `disabled`（透明度 0.35）。设置 `loop` 后首尾互通（首屏上一页跳末页、末页下一页回首屏），只有一页时仍禁用。',
+        '`#nav` 插槽完全接管翻页入口：传入后默认按钮不再渲染、也不再预留左右槽位（轨道回到整宽）；插槽参数 `{ page, maxPage, prev, next, canPrev, canNext }`，可把翻页按钮放到卡片上方/下方/任意位置并自由定制样式。',
+        '页码为 0 基：`page=0` 表示第一页；`v-model:page` 双向受控，组件自身也会抛 `update:page` 与 `change`。',
+        '数据量变少或 `perPage` 调大导致当前页越界时，组件自动收敛到新的最大页并抛 `update:page`，不会停留在空白页。',
+        '`itemKey` 指定数据项中的唯一键字段（如 `"id"`）；不传时以索引作为 key。',
+        '组件不渲染空态：`items` 为空时轨道为空、两个按钮均禁用，空态文案请由调用方在外部自行处理。',
+        '卡片外壳样式（内边距 / 圆角 / 边框 / 背景 / 纵向间距）均可用组件级令牌覆写，见本文档「样式令牌」一节。'
+      ],
+      faq: [
+        { q: '为什么翻页后卡片没有对齐到左边缘？', a: '组件按整页平移：位移是「页宽 + 间距」。若卡片宽度被外部样式改写（例如手动设置 width 或 flex-basis），会破坏对齐；请保持 `.wd-card-rail__item` 的分栏宽度，或通过 `perPage` 控制每页条数。' },
+        { q: '左右翻页按钮会不会挡住卡片内容？', a: '不会。默认按钮渲染时组件在轨道左右各预留 `--wd-card-rail-nav-gutter`（默认 34px）的槽位，按钮在槽位内居中，卡片内容整体缩进到按钮内侧。若默认槽位宽度不合设计，可通过令牌调整 gutter 与按钮尺寸。' },
+        { q: '想换掉默认圆按钮（改成工具栏、页码指示、贴边箭头）怎么做？', a: '用 `#nav` 插槽：`<template #nav="{ page, maxPage, prev, next, canPrev, canNext }">…</template>`。传入后默认按钮与左右预留槽位都会移除，插槽内容渲染在轨道之后，位置/样式完全由你决定；用 `prev` / `next` 驱动翻页，用 `canPrev` / `canNext` 控制禁用。' },
+        { q: '单项内容怎么自定义？', a: '使用默认作用域插槽：`<template #default="{ item, index }">…</template>`，插槽拿到当前数据项与索引，内部结构、图标、标签、进度条等全部自由组合。' },
+        { q: '最后一页不足 perPage 条时怎么显示？', a: '按实际数量渲染，卡片保持与前面相同的分栏宽度（不会拉伸填满整行），尾部留白。' },
+        { q: '可以在小屏改成每页 1 条吗？', a: '可以。传入响应式 `perPage`（如随窗口宽度计算）或直接传 `:per-page="1"`；组件会重新计算总页数并把越界页码收敛到有效范围。' },
+        { q: '如何让外部按钮也能翻页？', a: '通过 ref 调用组件暴露的 `prev()` / `next()` / `goTo(page)`；也可直接监听 `change` 事件同步外部状态。' }
+      ]
+    },
+    props: [
+      { name: 'items', type: 'array', default: '[]', desc: '数据项数组，逐项交给默认作用域插槽渲染' },
+      { name: 'perPage', type: 'number', default: '3', desc: '每页显示条数（小于等于 0 时按 1 处理）' },
+      { name: 'page', type: 'number', default: '0', desc: '当前页（0 基，支持 v-model:page）；传入越界值时自动收敛' },
+      { name: 'showNav', type: 'boolean', default: 'true', desc: '是否显示左右翻页按钮；渲染默认按钮时左右各预留一条槽位（见 --wd-card-rail-nav-gutter）' },
+      { name: 'itemKey', type: 'string', default: "''", desc: '数据项中唯一键的字段名；未提供时以索引为 key' },
+      { name: 'loop', type: 'boolean', default: 'false', desc: '是否循环滑动：首屏上一页跳末页、末页下一页回首屏；只有一页时不循环' }
+    ],
+    emits: [
+      { name: 'update:page', payload: 'page', desc: '页码变化（v-model:page 使用）' },
+      { name: 'change', payload: 'page', desc: '页码变化（翻页、受控回写、越界收敛都会触发）' }
+    ],
+    slots: [
+      { name: 'default', params: '{ item, index }', desc: '卡片单项内容：item=当前数据项，index=在 items 中的索引' },
+      { name: 'nav', params: '{ page, maxPage, prev, next, canPrev, canNext }', desc: '翻页入口定制：传入后默认圆按钮不再渲染、左右槽位也不预留；用 prev / next 翻页、canPrev / canNext 控制禁用' }
+    ],
+    methods: [
+      { name: 'prev()', params: '—', returns: 'void', desc: '上一页（已在首页时不动作，loop 时跳末页）' },
+      { name: 'next()', params: '—', returns: 'void', desc: '下一页（已在尾页时不动作，loop 时回首屏）' },
+      { name: 'goTo(page)', params: 'page: number', returns: 'void', desc: '跳转到指定页（自动夹取到 0 ~ 最大页）' }
     ]
   }
 ]

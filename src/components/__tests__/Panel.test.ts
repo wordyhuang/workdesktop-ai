@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import WdPanel from '../styles/Panel.vue'
 
 /** 自定义图标组件（测试 icon 直传组件形态） */
@@ -303,5 +305,12 @@ describe('WdPanel card 模式描述对齐', () => {
     expect(wrapper.find('.wd-panel__header-main').classes('is-desc-inline')).toBe(false)
     expect(wrapper.find('.wd-panel__description').classes('is-right')).toBe(true)
     wrapper.unmount()
+  })
+})
+
+describe('WdPanel 样式默认值', () => {
+  it('margin-bottom 默认 6px（--wd-panel-margin-bottom 未设置时的出厂回退值）', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/components/styles/Panel.vue'), 'utf-8')
+    expect(source).toContain('margin-bottom: var(--wd-panel-margin-bottom, 6px)')
   })
 })

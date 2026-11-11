@@ -33,15 +33,21 @@ export const fashionSkin: SkinPreset = {
       '--wd-datagrid-radius': '14px',
       // 标题回归纯文字：彩色标识条宽度归零（伪元素隐藏，与参考图一致）
       '--wd-panel-title-bar-width': '0',
-      // 面板空间感：padding 整体加大 3px（出厂 header 12/16/12/18、body/card-header 16），杂志风留白更松弛
-      '--wd-panel-header-padding': '15px 19px 15px 21px',
-      '--wd-panel-body-padding': '19px',
-      '--wd-panel-card-header-padding': '19px',
-      // 面板下间距同步加大（出厂 12px，走 --wd-panel-margin-bottom 组件级令牌）
-      '--wd-panel-margin-bottom': '15px',
-      // 容器类毛玻璃：面板 / 搜索 / 表格半透白底（配 cssRules 的 backdrop-filter 成磨砂，页面光斑隐约透出），面板亮边模拟玻璃高光
+      // 面板空间感：padding 两轮各 +3px（出厂 header 12/16/12/18、body/card-header 16），杂志风留白更松弛
+      '--wd-panel-header-padding': '18px 22px 18px 24px',
+      '--wd-panel-body-padding': '22px',
+      '--wd-panel-card-header-padding': '22px',
+      // 面板下间距同步加大（出厂 6px，走 --wd-panel-margin-bottom 组件级令牌）
+      '--wd-panel-margin-bottom': '18px',
+      // 搜索面板 padding 同步加大（出厂 8px 12px 0）
+      '--wd-search-padding': '11px 15px 3px',
+      // 底层容器 padding 按情况加大：表格 / 可编辑表格内边距 12→15，表单 footer 上留白 12→15
+      '--wd-datagrid-padding': '15px',
+      '--wd-editable-grid-padding': '15px',
+      '--wd-form-footer-padding': '15px 0 3px',
+      // 容器类毛玻璃：面板 / 搜索 / 表格半透白底（配 cssRules 的 backdrop-filter 成磨砂，页面光斑隐约透出），浅暖描边与玻璃底融合
       '--wd-panel-bg': 'rgba(255, 255, 255, 0.62)',
-      '--wd-panel-border-color': 'rgba(255, 255, 255, 0.7)',
+      '--wd-panel-border-color': 'rgba(233, 225, 214, 0.9)',
       '--wd-search-bg': 'rgba(255, 255, 255, 0.5)',
       '--wd-datagrid-bg': 'rgba(255, 255, 255, 0.55)',
       '--wd-editable-grid-bg': 'rgba(255, 255, 255, 0.55)',
@@ -80,6 +86,16 @@ export const fashionSkin: SkinPreset = {
 .wd-editable-grid {
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
+}
+/* 容器浅色边框：搜索 / 表格根类出厂无边框，补 1px 暖浅描边与面板统一（Panel 走 --wd-panel-border-color 令牌） */
+.wd-search-panel,
+.wd-datagrid,
+.wd-editable-grid {
+  border: 1px solid rgba(233, 225, 214, 0.9);
+}
+/* 表格单元格横向留白加大（出厂 .cell 12px），杂志风表格更透气 */
+.el-table .cell {
+  padding: 0 14px;
 }
 /* EP 菜单默认不透明白底会盖住侧栏毛玻璃，改透明（含 inline 展开子菜单） */
 .wd-station__menu.el-menu,

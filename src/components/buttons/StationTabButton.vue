@@ -16,6 +16,7 @@ import { filterProp, buttonTextProp, tipsProp } from '../common/props'
 import { openStationTab } from '../../lib/core/station-linkage'
 import type { StationTabInput } from '../../lib/core/station-linkage'
 
+// 起始支持版本：V1.2.12
 defineOptions({ name: 'WdStationTabButton', inheritAttrs: false })
 
 const props = defineProps({

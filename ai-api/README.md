@@ -4,10 +4,10 @@
 >
 > - 数据源：`docs/src/api-meta/`（文档站组件页与本目录的共同单一源）
 > - 生成命令：`npm run gen:ai-api`
-> - 生成时间：2026-11-06 21:36:55（Asia/Shanghai）
+> - 生成时间：2026-11-11 22:52:14（Asia/Shanghai）
 > - 组件源码：`src/components/**/*.vue`；类型声明：`dist/types/`
 >
-> 覆盖 34 个组件（Wd 前缀）的 Props / Events / Slots / 暴露方法与自定义数据类型，
+> 覆盖 35 个组件（Wd 前缀）的 Props / Events / Slots / 暴露方法与自定义数据类型，
 > 以及 3 个基础设施 API（全局配置、HTTP 请求核心、皮肤主题）。
 > 组件的组合用法与交互约定见 [ai-router.md](../ai-router.md) 与 `scenarios/**.md`。
 
@@ -92,6 +92,7 @@ Element Plus 原生 API 的权威定义以官方文档为准（[https://element-
 - [WdAnchor Anchor 快速导航（锚点）](./wd-anchor.md)
 - [WdTips Tips 提示](./wd-tips.md)
 - [WdTag Tag 标签](./wd-tag.md)
+- [WdCardRail CardRail 卡片滑轨](./wd-card-rail.md)
 - [WdGuide Guide 指引](./wd-guide.md)
 
 ### 布局组件

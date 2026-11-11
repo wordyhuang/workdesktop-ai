@@ -8,6 +8,7 @@ import ScenarioGuideView from './views/ScenarioGuideView.vue'
 import ScenarioWorkbenchView from './views/ScenarioWorkbenchView.vue'
 import ScenarioFocusView from './views/ScenarioFocusView.vue'
 import ScenarioStatsView from './views/ScenarioStatsView.vue'
+import ScenarioSettingsView from './views/ScenarioSettingsView.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
@@ -19,6 +20,7 @@ const routes = [
   { path: '/scenario/workbench', name: 'ScenarioWorkbench', component: ScenarioWorkbenchView },
   { path: '/scenario/focus', name: 'ScenarioFocus', component: ScenarioFocusView },
   { path: '/scenario/stats', name: 'ScenarioStats', component: ScenarioStatsView },
+  { path: '/scenario/settings', name: 'ScenarioSettings', component: ScenarioSettingsView },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 

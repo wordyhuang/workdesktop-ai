@@ -34,6 +34,7 @@ import type { Method } from 'axios'
 import type { ReqOptions } from '../../types/config'
 import { useConfig } from '../../lib/composables/useConfig'
 
+// 起始支持版本：V1.1.0
 defineOptions({ name: 'WdRequester' })
 
 interface Props {

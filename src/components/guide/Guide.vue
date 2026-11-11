@@ -112,6 +112,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Close } from '@element-plus/icons-vue'
 
+// 起始支持版本：V1.2.2
 defineOptions({ name: 'WdGuide' })
 
 type Placement = 'top' | 'bottom' | 'left' | 'right' | 'center'

@@ -271,6 +271,7 @@ export const formData: ComponentMeta[] = [
   {
     path: 'form-item',
     name: 'WdFormItem',
+    since: '1.1.0',
     passthrough: {
       target: 'el-form-item',
       note: '组件未声明自定义 emits，未声明的属性与事件经 $attrs 全量透传给 el-form-item。',
@@ -314,6 +315,7 @@ export const formData: ComponentMeta[] = [
   {
     path: 'search-item',
     name: 'WdSearchItem',
+    since: '1.1.0',
     passthrough: {
       target: 'el-form-item',
       note: '组件未声明自定义 emits，未声明的属性与事件经 $attrs 全量透传给 el-form-item；展开/收起由父级 WdSearchPanel 控制。',

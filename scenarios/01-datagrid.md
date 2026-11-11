@@ -1,8 +1,8 @@
 # 场景一：分页数据展示页面（DataGrid 标准场景）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-06\
-> **当前版本**：V\_1.4\
+> **最后修改时间**：2026-11-10\
+> **当前版本**：V\_1.5\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：搜索 + 分页表格的标准结构与交互规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。\
@@ -157,18 +157,18 @@ SearchPanel 触发 DataGrid.refresh() → 重置到第一页，带搜索参数�
 
 ### 1.6 该场景对组件规格的补充需求
 
-| 组件          | 补充项             | 说明                                                                                               |
-| ----------- | --------------- | ------------------------------------------------------------------------------------------------ |
-| DataGrid    | `toolbar` 插槽    | 左侧操作按钮区，用户自定义内容                                                                                  |
-| DataGrid    | `tools` 配置对象    | 右侧功能按钮，每项可开关：`{ refresh, columnSetting, modeSwitch, size }`                                      |
-| DataGrid    | `autoHeight`    | 撑满父容器剩余高度                                                                                        |
-| DataGrid    | `pagerStyle`    | 分页样式档位：`'simple' \| 'normal' \| 'full'`                                                          |
-| DataGrid    | `tableSize`     | 表格尺寸档位：`'large' \| 'default' \| 'small'`                                                         |
-| DataGrid    | `withIndex`     | 是否显示序号列，默认 true，宽 60 居中                                                                          |
-| DataGrid    | `withSelection` | 是否显示多选列，默认 false，宽 60 居中                                                                         |
+| 组件          | 补充项             | 说明                                                                                                                    |
+| ----------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| DataGrid    | `toolbar` 插槽    | 左侧操作按钮区，用户自定义内容                                                                                                       |
+| DataGrid    | `tools` 配置对象    | 右侧功能按钮，每项可开关：`{ refresh, columnSetting, modeSwitch, size }`                                                           |
+| DataGrid    | `autoHeight`    | 撑满父容器剩余高度                                                                                                             |
+| DataGrid    | `pagerStyle`    | 分页样式档位：`'simple' \| 'normal' \| 'full'`                                                                               |
+| DataGrid    | `tableSize`     | 表格尺寸档位：`'large' \| 'default' \| 'small'`                                                                              |
+| DataGrid    | `withIndex`     | 是否显示序号列，默认 true，宽 60 居中                                                                                               |
+| DataGrid    | `withSelection` | 是否显示多选列，默认 false，宽 60 居中                                                                                              |
 | DataGrid    | `defaultMode`   | 初始视图形态：`'table' \| 'card'`，默认 `'table'`——支撑策略七「默认 card 模式」（已实现：传入 `'card'` 且提供 `#card-item` 插槽时初始即卡片，配合 `modeSwitch`） |
-| SearchPanel | `withActions`   | 内置查询/重置按钮，默认 true                                                                                |
-| SearchPanel | 查询联动            | 搜索时触发 DataGrid 刷新（重置到第一页）                                                                        |
+| SearchPanel | `withActions`   | 内置查询/重置按钮，默认 true                                                                                                     |
+| SearchPanel | 查询联动            | 搜索时触发 DataGrid 刷新（重置到第一页）                                                                                             |
 
 > 分页样式档位 `pagerStyle` 已包含在 DataGrid 属性中，不单独出 Pagination 组件。
 
@@ -456,7 +456,7 @@ DataGrid 的 `defaultMode` prop 已实现：`default-mode="card"` 且提供了 `
 </wd-datagrid>
 ```
 
-**`#card-item` 布局建议（内容 → 拆分 → 布局三步法）**：
+**`#card-item`** **布局建议（内容 → 拆分 → 布局三步法）**：
 
 1. **先选出所需展示的内容**：卡片承接「单条完整呈现」≠ 全字段搬运——必选唯一标识（名称 / 标题）与区分性字段（编码 / 编号），再按浏览目的补充关键字段（状态、金额、数量、缩略图等），舍弃详情页才看的低频字段（备注全文、创建人、审计时间等），避免卡片臃肿退化成「行内表格」；
 2. **再根据内容选择一种逻辑方式拆分**：常用拆分维度——按重要性（主体信息 / 关键属性 / 辅助信息）、按区块结构（标题区 / 内容区 / 元信息区 / 操作区）、按数据关系（主信息 + 从属子项）、按展示形态（文本 / 数字 / 图像 / Tag / 按钮）；
@@ -655,17 +655,19 @@ interface DataGridProps {
 
 ### 1.17 空数据状态
 
-表格无数据时，显示统一的空状态占位，而非空白。
+表格无数据时，显示统一的空状态占位，而非空白；空状态按 §0.10 统一口径——主文案点明业务对象，并给出下一步行动按钮：
 
 ```html
 <wd-datagrid api="/api/users" :active="true">
   <template #empty>
-    <el-empty description="暂无数据" />
+    <el-empty description="暂无用户数据">
+      <el-button type="primary" @click="handleAdd">立即新增用户</el-button>
+    </el-empty>
   </template>
 </wd-datagrid>
 ```
 
-> DataGrid 默认 `empty-text` 为"暂无数据"，可通过属性覆盖，也可用 `#empty` 插槽完全自定义。
+> 筛选后空显示「未找到匹配结果」+「清空筛选条件」按钮、加载失败提供「重新加载」——完整状态表与文案口径见 §0.10。DataGrid 默认 `empty-text` 为"暂无数据"，建议用 `#empty` 插槽按上述规范自定义。
 
 ### 1.18 行交互行为
 

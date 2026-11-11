@@ -37,7 +37,7 @@ WorkDesktop AI 是一套面向企业后台管理场景的 Vue 3 组件库，在 
 | 声明式联动      | 属性（`filter` 分组 + `head-refresh-datagrid` 刷新）+ 事件驱动（A+B 混合），无需引入中心化 DSL                               |
 | 组合式 Hooks  | `useRequest` / `useDataGrid` / `useConfig` / `useGlobalConfig` / `useEventBus` / `useGlobalState`    |
 | 双产物 + 按需入口 | `dist/index.esm.js` + `dist/index.umd.js` + 27 个组件子路径入口 + 完整 `.d.ts`                                 |
-| 开箱主题       | 13 套预设皮肤一键套用（`theme.skin`）+ 语义色令牌 + El 派生色阶自动推导 + CSS 变量覆盖（优先级 cssVars > colors > skin）              |
+| 开箱主题       | 14 套预设皮肤一键套用（`theme.skin`）+ 语义色令牌 + El 派生色阶自动推导 + CSS 变量覆盖（优先级 cssVars > colors > skin）              |
 | 测试保障       | vitest + @vue/test-utils：237 用例全通过，行覆盖率 96.6%（阈值 lines/funcs ≥ 80%，branches ≥ 70%）                   |
 
 ## 安装
@@ -185,7 +185,7 @@ app.use(WorkDesktop, {
       WdDataForm: { submitApi: '/save' }
     }
   },
-  // 主题：skin 一键套用预设皮肤（13 套可选），colors / cssVars 在其上继续覆盖
+  // 主题：skin 一键套用预设皮肤（14 套可选），colors / cssVars 在其上继续覆盖
   // 覆盖优先级：cssVars > colors > skin；colors 改动会自动推导 El 浅/深色阶
   theme: { skin: 'default', colors: { primary: '#2f6bff' }, cssVars: { '--wd-radius': '8px' } }
 })
@@ -200,20 +200,21 @@ app.use(WorkDesktop, {
 - 基础控件（按钮、输入框、下拉、表格单元格等）继续使用 ElementPlus，**不重复造轮子**；
 - 本库只做场景化复合与业务约定的封装，宿主对 ElementPlus 的使用方式完全不受影响。
 
-## 组件总览（29 个）
+## 组件总览（35 个）
 
-| 分组       | 组件                                                                                                                                                                          |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 数据       | `WdDataGrid`（分页表格）、`WdEditableGrid`（可编辑表格）、`WdViewer`（详情描述列表）                                                                                                               |
-| 表单       | `WdDataForm`（数据表单）、`WdSearchPanel`（搜索面板）、`WdFormItem` / `WdSearchItem`（表单项包装）                                                                                               |
-| 按钮组（8 个） | `WdApiButton` / `WdConfirmButton` / `WdPopconfirmButton` / `WdPromptButton` / `WdRouteButton` / `WdTipsButton` / `WdDrawerButton`（`mode` 切换抽屉/对话框）/ `WdDialogButton`（对话框专用） |
-| 容器       | `WdDrawer`（`mode` 切换抽屉/对话框，支持 iframe 宿主）、`WdIframe`（iframe 嵌入与通信）                                                                                                           |
-| 输入选择     | `WdSelect` / `WdAutoComplete` / `WdCheckboxList` / `WdRadioList` / `WdSwitch`（切换即请求，失败自动回滚）                                                                                 |
-| 上传       | `WdUpload`（文件）、`WdImageUpload`（图片，强制 image/\*）                                                                                                                              |
-| 布局       | `WdStation`（管理台整页布局：菜单分组 / 标签页 / 工具栏 / 页脚）                                                                                                                                  |
-| 样式       | `WdPanel`（面板）                                                                                                                                                               |
-| 页面元素     | `WdPath`（导航路径/面包屑：手动路径 / 自动联动 Station 菜单链 + 页面标题链 / 滚动跟随可视区第一个标题）、`WdTips`（提示图标/提示框）                                                                                        |
-| 核心       | `WdRequester`（命令式请求触发器，v-model 开关语义）                                                                                                                                        |
+| 分组          | 组件                                                                                                                                                                                |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 指引          | `WdGuide`（页面引导：分步高亮引导与提示）                                                                                                                                                           |
+| 数据          | `WdDataGrid`（分页表格）、`WdEditableGrid`（可编辑表格）、`WdViewer`（详情描述列表）                                                                                                                       |
+| 表单          | `WdDataForm`（数据表单）、`WdSearchPanel`（搜索面板）、`WdFormItem` / `WdSearchItem`（表单项包装）                                                                                                     |
+| 按钮组（9 个）    | `WdApiButton` / `WdConfirmButton` / `WdPopconfirmButton` / `WdPromptButton` / `WdRouteButton` / `WdTipsButton` / `WdDrawerButton`（`mode` 切换抽屉/对话框）/ `WdDialogButton`（对话框专用）/ `WdStationTabButton`（标签页按钮） |
+| 容器          | `WdDrawer`（`mode` 切换抽屉/对话框，支持 iframe 宿主）、`WdIframe`（iframe 嵌入与通信）                                                                                                                   |
+| 输入选择（6 个）   | `WdSelect` / `WdAutoComplete` / `WdCheckboxList` / `WdRadioList` / `WdSwitch`（切换即请求，失败自动回滚）/ `WdDateRangePicker`（日期范围选择）                                                                    |
+| 上传          | `WdUpload`（文件）、`WdImageUpload`（图片，强制 image/\*）                                                                                                                                         |
+| 布局          | `WdStation`（管理台整页布局：菜单分组 / 标签页 / 工具栏 / 页脚）                                                                                                                                          |
+| 样式          | `WdPanel`（面板）                                                                                                                                                                    |
+| 页面元素（5 个）   | `WdPath`（导航路径/面包屑：手动路径 / 自动联动 Station 菜单链 + 页面标题链 / 滚动跟随可视区第一个标题）、`WdAnchor`（悬浮快速导航锚点）、`WdTips`（提示图标/提示框）、`WdTag`（彩色标签：12 种预设色 + auto 自动配色）、`WdCardRail`（卡片滑轨：横向分页轨道，单项内容由默认作用域插槽定制） |
+| 核心          | `WdRequester`（命令式请求触发器，v-model 开关语义）                                                                                                                                            |
 
 ## 手动调用请求（RequestAPI）
 

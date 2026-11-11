@@ -51,10 +51,22 @@ const ElMenuItemGroup = defineComponent({
       ])
   }
 })
+/** el-tabs 滑块重测调用计数（供 slider 滑块自愈用例断言），用例内手动清零 */
+let elTabsBarUpdateCount = 0
 const ElTabs = defineComponent({
   name: 'el-tabs',
   props: { modelValue: String },
-  setup(p, { slots }) {
+  setup(p, { slots, expose }) {
+    // 模拟真实 EP el-tabs 的暴露链 tabNavRef.tabBarRef.update()（Station 自愈重测依赖该链路）
+    expose({
+      tabNavRef: {
+        tabBarRef: {
+          update: () => {
+            elTabsBarUpdateCount++
+          }
+        }
+      }
+    })
     return () => h('div', { class: 'el-tabs-stub', 'data-active': p.modelValue }, slots.default?.())
   }
 })
@@ -643,6 +655,24 @@ describe('WdStation 集成', () => {
     expect(wrapper.find('.el-tabs-stub').attributes('type')).toBeUndefined()
     // slider 形态 tabs-bar 挂 slider 修饰类：底部通栏线由 bar 层承担（覆盖 tabs-left/right 两侧，两端对称）
     expect(wrapper.find('.wd-station__tabs-bar').classes()).toContain('wd-station__tabs-bar--slider')
+  })
+
+  it('slider 形态：tabs 集合/激活签变化后触发 active-bar 自愈重测（修复 EP 量宽 0 宽残留）', async () => {
+    const wrapper = mountStation({ menuGroups: menuGroupsFixture, contentMode: 'tabs', routerMode: 'html' })
+    await nextTick()
+    // 冲掉挂载阶段（affix 自动开签）已排队的自愈调用，从零开始计数
+    await new Promise((r) => setTimeout(r, 20))
+    elTabsBarUpdateCount = 0
+    ;(wrapper.vm as any).openTab({ title: '任务列表', path: '/work/tasks', _key: 'workspace:/work/tasks' })
+    await nextTick()
+    await new Promise((r) => setTimeout(r, 20))
+    expect(elTabsBarUpdateCount).toBeGreaterThan(0)
+    // 切换激活签同样触发自愈
+    elTabsBarUpdateCount = 0
+    const label = wrapper.findAll('.wd-station__tab-label').find((l) => l.text().includes('用户管理'))!
+    await label.trigger('click')
+    await new Promise((r) => setTimeout(r, 20))
+    expect(elTabsBarUpdateCount).toBeGreaterThan(0)
   })
 
   it('tabsStyle=card：EP 原生卡片式（card 类型，不挂 slider 修饰类）', async () => {

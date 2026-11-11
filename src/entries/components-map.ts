@@ -53,6 +53,7 @@ export const componentMap: Record<string, string> = {
   // 页面元素组件
   'path': 'styles/Path.vue',
   'tag': 'styles/Tag.vue',
+  'card-rail': 'styles/CardRail.vue',
 
   // 布局组件
   'station': 'layout/Station.vue',

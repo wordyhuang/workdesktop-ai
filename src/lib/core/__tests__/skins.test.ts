@@ -14,9 +14,9 @@ describe('skins 预设皮肤库', () => {
     vi.restoreAllMocks()
   })
 
-  it('内置 13 套皮肤，结构完整（key/label/desc/theme）', () => {
+  it('内置 14 套皮肤，结构完整（key/label/desc/theme）', () => {
     const skins = listSkins()
-    expect(skins).toHaveLength(13)
+    expect(skins).toHaveLength(14)
     expect(Object.keys(SKIN_PRESETS)).toEqual([
       'default',
       'fashion',
@@ -30,7 +30,8 @@ describe('skins 预设皮肤库', () => {
       'apple',
       'arco',
       'antd',
-      'soft'
+      'soft',
+      'song'
     ])
     for (const skin of skins) {
       expect(skin.key).toBeTruthy()
@@ -704,6 +705,124 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--el-table-row-hover-bg-color: #f8f9fa')
   })
 
+  it('song 天青宋韵：墨青主色 + 宣纸青灰底 + 墨色文字 + 2~4px 小圆角 + 宋式宽松留白', () => {
+    applyTheme({ skin: 'song' })
+    const css = themeCss()
+    // 汝窑天青取可承载白字的深阶 #4a7d78（白字对比度 ≈4.7 达 AA），语义色同取低饱和宋色
+    expect(css).toContain('--wd-color-primary: #4a7d78')
+    expect(css).toContain('--el-color-primary: #4a7d78')
+    expect(css).toContain('--wd-color-success: #4f8f68')
+    expect(css).toContain('--wd-color-warning: #c0954a')
+    expect(css).toContain('--wd-color-danger: #a85a4f')
+    expect(css).toContain('--wd-color-info: #7e8f8b')
+    // 页面宣纸青灰 + 卡片近白 + 浮层纸白；墨色文字体系（placeholder 压深保可读）
+    expect(css).toContain('--wd-bg-color: #fbfcfb')
+    expect(css).toContain('--wd-bg-color-page: #eef3f1')
+    expect(css).toContain('--wd-bg-color-overlay: #fdfefd')
+    expect(css).toContain('--wd-text-color-primary: #2b3330')
+    expect(css).toContain('--wd-text-color-regular: #56605c')
+    expect(css).toContain('--wd-text-color-secondary: #7b8580')
+    expect(css).toContain('--wd-text-color-placeholder: #97a19c')
+    // 青灰细边 + 宋式克制小圆角（控件 4px / 小 2px）+ 宽松留白
+    expect(css).toContain('--wd-border-color: #cfd9d5')
+    expect(css).toContain('--wd-border-color-light: #e2e9e6')
+    expect(css).toContain('--wd-radius-base: 4px')
+    expect(css).toContain('--wd-radius-small: 2px')
+    expect(css).toContain('--wd-spacing-base: 14px')
+    expect(css).toContain('--wd-spacing-large: 18px')
+    // 主色按 EP 公式推导色阶（混白 30% → #80a4a1，混黑 20% → #3b6460）
+    expect(css).toContain('--el-color-primary-light-3: #80a4a1')
+    expect(css).toContain('--el-color-primary-dark-2: #3b6460')
+  })
+
+  it('song 组件级：宣纸白面板 + 天青标识条 + 青灰细描边 + 青瓷导航区 + 冰裂纹背景素材', () => {
+    applyTheme({ skin: 'song' })
+    const css = themeCss()
+    // 面板：宣纸白底 + 极轻青灰阴影 + 墨青标题 + 2px 天青渐变标识条 + 宋式留白间距
+    expect(css).toContain('--wd-panel-bg: #fbfcfb')
+    expect(css).toContain('--wd-panel-radius: 4px')
+    expect(css).toContain('--wd-panel-border-color: #d9e3df')
+    expect(css).toContain('--wd-panel-title-color: #3a6360')
+    expect(css).toContain('--wd-panel-title-bar-width: 2px')
+    expect(css).toContain('--wd-panel-title-bar-bg: linear-gradient(180deg, #4a7d78, #8fb9b4)')
+    expect(css).toContain('--wd-panel-header-padding: 14px 18px')
+    expect(css).toContain('--wd-panel-body-padding: 18px')
+    expect(css).toContain('--wd-panel-footer-bg: #f4f8f6')
+    expect(css).toContain('--wd-panel-margin-bottom: 14px')
+    expect(css).toContain('--wd-panel-shadow-sm: 0 1px 2px rgba(49, 74, 71, 0.04)')
+    expect(css).toContain('--wd-panel-shadow-md: 0 6px 18px rgba(49, 74, 71, 0.08)')
+    // 内容容器：表格 / 可编辑表格 / 搜索 / 表单操作条统一青灰细边与小圆角
+    expect(css).toContain('--wd-datagrid-bg: #fcfdfc')
+    expect(css).toContain('--wd-datagrid-border-color: #dbe5e1')
+    expect(css).toContain('--wd-datagrid-radius: 4px')
+    expect(css).toContain('--wd-datagrid-padding: 16px')
+    expect(css).toContain('--wd-editable-grid-bg: #fcfdfc')
+    expect(css).toContain('--wd-editable-grid-border-color: #dbe5e1')
+    expect(css).toContain('--wd-search-bg: #f4f8f6')
+    expect(css).toContain('--wd-search-padding: 16px')
+    expect(css).toContain('--wd-form-footer-bg: #f4f8f6')
+    expect(css).toContain('--wd-form-footer-padding: 12px 18px')
+    expect(css).toContain('--wd-form-footer-radius: 4px')
+    // 导航区：青瓷淡底侧栏 + 近白页头 / 页签条 + 天青激活态 + 灰青分组标题
+    expect(css).toContain('--wd-station-aside-bg: #e9f0ed')
+    expect(css).toContain('--wd-station-header-bg: #f7faf8')
+    expect(css).toContain('--wd-station-tabs-bg: #f1f6f4')
+    expect(css).toContain('--wd-station-tabs-active-color: #4a7d78')
+    expect(css).toContain('--wd-station-tabs-active-bg: #dce9e5')
+    expect(css).toContain('--wd-station-menu-group-color: #849b95')
+    // 背景素材：面板汝窑冰裂纹开片 + 侧栏淡远山（内联 SVG 零外部资源）
+    expect(css).toContain("--wd-panel-bg-image: url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='170'")
+    expect(css).toContain("--wd-station-aside-bg-image: url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='480' height='110'")
+  })
+
+  it('song cssRules：宋体字系 + 平涂天青主按钮 + 宣纸白默认按钮 + 小圆角标签 + 选中态左墨线 + 表头浅天青', () => {
+    applyTheme({ skin: 'song' })
+    const css = themeCss()
+    // 宋体衬线字体栈（正文继承 + EP 变量在 cssVars 注入）
+    expect(css).toContain("font-family: 'Songti SC'")
+    expect(css).toContain("'STSong', 'SimSun', '宋体'")
+    // 主按钮：天青平涂（宋式克制不做渐变），hover 取深阶 + 极轻投影
+    expect(css).toContain('.el-button--primary {')
+    expect(css).toContain('--el-button-hover-bg-color: var(--el-color-primary-dark-2)')
+    expect(css).toContain('box-shadow: 0 1px 2px rgba(49, 74, 71, 0.12)')
+    // 默认按钮：宣纸白底 + 青灰细边 + 墨色字，hover 转天青
+    expect(css).toContain(".el-button:not([class*='el-button--']):not(.is-text):not(.is-link) {")
+    expect(css).toContain('--el-button-bg-color: #fbfcfb')
+    expect(css).toContain('--el-button-border-color: #cfd9d5')
+    expect(css).toContain('--el-button-text-color: #2b3330')
+    // 标签：宋式 2px 小圆角 + primary 浅天青底极细青边
+    expect(css).toContain('.el-tag {')
+    expect(css).toContain('border-radius: 2px')
+    expect(css).toContain('.el-tag.el-tag--primary {')
+    expect(css).toContain('--el-tag-border-color: rgba(74, 125, 120, 0.34)')
+    expect(css).toContain('--el-tag-text-color: var(--el-color-primary)')
+    // 输入框聚焦：1px 内描边 + 3px 极淡外晕（比 Soft 更收敛）
+    expect(css).toContain('.el-input__wrapper.is-focus {')
+    expect(css).toContain('color-mix(in srgb, var(--el-color-primary) 10%, transparent)')
+    // 顶栏菜单：浅青灰 hover + 浅天青底青字选中
+    expect(css).toContain('.wd-station__top-menu .el-menu {')
+    expect(css).toContain('--el-menu-hover-bg-color: rgba(74, 125, 120, 0.06)')
+    expect(css).toContain('.wd-station__top-menu .el-menu-item.is-active {')
+    // 青瓷侧栏：青灰细分割线 + 菜单墨字 + 选中项左侧 2px 墨线（宋式留白标记）
+    expect(css).toContain('.wd-station .wd-station__aside {')
+    expect(css).toContain('border-right: 1px solid #dbe5e1')
+    expect(css).toContain('.wd-station__menu {')
+    expect(css).toContain('--el-menu-text-color: #2b3330')
+    expect(css).toContain('--el-menu-hover-bg-color: rgba(74, 125, 120, 0.08)')
+    expect(css).toContain('.wd-station__menu .el-menu-item.is-active {')
+    expect(css).toContain('box-shadow: inset 2px 0 0 var(--el-color-primary)')
+    expect(css).toContain('.wd-station__menu .el-sub-menu.is-active > .el-sub-menu__title {')
+    // 表格：表头浅天青底 + 墨青字 + 青灰细线（同选择器级覆盖）
+    expect(css).toContain('.el-table {')
+    expect(css).toContain('--el-table-header-bg-color: #f3f8f6')
+    expect(css).toContain('--el-table-header-text-color: #3a6360')
+    expect(css).toContain('--el-table-border-color: #e0e8e4')
+    expect(css).toContain('--el-table-row-hover-bg-color: #f6faf8')
+    // 冰裂纹平铺尺寸（宋汝窑开片意象）
+    expect(css).toContain('div.wd-panel.wd-panel {')
+    expect(css).toContain('background-size: 260px 170px')
+  })
+
   it('tech 深空霓虹青：深空蓝底 + 青色描边辉光 + 青蓝标识条 + 导航区压黑 + El 深色联动', () => {
     applyTheme({ skin: 'tech' })
     const css = themeCss()
@@ -849,11 +968,20 @@ describe('config 集成：theme.skin 经全局配置生效', () => {
     expect(css).toContain('--wd-datagrid-radius: 14px')
     // 标题回归纯文字：彩色标识条宽度归零
     expect(css).toContain('--wd-panel-title-bar-width: 0')
-    // 面板空间感：padding 整体加大 3px（出厂 header 12/16/12/18、body/card-header 16）+ 面板下间距 12→15
-    expect(css).toContain('--wd-panel-header-padding: 15px 19px 15px 21px')
-    expect(css).toContain('--wd-panel-body-padding: 19px')
-    expect(css).toContain('--wd-panel-card-header-padding: 19px')
-    expect(css).toContain('--wd-panel-margin-bottom: 15px')
+    // 面板空间感：padding 两轮各 +3（出厂 header 12/16/12/18、body/card-header 16）+ 面板下间距 12→18
+    expect(css).toContain('--wd-panel-header-padding: 18px 22px 18px 24px')
+    expect(css).toContain('--wd-panel-body-padding: 22px')
+    expect(css).toContain('--wd-panel-card-header-padding: 22px')
+    expect(css).toContain('--wd-panel-margin-bottom: 18px')
+    // 搜索面板 padding 同步加大（出厂 8px 12px 0）
+    expect(css).toContain('--wd-search-padding: 11px 15px 3px')
+    // 底层容器 padding 按情况加大：表格 / 可编辑表格 12→15，表单 footer 12px 0 0 → 15px 0 3px
+    expect(css).toContain('--wd-datagrid-padding: 15px')
+    expect(css).toContain('--wd-editable-grid-padding: 15px')
+    expect(css).toContain('--wd-form-footer-padding: 15px 0 3px')
+    // 表格单元格横向留白加大（出厂 12px），杂志风表格更透气
+    expect(css).toContain('.el-table .cell {')
+    expect(css).toContain('padding: 0 14px')
     // 字体整体加大 1px（出厂 base/small/large 14/12/16）
     expect(css).toContain('--wd-font-size-base: 15px')
     expect(css).toContain('--wd-font-size-small: 13px')
@@ -869,20 +997,35 @@ describe('config 集成：theme.skin 经全局配置生效', () => {
     expect(css).toContain('.wd-station__menu.el-menu,')
     expect(css).toContain('.wd-station__menu .el-menu-item.is-active {')
     expect(css).toContain('background: #1f2532')
-    // 容器类毛玻璃：面板 / 搜索 / 表格半透白底（透出页面光斑），面板亮边高光
+    // 容器类毛玻璃：面板 / 搜索 / 表格半透白底（透出页面光斑），容器浅暖描边与毛玻璃融合
     expect(css).toContain('--wd-panel-bg: rgba(255, 255, 255, 0.62)')
-    expect(css).toContain('--wd-panel-border-color: rgba(255, 255, 255, 0.7)')
+    expect(css).toContain('--wd-panel-border-color: rgba(233, 225, 214, 0.9)')
     expect(css).toContain('--wd-search-bg: rgba(255, 255, 255, 0.5)')
     expect(css).toContain('--wd-datagrid-bg: rgba(255, 255, 255, 0.55)')
     expect(css).toContain('--wd-editable-grid-bg: rgba(255, 255, 255, 0.55)')
     expect(css).toContain('.wd-panel,')
     expect(css).toContain('.wd-editable-grid {')
     expect(css).toContain('backdrop-filter: blur(14px) saturate(1.4)')
+    // 浅色边框：搜索 / 表格根类出厂无边框，皮肤补 1px 暖浅描边（Panel 走 --wd-panel-border-color 令牌）
+    expect(css).toContain('.wd-search-panel,')
+    expect(css).toContain('.wd-datagrid,')
+    expect(css).toContain('border: 1px solid rgba(233, 225, 214, 0.9)')
     // EP 表格默认不透明白底会盖住容器玻璃底，透明化后透出；表头留半透白分层，行 hover 暖色透底
     expect(css).toContain('--el-table-bg-color: transparent')
     expect(css).toContain('--el-table-tr-bg-color: transparent')
     expect(css).toContain('--el-table-header-bg-color: rgba(255, 255, 255, 0.45)')
     expect(css).toContain('--el-table-row-hover-bg-color: rgba(205, 60, 29, 0.05)')
+  })
+
+  it('setGlobalConfig 切换 song 天青宋韵皮肤生效', () => {
+    setGlobalConfig({ theme: { skin: 'song' } })
+    const css = themeCss()
+    expect(css).toContain('--wd-color-primary: #4a7d78')
+    expect(css).toContain('--wd-bg-color-page: #eef3f1')
+    expect(css).toContain('--wd-panel-title-color: #3a6360')
+    expect(css).toContain('--wd-panel-title-bar-width: 2px')
+    expect(css).toContain('--wd-station-aside-bg: #e9f0ed')
+    expect(css).toContain('box-shadow: inset 2px 0 0 var(--el-color-primary)')
   })
 
   it('resetConfig 恢复默认后皮肤注入清空', () => {

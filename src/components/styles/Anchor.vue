@@ -45,6 +45,7 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, type PropType } from 'vue'
 import { registerAnchorInstance, type AnchorItemLike } from '../../lib/core/anchor-linkage'
 
+// 起始支持版本：V1.2.8
 defineOptions({ name: 'WdAnchor' })
 
 interface AnchorItem {

@@ -44,7 +44,7 @@
     <el-drawer v-model="skinVisible" title="全站主题皮肤" size="420px">
       <div class="skin-picker">
         <p class="skin-picker__tip">
-          组件库 13 套系统预设皮肤，选择后经 <code>theme.skin</code> 一键套用，全站实时换肤（Element 组件联动）。
+          组件库 14 套系统预设皮肤，选择后经 <code>theme.skin</code> 一键套用，全站实时换肤（Element 组件联动）。
           <el-tag size="small" type="info" effect="plain">刷新恢复默认</el-tag>
         </p>
         <div v-for="s in SITE_SKINS" :key="s.key" class="skin-item" :class="{ 'is-active': s.key === currentSkinKey }"
@@ -147,6 +147,7 @@ const COMPONENT_ICONS: Record<string, string> = {
   upload: 'Upload',
   'image-upload': 'Picture',
   // 页面元素
+  'card-rail': 'CreditCard',
   guide: 'Compass',
   path: 'Location',
   anchor: 'Flag',
@@ -193,7 +194,8 @@ const menuGroups: { key: string; title?: string; menus: DocMenuNode[] }[] = [
         children: [
           { title: '工作台', path: '/scenario/workbench', icon: 'Monitor' },
           { title: '专注工作台', path: '/scenario/focus', icon: 'Timer' },
-          { title: '统计中心', path: '/scenario/stats', icon: 'DataAnalysis' }
+          { title: '统计中心', path: '/scenario/stats', icon: 'DataAnalysis' },
+          { title: '设置中心', path: '/scenario/settings', icon: 'Setting' }
         ]
       },
       {

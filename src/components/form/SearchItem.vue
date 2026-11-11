@@ -37,6 +37,7 @@
 import { computed, useSlots, type PropType } from 'vue'
 import { QuestionFilled } from '@element-plus/icons-vue'
 
+// 起始支持版本：V1.1.0
 defineOptions({ name: 'WdSearchItem', inheritAttrs: false })
 
 const props = defineProps({

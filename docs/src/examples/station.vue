@@ -77,6 +77,38 @@
     </demo-block>
 
     <demo-block
+      title="空态隐藏（hide-empty-group / hide-empty-nav）"
+      desc="数据动态留空时避免渲染空壳：hide-empty-group 让无实际子菜单（menus: [] 或仅剩空壳层级）的分组从分导台与侧边分组标题同步消失；全部分组为空时 hide-empty-nav 隐藏整个分导台（顶栏回退系统标题）。两者默认关闭，判定口径为「递归到无 children 的项视为叶子，存在任一叶子即算有实际菜单」"
+      :code="code10"
+    >
+      <div class="empty-switch">
+        <el-radio-group v-model="emptyDemo" size="small">
+          <el-radio-button value="partial">部分分组为空（hide-empty-group 生效）</el-radio-button>
+          <el-radio-button value="all">全部分组为空（hide-empty-nav 隐藏分导台）</el-radio-button>
+        </el-radio-group>
+      </div>
+      <div class="station-stage">
+        <wd-station
+          :key="emptyDemo"
+          title="WorkDesktop"
+          logo="Platform"
+          :menu-groups="emptyDemo === 'all' ? menuGroupsAllEmpty : menuGroupsSparse"
+          hide-empty-nav
+          hide-empty-group
+          user-name="张管理员"
+          copyright="© 2026 WorkDesktop"
+          router-mode="html"
+          @menu-select="onMenuSelect"
+        >
+          <div class="station-demo-page">
+            <h4>空态隐藏演示</h4>
+            <p>{{ emptyDemo === 'all' ? '全部分组为空：分导台已隐藏，顶栏回退系统标题' : '「占位分组」为空：已从分导台与侧边分组标题同步消失' }}</p>
+          </div>
+        </wd-station>
+      </div>
+    </demo-block>
+
+    <demo-block
       title="顶部菜单模式"
       desc="menu-mode=top 时菜单移到顶部横排，折叠按钮变为向上/向下箭头，控制顶部菜单的收起与展开"
       :code="code4"
@@ -458,6 +490,43 @@ const code9 = `<!-- 第一步：安装图标字体（可选安装，不用 FA �
 const menuGroupsFa = ${JSON.stringify(stationData.menuGroupsFa, null, 2)}
 <\/script>`
 
+const code10 = `<template>
+  <el-radio-group v-model="emptyDemo" size="small">
+    <el-radio-button value="partial">部分分组为空（hide-empty-group 生效）</el-radio-button>
+    <el-radio-button value="all">全部分组为空（hide-empty-nav 隐藏分导台）</el-radio-button>
+  </el-radio-group>
+
+  <wd-station
+    title="WorkDesktop" logo="Platform"
+    :menu-groups="emptyDemo === 'all' ? menuGroupsAllEmpty : menuGroupsSparse"
+    hide-empty-nav hide-empty-group
+    user-name="张管理员" copyright="© 2026 WorkDesktop"
+    router-mode="html"
+    @menu-select="onMenuSelect"
+  >
+    <div>内容区</div>
+  </wd-station>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const emptyDemo = ref('partial')
+
+// 部分分组为空：blank 组 menus: [] → 开启 hide-empty-group 后不渲染（分导台条目与侧边分组标题同步消失）
+const menuGroupsSparse = [
+  { key: 'workspace', title: '工作区', icon: 'Monitor', menus: [{ title: '工作台', path: '/work/dashboard' }] },
+  { key: 'operation', title: '运营中心', icon: 'DataLine', menus: [{ title: '数据报表', path: '/operation/report' }] },
+  { key: 'blank', title: '占位分组', menus: [] }
+]
+
+// 全部分组为空：所有分组无实际菜单 → 开启 hide-empty-nav 后整个分导台隐藏，顶栏回退系统标题
+const menuGroupsAllEmpty = [
+  { key: 'blank', title: '占位分组', menus: [] },
+  { key: 'empty', title: '空分组', menus: [] }
+]
+<\/script>`
+
 // 左侧菜单演示数据统一抽离到同目录 station-data.json，此处按用途取用（结构说明见组件文档 menuGroups / menus）
 const menuGroups = stationData.menuGroups
 
@@ -469,6 +538,21 @@ const flatMenus = stationData.flatMenus
 
 // Font Awesome 图标演示数据：icon 传图标字体 class（fa-solid / fa-regular / fa-brands）
 const menuGroupsFa = stationData.menuGroupsFa
+
+// 空态隐藏演示数据：blank 组 menus: [] → 开启 hide-empty-group 后从分导台与侧边分组标题同步消失
+const menuGroupsSparse = [
+  { key: 'workspace', title: '工作区', icon: 'Monitor', menus: [{ title: '工作台', path: '/work/dashboard' }] },
+  { key: 'operation', title: '运营中心', icon: 'DataLine', menus: [{ title: '数据报表', path: '/operation/report' }] },
+  { key: 'blank', title: '占位分组', menus: [] }
+]
+
+// 全部分组为空 → 开启 hide-empty-nav 后隐藏整个分导台，顶栏回退系统标题
+const menuGroupsAllEmpty = [
+  { key: 'blank', title: '占位分组', menus: [] },
+  { key: 'empty', title: '空分组', menus: [] }
+]
+
+const emptyDemo = ref<'partial' | 'all'>('partial')
 
 const currentMenuText = ref('（点击左侧菜单）')
 const refreshCount = ref(0)
@@ -558,6 +642,9 @@ function onLocateSlot(id: string) {
   font-size: 12px;
   color: var(--wd-text-color-secondary, #909399);
   white-space: nowrap;
+}
+.empty-switch {
+  margin-bottom: 8px;
 }
 .slot-id-tip {
   margin-top: 8px;
