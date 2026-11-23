@@ -1,7 +1,11 @@
 <template>
   <div class="wd-station" :class="{ 'is-collapsed': collapsedState }">
     <!-- 左侧菜单栏（menuMode=side）：logo 与菜单同列，菜单紧贴 logo -->
-    <aside v-if="menuMode === 'side'" class="wd-station__aside" :class="{ 'is-collapsed': collapsedState }">
+    <aside
+      v-if="menuMode === 'side'"
+      class="wd-station__aside"
+      :class="{ 'is-collapsed': collapsedState, 'is-collapse-title': collapsedShowTitle }"
+    >
       <div id="wd-station__logo" class="wd-station__logo" :class="{ 'is-collapsed': collapsedState }">
         <slot name="logo" :collapsed="collapsedState">
           <el-icon v-if="isIconFontClass(logo)" class="wd-station__logo-icon"><i :class="logo" /></el-icon>
@@ -311,6 +315,8 @@ const props = defineProps({
   collapsible: { type: Boolean, default: true },
   /** 折叠状态（v-model:collapsed） */
   collapsed: { type: Boolean, default: false },
+  /** 折叠态菜单项形态：true=icon 上 / title 文字下竖排（窄栏可读）；false=仅 icon（EP 原生折叠形态） */
+  collapsedShowTitle: { type: Boolean, default: true },
   /** 当前分组 key（v-model:active-group） */
   activeGroup: { type: String, default: '' },
   /** 当前菜单 key（v-model:active-menu） */
@@ -962,6 +968,37 @@ defineExpose({ refresh, openTab, closeTab })
   vertical-align: middle;
   width: var(--el-menu-icon-width);
   text-align: center;
+}
+
+/* 折叠竖排形态（collapsedShowTitle，默认开启）：icon 上 / title 文字下。
+   折叠树中仅顶层项在 DOM（子菜单折叠为 popup teleport 到 body），规则命中安全；
+   specificity（5 类）高于上方「折叠隐藏 span」补齐规则与 EP 原生规则，可覆盖生效 */
+.wd-station__aside.is-collapse-title.is-collapsed :deep(.el-menu--collapse .el-menu-item),
+.wd-station__aside.is-collapse-title.is-collapsed :deep(.el-menu--collapse .el-sub-menu__title) {
+  flex-direction: column;
+  height: auto;
+  min-height: var(--el-menu-item-height);
+  padding: 10px 4px 8px;
+  gap: 4px;
+}
+.wd-station__aside.is-collapse-title.is-collapsed :deep(.el-menu--collapse .el-menu-item > span),
+.wd-station__aside.is-collapse-title.is-collapsed :deep(.el-menu--collapse .el-sub-menu__title > span) {
+  display: block;
+  width: 100%;
+  height: auto;
+  visibility: visible;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+}
+.wd-station__aside.is-collapse-title.is-collapsed :deep(.el-menu--collapse .el-menu-item .el-icon),
+.wd-station__aside.is-collapse-title.is-collapsed :deep(.el-menu--collapse .el-sub-menu__title .el-icon) {
+  margin: 0;
+  width: 100%;
+  justify-content: center;
 }
 
 /* 菜单徽章对齐：与 StationMenuNode.vue 同款规则。

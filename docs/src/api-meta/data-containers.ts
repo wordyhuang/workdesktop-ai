@@ -135,10 +135,10 @@ export const containerData: ComponentMeta[] = [
       note: '纯自研卡片容器（根节点 div.wd-panel，内部仅使用 el-icon），没有可透传的 Element Plus 组件。',
     },
     title: 'Panel 面板',
-    desc: '带标题/描述的内容面板，作为表单分组与详情分区容器；支持常规面板与信息卡片两种模式、折叠、内容超限自动折叠、描述对齐与悬停动效、标题标识条长短形态、标题图标、标题右侧操作区与阴影策略',
+    desc: '带标题/描述的内容面板，作为表单分组与详情分区容器；支持常规面板与信息卡片两种模式、折叠、内容超限自动折叠、描述对齐与悬停动效、标题标识条长短形态、标题图标、标题右侧操作区与阴影策略；开启 fullscreenable 后右上角内置专注（全屏）按钮，面板可从原位放大至全屏',
     group: '容器',
     intro: {
-      overview: 'WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情分区的容器。标题左侧带品牌色标识条（高度形态可调：`titleBar` 长条与头部同高 / 短条与标题行同高、顶部对齐标题行，短条下描述换行显示在标题下方），支持点击标题区折叠/展开主体内容、内容超过指定高度时自动折叠（`collapseHeight`）、控制描述在标题右侧空白区居左或居右对齐（`descriptionAlign`）、描述折叠展示时的悬停淡入动效（`descriptionExpandable`）、为标题配置图标（`icon`，设置后左侧标识条自动隐藏、由图标承担视觉锚点）、在标题右侧放置操作区（extra 插槽），并提供 always / hover / never 三种阴影策略以适应不同层级的视觉分区需求；还可通过 `mode` 切换信息卡片形态（`card`：白底大圆角、头部整体带浅色背景、描述显示在标题下方，适合 flex 容器一行并行多卡）。',
+      overview: 'WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情分区的容器。标题左侧带品牌色标识条（高度形态可调：`titleBar` 长条与头部同高 / 短条与标题行同高、顶部对齐标题行，短条下描述换行显示在标题下方），支持点击标题区折叠/展开主体内容、内容超过指定高度时自动折叠（`collapseHeight`）、控制描述在标题右侧空白区居左或居右对齐（`descriptionAlign`）、描述折叠展示时的悬停淡入动效（`descriptionExpandable`）、为标题配置图标（`icon`，设置后左侧标识条自动隐藏、由图标承担视觉锚点）、在标题右侧放置操作区（extra 插槽），并提供 always / hover / never 三种阴影策略以适应不同层级的视觉分区需求；还可通过 `mode` 切换信息卡片形态（`card`：白底大圆角、头部整体带浅色背景、描述显示在标题下方，适合 flex 容器一行并行多卡）。开启 `fullscreenable` 后，面板右上角内置专注（全屏）按钮：点击后面板从原位放大至铺满视口（FLIP 缩放 + 遮罩淡入，内容不重挂载、状态不丢失），全屏态按钮变为关闭，点击后收缩回原位并恢复页面滚动。',
       whenToUse: [
         '详情页需要按「基本信息 / 联系信息 / 其他」等分区组织内容时。',
         '表单较长，需要分组展示并允许用户收起暂不关注的分组时（`collapsible`）。',
@@ -148,6 +148,7 @@ export const containerData: ComponentMeta[] = [
         '描述属于补充信息、不希望常驻占位，希望悬停标题时以轻量动效提示出来时（`descriptionExpandable`）。',
         '分区标题需要更强的视觉辨识度，希望用图标替代默认的品牌色标识条时（`icon`）。',
         '信息聚合页需要一行并排展示多块独立信息，希望卡片化外观（头部带浅色背景、描述在标题下方）时（`mode="card"`）。',
+        '页面上某一块已渲染的内容（表格、详情分区、看板卡片）需要临时放大专注查看/操作，且放大前后要求内容状态零丢失时（`fullscreenable`）。',
         '不建议：需要弹出式承载内容（应使用 WdDrawer 抽屉/对话框容器）。',
         '不建议：页面最外层整体布局（应使用 WdStation 中后台外框架）。'
       ],
@@ -164,13 +165,20 @@ export const containerData: ComponentMeta[] = [
         '折叠时主体（default）与底部（footer）会一并收起，展开带高度过渡动画；不要把需要常驻的操作只放在 footer 里。',
         '阴影选择建议：`hover`（默认）适合常规分区；`always` 适合需要突出的核心分区；`never` 仅保留描边，适合密集排列的次级分区。',
         '`border="false"` 去掉外框描边，适合嵌在卡片、抽屉、灰色底区块等已有容器内；此时建议搭配 `shadow="never"` 避免悬停浮起。',
-        '标题区支持键盘操作（Enter / Space 切换折叠），并带有 `aria-expanded` 等无障碍属性。'
+        '标题区支持键盘操作（Enter / Space 切换折叠），并带有 `aria-expanded` 等无障碍属性。',
+        '`fullscreenable=true` 时头部右上角（extra 区域内、`@click.stop` 拦截，不误触折叠）内置专注（全屏）按钮，`extra` 插槽内容与其共存（插槽在前、按钮在最后）。全屏是「原地 fixed 展开」，不 teleport、不重挂载：`v-model:fullscreen` 状态切换只改布局，插槽内容的组件状态（请求结果、输入值、折叠状态）全程保留；进入全屏后锁定 `body` 滚动（卸载或退出时恢复），面板切换为 flex 纵向布局：主体区自动撑满并可滚动（`.wd-panel__content-inner` overflow auto），footer 常驻底部，圆角与外边距归零。',
+        '专注模式的放大/收缩动画为 FLIP 缩放过渡（transform + opacity，约 0.28s），遮罩同步淡入淡出；动画仅作用于视觉，状态切换是同步的（事件立即触发）。层级令牌：全屏层级 `--wd-panel-fullscreen-z-index`（默认 2000）、遮罩色 `--wd-panel-fullscreen-mask-color`（默认 rgba(0,0,0,0.45)），可在皮肤/页面级覆盖；遮罩层级自动取全屏层级 - 1。',
+        '专注按钮与折叠箭头共存时：操作区顺序为 extra 插槽 → 全屏按钮 → 折叠箭头。全屏面板内部再弹 el-select 下拉、el-popconfirm 等层级由 Element Plus 统一管理（默认高于 2000），不受本令牌影响。'
       ],
       faq: [
         { q: '不传 `title` 只传 `description` 为什么不显示？', a: '标题区（header）的渲染条件是 `title` 或 `title` 插槽存在，`description` 是标题的附属内容，不能单独触发标题区渲染。' },
         { q: '`change` 和 `update:opened` 有什么区别？', a: '两者都在折叠状态切换时触发且参数相同。`update:opened` 用于配合 `v-model:opened` 做双向绑定；`change` 用于业务侧监听（如收起时暂存草稿、展开时懒加载数据）。' },
         { q: 'extra 插槽里的按钮点击会把面板折叠了？', a: '不会。extra 区域的点击事件已做 `.stop` 处理，不会冒泡到标题区的折叠切换逻辑。' },
-        { q: '想让面板默认收起怎么写？', a: '设置 `collapsible` 并传 `:opened="false"`（或 `v-model:opened` 绑定初始为 `false` 的变量）即可。' }
+        { q: '想让面板默认收起怎么写？', a: '设置 `collapsible` 并传 `:opened="false"`（或 `v-model:opened` 绑定初始为 `false` 的变量）即可。' },
+        { q: '专注（全屏）模式和 Dialog（全屏对话框）有什么区别？', a: 'Dialog 内容经 teleport 挂载到 body，每次打开都是重新挂载，内部组件状态会丢失；Panel 的专注模式是原地 fixed 展开，内容从未离开文档流，状态、数据、滚动位置全程保留。需要「对已渲染元素专注操作」时开 `fullscreenable`，需要按需弹出新内容时用 WdDrawer。' },
+        { q: '面板上没有全屏（专注）按钮？', a: '头部渲染条件与普通面板一致：需传 `title` 或使用 `title` 插槽；另请确认已设置 `fullscreenable`（默认 false 不渲染按钮）。' },
+        { q: '不用 v-model，能用代码控制全屏吗？', a: '可以。`ref` 上暴露 `toggleFullscreen()` / `enterFullscreen()` / `exitFullscreen()` 三个方法；`fullscreen` prop 也可作为受控入口。' },
+        { q: '全屏后面板内部内容超出屏幕怎么办？', a: '全屏态主体区（内容+footer 容器）自动撑满视口，内容超出时主体区出现滚动条（footer 固定在底部），无需额外处理。' }
       ]
     },
     props: [
@@ -185,17 +193,26 @@ export const containerData: ComponentMeta[] = [
       { name: 'titleBar', type: "'long' | 'short'", default: "'long'", desc: '标题左侧品牌色标识条高度形态：long=与头部同高（默认）；short=与标题行同高（约 22px）、顶部对齐标题行，描述换行显示在标题下方；icon 或 mode="card" 下标识条隐藏，该属性无效' },
       { name: 'icon', type: 'string | Component', default: "''", desc: '标题图标：@element-plus/icons-vue 图标名（如 Setting）/ 图标字体 class（如 fa-solid fa-user）/ 组件对象；设置后标题前显示图标，左侧品牌色标识条隐藏' },
       { name: 'mode', type: "'panel' | 'card'", default: "'panel'", desc: "展示模式：panel=常规分区面板；card=信息卡片（白底大圆角、头部整体带浅色背景、description 默认显示在标题下方，descriptionAlign=\"right\" 时与标题同行、垂直居中，配合 flex 容器可一行并行多卡）" },
-      { name: 'collapseHeight', type: 'number', default: '0', desc: '内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时渲染完成后自动折叠；0=不自动折叠（完全撑开）' }
+      { name: 'collapseHeight', type: 'number', default: '0', desc: '内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时渲染完成后自动折叠；0=不自动折叠（完全撑开）' },
+      { name: 'fullscreenable', type: 'boolean', default: 'false', desc: '是否在右上角显示专注（全屏）按钮：点击后面板从原位放大至全屏（FLIP 过渡 + 遮罩淡入，内容不重挂载、状态不丢失），全屏态按钮变为关闭' },
+      { name: 'fullscreen', type: 'boolean', default: 'false', desc: '全屏状态（配合 fullscreenable，支持 v-model:fullscreen）' }
     ],
     emits: [
       { name: 'update:opened', payload: 'value: boolean', desc: '展开状态变化（v-model:opened）' },
-      { name: 'change', payload: 'value: boolean', desc: '折叠/展开切换时触发' }
+      { name: 'change', payload: 'value: boolean', desc: '折叠/展开切换时触发' },
+      { name: 'update:fullscreen', payload: 'value: boolean', desc: '全屏状态变化（v-model:fullscreen）' },
+      { name: 'fullscreen-change', payload: 'value: boolean', desc: '进入/退出全屏时触发' }
     ],
     slots: [
       { name: 'title', params: '—', desc: '自定义标题区' },
-      { name: 'extra', params: '—', desc: '标题右侧操作区' },
+      { name: 'extra', params: '—', desc: '标题右侧操作区（与内置专注按钮共存：插槽在前、按钮在最后）' },
       { name: 'default', params: '—', desc: '主体内容' },
       { name: 'footer', params: '—', desc: '底部' }
+    ],
+    methods: [
+      { name: 'toggleFullscreen()', params: '—', returns: 'void', desc: '切换全屏状态' },
+      { name: 'enterFullscreen()', params: '—', returns: 'void', desc: '进入全屏' },
+      { name: 'exitFullscreen()', params: '—', returns: 'void', desc: '退出全屏' }
     ]
   }
 ]
@@ -429,7 +446,7 @@ export const inputData: ComponentMeta[] = [
       ...optionsProps
     ],
     emits: optionsEmits,
-    slots: [{ name: 'default', params: '{ option, text, value }', desc: '选项内容' }]
+    slots: [{ name: 'default', params: '{ option, text, value, tips }', desc: '选项内容' }]
   },
   {
     path: 'auto-complete',
@@ -519,7 +536,7 @@ export const inputData: ComponentMeta[] = [
       ],
       notes: [
         'modelValue 是数组，请始终用数组初始化（`ref([])`），不要绑定单个值。',
-        '数据项的 tips 字段非空时，鼠标悬停该选项文本弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 \'tips\'），无 tips 字段的选项不显示提示。',
+        '数据项的 tips 字段非空时，选项文本右侧显示问号帮助图标，鼠标悬停图标弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 \'tips\'），无 tips 字段的选项不显示图标。',
         '自定义解包字段名示例：后端返回 `{ id, name, remark }` 时，设置 `value-prop="id" text-prop="name" tips-prop="remark"` 即可，无需手工转换数据。',
         'dataSource 与 api 同时存在时 dataSource 优先，不会发起请求；active=false 仅关闭挂载自动加载，api/dataSource 变化时仍会重新加载。',
         'addData / appendData 固定项同样经过字段映射解析，需与 textProp / valueProp 的字段名保持一致。',
@@ -540,7 +557,7 @@ export const inputData: ComponentMeta[] = [
         fields: [
           { name: 'text（字段名由 textProp 决定）', type: 'string', required: '是', default: '—', desc: '选项显示文本' },
           { name: 'value（字段名由 valueProp 决定）', type: 'any', required: '是', default: '—', desc: '选项值' },
-          { name: 'tips（字段名由 tipsProp 决定）', type: 'string', required: '否', default: "''", desc: '悬停提示，非空时鼠标悬停该选项显示 tooltip' },
+          { name: 'tips（字段名由 tipsProp 决定）', type: 'string', required: '否', default: "''", desc: '悬停提示，非空时选项文本右侧显示帮助图标，悬停图标查看' },
           { name: '其他任意字段', type: 'any', required: '否', default: '—', desc: '原样保留在标准化结果的 raw 中' },
         ],
         after: ['接口返回约定：`api` 返回的 `data` 为选项数组，或 `{ list: 选项数组 }` 结构（字段名可由全局配置 `response.list.listName` 覆盖）。'],
@@ -552,7 +569,7 @@ export const inputData: ComponentMeta[] = [
       ...optionsProps
     ],
     emits: optionsEmits,
-    slots: [{ name: 'default', params: '{ option, text, value }', desc: '选项内容' }]
+    slots: [{ name: 'default', params: '{ option, text, value, tips }', desc: '选项内容' }]
   },
   {
     path: 'radio-list',
@@ -573,7 +590,7 @@ export const inputData: ComponentMeta[] = [
         '不建议：选项很多或需要搜索时使用 WdSelect；仅开/关两个互斥状态且语义是「启停」时，WdSwitch 更贴切。'
       ],
       notes: [
-        '数据项的 tips 字段非空时，鼠标悬停该选项文本弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 \'tips\'），适合做选项含义解释（如「停用：账号保留数据，但暂时无法登录」）。',
+        '数据项的 tips 字段非空时，选项文本右侧显示问号帮助图标，鼠标悬停图标弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 \'tips\'），适合做选项含义解释（如「停用：账号保留数据，但暂时无法登录」）。',
         '自定义解包字段名示例：后端返回 `{ id, name, remark }` 时，设置 `value-prop="id" text-prop="name" tips-prop="remark"` 即可，无需手工转换数据。',
         '「不限 / 全部」类占位项推荐用 add-data 前插（如 `{ value: 0, text: \'不限\' }`），而不是混入业务选项数据。',
         'dataSource 与 api 同时存在时 dataSource 优先，不会发起请求；active=false 仅关闭挂载自动加载，api/dataSource 变化时仍会重新加载。',
@@ -595,7 +612,7 @@ export const inputData: ComponentMeta[] = [
         fields: [
           { name: 'text（字段名由 textProp 决定）', type: 'string', required: '是', default: '—', desc: '选项显示文本' },
           { name: 'value（字段名由 valueProp 决定）', type: 'any', required: '是', default: '—', desc: '选项值' },
-          { name: 'tips（字段名由 tipsProp 决定）', type: 'string', required: '否', default: "''", desc: '悬停提示，非空时鼠标悬停该选项显示 tooltip' },
+          { name: 'tips（字段名由 tipsProp 决定）', type: 'string', required: '否', default: "''", desc: '悬停提示，非空时选项文本右侧显示帮助图标，悬停图标查看' },
           { name: '其他任意字段', type: 'any', required: '否', default: '—', desc: '原样保留在标准化结果的 raw 中' },
         ],
         after: ['接口返回约定：`api` 返回的 `data` 为选项数组，或 `{ list: 选项数组 }` 结构（字段名可由全局配置 `response.list.listName` 覆盖）。'],
@@ -607,7 +624,7 @@ export const inputData: ComponentMeta[] = [
       ...optionsProps
     ],
     emits: optionsEmits,
-    slots: [{ name: 'default', params: '{ option, text, value }', desc: '选项内容' }]
+    slots: [{ name: 'default', params: '{ option, text, value, tips }', desc: '选项内容' }]
   },
   {
     path: 'switch',

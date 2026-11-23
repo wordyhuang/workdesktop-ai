@@ -27,6 +27,11 @@
       </div>
     </wd-panel>
 
+    <!-- 页面顶部提示（§0.1）：功能介绍与注意事项 -->
+    <wd-tips type="box" icon="InfoFilled" class="settings-tips">
+      本页统一管理个人配置，修改后点击右上角「保存更改」一次性保存并自动记录变更；离开页面前请确认已保存。
+    </wd-tips>
+
     <!-- 主体：左侧分类导航 + 右侧单页滚动分区 -->
     <div class="settings-body">
       <wd-panel class="settings-nav">
@@ -152,15 +157,15 @@
               :with-pager="false"
             >
               <el-table-column prop="time" label="时间" width="180" />
-              <el-table-column prop="device" label="设备" min-width="180" />
-              <el-table-column prop="ip" label="IP" width="140" />
-              <el-table-column prop="result" label="结果" width="120">
+              <el-table-column prop="device" label="设备" min-width="200">
                 <template #default="{ row }">
+                  {{ row.device }}
                   <wd-tag :type="row.result === '登录成功' ? 'success' : 'danger'" size="small">
                     {{ row.result }}
                   </wd-tag>
                 </template>
               </el-table-column>
+              <el-table-column prop="ip" label="IP" width="140" />
             </wd-data-grid>
           </wd-panel>
         </section>
@@ -205,7 +210,7 @@
                 <b>接收类型</b>
                 <small>勾选需要接收的通知类型</small>
               </div>
-              <wd-checkbox-list v-model="notify.types" :data-source="NOTIFY_TYPES" />
+              <wd-checkbox-list v-model="notify.types" :data-source="NOTIFY_TYPES" button-style />
             </div>
 
             <div class="settings-row settings-row--vacation">
@@ -247,12 +252,12 @@
                 <b>主题模式</b>
                 <small>选择界面明暗风格</small>
               </div>
-              <wd-radio-list v-model="appearance.theme" :data-source="THEMES" />
+              <wd-radio-list v-model="appearance.theme" :data-source="THEMES" button-style />
             </div>
             <div class="settings-form-grid settings-form-grid--appearance">
               <div class="settings-field">
                 <label>界面语言</label>
-                <wd-select v-model="appearance.language" :data-source="LANGUAGES" placeholder="请选择界面语言" />
+                <wd-radio-list v-model="appearance.language" :data-source="LANGUAGES" button-style />
               </div>
               <div class="settings-field">
                 <label>时区</label>
@@ -304,18 +309,20 @@
               icon="WarningFilled"
               color="#e6a23c"
               bg="var(--el-color-warning-light-9)"
-              tips="注销账号后数据将进入 30 天冷静期，期间可联系管理员恢复。"
+              tips="注销账号为不可恢复操作，提交后账号数据将被清除且无法找回，请务必谨慎操作。"
             />
             <div class="settings-danger">
               <div class="settings-danger__main">
                 <b>注销账号</b>
                 <small>注销后你将退出所有设备，且无法继续使用该账号登录。</small>
               </div>
-              <wd-popconfirm-button
+              <!-- §0.9 L2 强确认：不可恢复操作需输入指定文本，输入不符时 mock 返回业务失败、弹窗保留可改 -->
+              <wd-prompt-button
                 label="注销账号"
                 type="danger"
-                title="确认提交注销申请？"
-                confirm-button-text="确定"
+                prompt-title="注销后账号数据将被清除且不可恢复，请输入「注销」确认"
+                prompt-placeholder="请输入「注销」"
+                param-key="confirmText"
                 api="/settings/deactivate"
                 @api-success="showMessage('注销申请已提交')"
               />
@@ -523,9 +530,13 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 1440px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 18px 26px 18px;
+}
+
+/* 页面顶部提示（box 横幅）与上下容器的间距 */
+.settings-tips {
+  margin: 10px 0 8px;
 }
 
 .settings-page *,
@@ -682,7 +693,6 @@ onBeforeUnmount(() => {
   flex-direction: column;
   min-height: 0;
   overflow-y: auto;
-  padding: 2px 4px 4px 0;
 }
 
 .settings-section {
@@ -949,7 +959,6 @@ onBeforeUnmount(() => {
   .settings-page {
     display: block;
     height: auto;
-    padding-bottom: 64px;
   }
 
   .settings-body {
@@ -961,7 +970,6 @@ onBeforeUnmount(() => {
 
   .settings-sections {
     overflow: visible;
-    padding-right: 0;
   }
 
   .settings-nav__list {

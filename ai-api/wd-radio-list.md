@@ -16,7 +16,7 @@ WdRadioList 基于 el-radio-group 封装，以平铺单选框（或按钮组）�
 
 ### 注意事项
 
-- 数据项的 tips 字段非空时，鼠标悬停该选项文本弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 'tips'），适合做选项含义解释（如「停用：账号保留数据，但暂时无法登录」）。
+- 数据项的 tips 字段非空时，选项文本右侧显示问号帮助图标，鼠标悬停图标弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 'tips'），适合做选项含义解释（如「停用：账号保留数据，但暂时无法登录」）。
 - 自定义解包字段名示例：后端返回 `{ id, name, remark }` 时，设置 `value-prop="id" text-prop="name" tips-prop="remark"` 即可，无需手工转换数据。
 - 「不限 / 全部」类占位项推荐用 add-data 前插（如 `{ value: 0, text: '不限' }`），而不是混入业务选项数据。
 - dataSource 与 api 同时存在时 dataSource 优先，不会发起请求；active=false 仅关闭挂载自动加载，api/dataSource 变化时仍会重新加载。
@@ -60,7 +60,7 @@ WdRadioList 基于 el-radio-group 封装，以平铺单选框（或按钮组）�
 | dataSource | `array` | — | 静态选项数组（与 api 二选一） |
 | textProp | `string` | 'text' | 选项显示文本字段 |
 | valueProp | `string` | 'value' | 选项值字段 |
-| tipsProp | `string` | 'tips' | 选项悬停提示字段：数据项该字段非空时，鼠标悬停该选项显示 tooltip |
+| tipsProp | `string` | 'tips' | 选项悬停提示字段：数据项该字段非空时，选项文本旁显示帮助图标，鼠标悬停图标查看说明 |
 | addData | `array` | — | 选项前插固定项 |
 | appendData | `array` | — | 选项后追加固定项 |
 
@@ -79,7 +79,7 @@ WdRadioList 基于 el-radio-group 封装，以平铺单选框（或按钮组）�
 
 | 插槽 | 容器 id | 插槽参数 | 说明 |
 | --- | --- | --- | --- |
-| default | — | { option, text, value } | 选项内容 |
+| default | — | { option, text, value, tips } | 选项内容 |
 
 ### 数据类型
 
@@ -93,7 +93,7 @@ WdRadioList 基于 el-radio-group 封装，以平铺单选框（或按钮组）�
 | --- | --- | --- | --- | --- |
 | text（字段名由 textProp 决定） | string | 是 | — | 选项显示文本 |
 | value（字段名由 valueProp 决定） | any | 是 | — | 选项值 |
-| tips（字段名由 tipsProp 决定） | string | 否 | '' | 悬停提示，非空时鼠标悬停该选项显示 tooltip |
+| tips（字段名由 tipsProp 决定） | string | 否 | '' | 悬停提示，非空时选项文本右侧显示帮助图标，悬停图标查看 |
 | 其他任意字段 | any | 否 | — | 原样保留在标准化结果的 raw 中 |
 
 接口返回约定：`api` 返回的 `data` 为选项数组，或 `{ list: 选项数组 }` 结构（字段名可由全局配置 `response.list.listName` 覆盖）。

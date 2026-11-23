@@ -12,15 +12,9 @@
     </unpack-note>
     <demo-block
       title="单元格编辑（cell 模式）+ 方法调用"
-      desc="点击单元格进入编辑，失焦提交；required 必填校验，未通过则无法批量保存。下方按钮演示通过 ref 调用 addRow() / getDirtyRows() / validate() / saveAll()。本地静态数据关闭分页：with-pager=false"
+      desc="点击单元格进入编辑，失焦提交；required 必填校验，未通过则无法批量保存。工具栏按钮演示通过 ref 调用 addRow() / getDirtyRows() / validate() / saveAll()。本地静态数据关闭分页：with-pager=false"
       :code="code1"
     >
-      <div style="margin-bottom: 12px">
-        <el-button size="small" @click="callAddRow">addRow() 新增一行</el-button>
-        <el-button size="small" @click="callDirty">getDirtyRows() 脏行数</el-button>
-        <el-button size="small" @click="callValidate">validate() 校验</el-button>
-        <el-button size="small" type="primary" @click="callSaveAll">saveAll() 批量保存</el-button>
-      </div>
       <wd-editable-grid
         ref="editRef"
         :columns="columns"
@@ -29,7 +23,14 @@
         :with-pager="false"
         save-button-text="保存修改"
         @save="onSave"
-      />
+      >
+        <template #toolbar>
+          <el-button size="small" @click="callAddRow">addRow() 新增一行</el-button>
+          <el-button size="small" @click="callDirty">getDirtyRows() 脏行数</el-button>
+          <el-button size="small" @click="callValidate">validate() 校验</el-button>
+          <el-button size="small" type="primary" @click="callSaveAll">saveAll() 批量保存</el-button>
+        </template>
+      </wd-editable-grid>
     </demo-block>
 
     <demo-block
@@ -88,9 +89,16 @@
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
-const code1 = `<!-- 加 ref；本地静态数据建议关闭分页 -->
+const code1 = `<!-- 加 ref；本地静态数据建议关闭分页；方法调用按钮统一放 toolbar 插槽 -->
 <wd-editable-grid ref="editRef" :columns="columns"
-  :model-value="rows" :with-pager="false" @save="onSave" />
+  :model-value="rows" :with-pager="false" @save="onSave">
+  <template #toolbar>
+    <el-button size="small" @click="editRef.addRow()">addRow() 新增一行</el-button>
+    <el-button size="small" @click="editRef.getDirtyRows()">getDirtyRows() 脏行数</el-button>
+    <el-button size="small" @click="editRef.validate()">validate() 校验</el-button>
+    <el-button size="small" type="primary" @click="editRef.saveAll()">saveAll() 批量保存</el-button>
+  </template>
+</wd-editable-grid>
 
 // 通过 ref 调用方法
 const editRef = ref()

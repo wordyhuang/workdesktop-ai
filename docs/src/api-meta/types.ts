@@ -207,7 +207,7 @@ export const optionsProps: PropMeta[] = [
   { name: 'dataSource', type: 'array', default: '—', desc: '静态选项数组（与 api 二选一）' },
   { name: 'textProp', type: 'string', default: "'text'", desc: '选项显示文本字段' },
   { name: 'valueProp', type: 'string', default: "'value'", desc: '选项值字段' },
-  { name: 'tipsProp', type: 'string', default: "'tips'", desc: '选项悬停提示字段：数据项该字段非空时，鼠标悬停该选项显示 tooltip' },
+  { name: 'tipsProp', type: 'string', default: "'tips'", desc: '选项悬停提示字段：数据项该字段非空时，选项文本旁显示帮助图标，鼠标悬停图标查看说明' },
   { name: 'addData', type: 'array', default: '—', desc: '选项前插固定项' },
   { name: 'appendData', type: 'array', default: '—', desc: '选项后追加固定项' }
 ]

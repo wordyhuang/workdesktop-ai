@@ -68,7 +68,7 @@
 ### 8.4 代码示例
 
 ```html
-<wd-panel :show-header="false">
+<wd-panel>
   <!-- Tab 分类区：label 插槽显示各分类总量；"全部"常量分类不显示总量 -->
   <el-tabs v-model="activeTab" @tab-change="handleTabChange">
     <el-tab-pane name="all" label="全部" />

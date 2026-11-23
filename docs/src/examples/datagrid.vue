@@ -436,27 +436,25 @@
     <demo-block title="方法调用（ref）"
       desc="给组件加 ref 后，可通过 grid.refresh() / grid.search(params) / grid.getSelection() / getCartList() / clearCart() / clearSelection() 等方法编程式操作表格，同时演示：<br/>1. 多选 + 选中回显（selectionKey）：v-model:model-value 双向绑定选中项回显勾选<br/>2. 跨页选择「购物车」：勾选行跨页累计，翻页/搜索不清空"
       :code="code4">
-      <div style="margin-bottom: 12px">
-        <!-- 多选 + selectionKey 示例控制区 -->
-        <span style="margin-right: 12px">当前选中：{{ checkedNames.join('、') || '（空）' }}</span>
-        <el-button size="small" @click="setPreset">设置预选（回显勾选）</el-button>
-        <el-button size="small" @click="checkedNames = []">清空选中</el-button>
-        <br /><br />
-        <!-- 跨页购物车示例控制区 -->
-        <span style="margin-right: 12px">已选购物车 {{ cartCount }} 项</span>
-        <el-button size="small" @click="showCartCount">getCartList() 取购物车</el-button>
-        <el-button size="small" @click="clearCartDemo">clearCart() 清空购物车</el-button>
-        <br /><br />
-        <!-- 通用方法调用区 -->
-        <el-button size="small" @click="callRefresh">refresh() 刷新</el-button>
-        <el-button size="small" @click="callSearch">search({ status: 1 }) 只看启用</el-button>
-        <el-button size="small" @click="callResetSearch">resetSearch() 重置查询</el-button>
-        <el-button size="small" @click="callGetSelection">getSelection() 取当前页选中</el-button>
-        <el-button size="small" @click="callClearSelection">clearSelection() 清空当前页选择</el-button>
-      </div>
       <wd-data-grid ref="gridRef" border api="/user/list" :active="true" row-key="id" :with-selection="true"
         selection-key="name" v-model:model-value="checkedNames" :with-selection-cart="true" cart-row-key="id"
         :tools="{ refresh: true }" @cart-change="(v: any[]) => (cartCount = v.length)">
+        <template #toolbar>
+          <!-- 多选 + selectionKey 示例控制区 -->
+          <span class="demo-ctl">当前选中：{{ checkedNames.join('、') || '（空）' }}</span>
+          <el-button size="small" @click="setPreset">设置预选（回显勾选）</el-button>
+          <el-button size="small" @click="checkedNames = []">清空选中</el-button>
+          <!-- 跨页购物车示例控制区 -->
+          <span class="demo-ctl">已选购物车 {{ cartCount }} 项</span>
+          <el-button size="small" @click="showCartCount">getCartList() 取购物车</el-button>
+          <el-button size="small" @click="clearCartDemo">clearCart() 清空购物车</el-button>
+          <!-- 通用方法调用区 -->
+          <el-button size="small" @click="callRefresh">refresh() 刷新</el-button>
+          <el-button size="small" @click="callSearch">search({ status: 1 }) 只看启用</el-button>
+          <el-button size="small" @click="callResetSearch">resetSearch() 重置查询</el-button>
+          <el-button size="small" @click="callGetSelection">getSelection() 取当前页选中</el-button>
+          <el-button size="small" @click="callClearSelection">clearSelection() 清空当前页选择</el-button>
+        </template>
         <el-table-column prop="name" label="姓名" min-width="120" />
         <el-table-column prop="dept" label="部门" width="120" />
         <el-table-column prop="status" label="状态" width="90">
@@ -557,38 +555,36 @@ const toolsPos = ref<'left' | 'right' | 'bottom'>('right')
 // 自定义工具栏位置：left（默认）/ right / bottom
 const toolbarPos = ref<'left' | 'right' | 'bottom'>('left')
 
-const code4 = `<!-- 同时演示：多选回显 + 跨页购物车 + 方法调用(ref) -->
-<div style="margin-bottom: 12px">
-  <!-- 多选 + selectionKey 示例控制区 -->
-  <span style="margin-right: 12px">当前选中：{{ checkedNames.join('、') || '（空）' }}</span>
-  <el-button size="small" @click="setPreset">设置预选（回显勾选）</el-button>
-  <el-button size="small" @click="checkedNames = []">清空选中</el-button>
-  <br/><br/>
-  <!-- 跨页购物车示例控制区 -->
-  <span style="margin-right: 12px">已选购物车 {{ cartCount }} 项</span>
-  <el-button size="small" @click="showCartCount">getCartList() 取购物车</el-button>
-  <el-button size="small" @click="clearCartDemo">clearCart() 清空购物车</el-button>
-  <br/><br/>
-  <!-- 通用方法调用区 -->
-  <el-button size="small" @click="callRefresh">refresh() 刷新</el-button>
-  <el-button size="small" @click="callSearch">search({ status: 1 }) 只看启用</el-button>
-  <el-button size="small" @click="callResetSearch">resetSearch() 重置查询</el-button>
-  <el-button size="small" @click="callGetSelection">getSelection() 取当前页选中</el-button>
-  <el-button size="small" @click="callClearSelection">clearSelection() 清空当前页选择</el-button>
-</div>
-<wd-data-grid ref="gridRef" 
+const code4 = `<!-- 同时演示：多选回显 + 跨页购物车 + 方法调用(ref)，示例控制区统一放入 toolbar 插槽 -->
+<wd-data-grid ref="gridRef"
   border
-  api="/user/list" 
-  :active="true" 
-  row-key="id" 
+  api="/user/list"
+  :active="true"
+  row-key="id"
   :with-selection="true"
   selection-key="name"
   v-model:model-value="checkedNames"
-  :with-selection-cart="true" 
+  :with-selection-cart="true"
   cart-row-key="id"
   :tools="{ refresh: true }"
   @cart-change="(v) => (cartCount = v.length)"
 >
+  <template #toolbar>
+    <!-- 多选 + selectionKey 示例控制区 -->
+    <span style="margin-right: 12px">当前选中：{{ checkedNames.join('、') || '（空）' }}</span>
+    <el-button size="small" @click="setPreset">设置预选（回显勾选）</el-button>
+    <el-button size="small" @click="checkedNames = []">清空选中</el-button>
+    <!-- 跨页购物车示例控制区 -->
+    <span style="margin-right: 12px">已选购物车 {{ cartCount }} 项</span>
+    <el-button size="small" @click="showCartCount">getCartList() 取购物车</el-button>
+    <el-button size="small" @click="clearCartDemo">clearCart() 清空购物车</el-button>
+    <!-- 通用方法调用区 -->
+    <el-button size="small" @click="callRefresh">refresh() 刷新</el-button>
+    <el-button size="small" @click="callSearch">search({ status: 1 }) 只看启用</el-button>
+    <el-button size="small" @click="callResetSearch">resetSearch() 重置查询</el-button>
+    <el-button size="small" @click="callGetSelection">getSelection() 取当前页选中</el-button>
+    <el-button size="small" @click="callClearSelection">clearSelection() 清空当前页选择</el-button>
+  </template>
   <el-table-column prop="name" label="姓名" min-width="120" />
   <el-table-column prop="dept" label="部门" width="120" />
   <el-table-column prop="status" label="状态" width="90">
@@ -1164,6 +1160,8 @@ const codeFix = `<template>
 
 <style scoped>
 .fix-box { height: 520px; }  /* 内容区固定高；也可为 flex 伸展/可滚动容器 */
+/* toolbar 内示例控制区说明文字 */
+.demo-ctl { margin-right: 12px; font-size: 12px; color: var(--el-text-color-secondary); }
 </style>
 
 <!-- 两种高度模式说明：

@@ -1,5 +1,7 @@
 <template>
   <div class="stats-page">
+    <!-- 页面说明：§0.1 所有功能页顶部 tips -->
+    <wd-tips type="box" icon="InfoFilled">统计中心展示核心指标趋势与渠道结构；点击指标卡联动趋势图，点击数据点可下钻明细；数据每半小时更新。</wd-tips>
     <!-- 顶条：标题 + 时间范围切换 + 更新时间 -->
     <header class="st-top">
       <div class="st-top__head">
@@ -8,13 +10,9 @@
       </div>
       <div class="st-top__right">
         <ScenarioPromptButton scene="stats" title="统计中心" />
-        <div class="st-range" role="group" aria-label="时间范围切换">
-          <button
-            v-for="r in RANGES" :key="r.key" type="button" class="st-range__btn"
-            :class="{ 'is-active': range === r.key }" @click="onRange(r.key)">
-            {{ r.label }}
-          </button>
-        </div>
+        <wd-radio-list
+          v-model="range" :data-source="RANGE_OPTIONS" :button-style="true"
+          size="small" aria-label="时间范围切换" @change="onRange" />
         <span class="st-top__updated">更新于 {{ updatedText }}</span>
       </div>
     </header>
@@ -27,9 +25,20 @@
         @click="activeKey = m.key">
         <span class="st-kpi__label">{{ m.label }}</span>
         <span class="st-kpi__value">{{ m.display }}<i>{{ m.unit }}</i></span>
-        <span class="st-kpi__delta" :class="deltaGood(m) ? 'is-good' : 'is-bad'">
-          较上期 <b>{{ m.delta }}</b>
+        <span class="st-kpi__delta">
+          较上期
+          <wd-tag size="small" effect="light" round :type="deltaGood(m) ? 'success' : 'danger'">
+            <el-icon class="st-kpi__delta-icon"><component :is="deltaUp(m) ? TopRight : BottomRight" /></el-icon>
+            {{ m.delta }}
+          </wd-tag>
         </span>
+        <svg class="st-kpi__spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+          <polygon :points="sparkArea(m.data['7d'])" fill="var(--el-color-primary)" fill-opacity="0.14" />
+          <polyline
+            :points="sparkPoints(m.data['7d'])" fill="none" stroke="var(--el-color-primary)"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+            vector-effect="non-scaling-stroke" />
+        </svg>
       </button>
     </section>
 
@@ -50,7 +59,7 @@
               :aria-label="`${activeMetric.label}趋势图`" @mousemove="onChartMove" @mouseleave="hoverIndex = -1"
               @click="onChartClick">
               <polyline
-                :points="linePoints(prevPoints)" fill="none" stroke="#c09048"
+                :points="linePoints(prevPoints)" fill="none" stroke="var(--el-color-warning-light-3)"
                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
               <polyline
                 :points="linePoints(points)" fill="none" stroke="var(--el-color-primary)"
@@ -161,13 +170,9 @@
     <section class="st-row3">
       <wd-panel class="st-row3__rank" title="访问排行 TOP 5" icon="Trophy" description="较上期变化">
         <template #extra>
-          <div class="st-top5__tabs" role="group" aria-label="排行维度切换">
-            <button
-              v-for="t in TOP_TABS" :key="t.key" type="button" class="st-top5__tab"
-              :class="{ 'is-active': topTab === t.key }" @click="topTab = t.key">
-              {{ t.label }}
-            </button>
-          </div>
+          <wd-radio-list
+            v-model="topTab" :data-source="TOP_OPTIONS" :button-style="true"
+            size="small" aria-label="排行维度切换" />
         </template>
         <ul class="st-top5">
           <li v-for="(r, i) in topList" :key="r.name" class="st-top5__item">
@@ -195,7 +200,7 @@
     </section>
 
     <!-- 下钻明细：点击趋势图数据点，右侧抽屉展开 -->
-    <wd-drawer v-model="detailVisible" :title="drillTitle" size="420px">
+    <wd-drawer v-model="detailVisible" :title="drillTitle" size="500px">
       <div v-if="drillIndex >= 0" class="st-drawer">
         <div class="st-drawer__meta">
           <span>{{ rangeLabel }} · {{ labels[drillIndex] }}</span>
@@ -218,6 +223,7 @@
 </template>
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { BottomRight, TopRight } from '@element-plus/icons-vue'
 import ScenarioPromptButton from '../components/ScenarioPromptButton.vue'
 
 defineOptions({ name: 'ScenarioStatsView' })
@@ -231,6 +237,9 @@ const RANGES: { key: RangeKey; label: string; labels: string[] }[] = [
   { key: '30d', label: '近 30 天', labels: ['10-08', '10-11', '10-14', '10-17', '10-20', '10-23', '10-26', '10-29', '11-01', '11-04'] },
   { key: '12m', label: '近 12 个月', labels: ['12月', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月'] }
 ]
+
+/** wd-radio-list 静态选项（text/value 字段映射） */
+const RANGE_OPTIONS = RANGES.map((r) => ({ text: r.label, value: r.key }))
 
 interface Metric {
   key: string
@@ -396,6 +405,8 @@ const TOP_TABS: { key: TopKey; label: string }[] = [
   { key: 'channel', label: '渠道' },
   { key: 'item', label: '商品' }
 ]
+/** wd-radio-list 静态选项（text/value 字段映射） */
+const TOP_OPTIONS = TOP_TABS.map((t) => ({ text: t.label, value: t.key }))
 const TOP_RANKS: Record<TopKey, { name: string; delta: string; v: Record<RangeKey, number> }[]> = {
   page: [
     { name: '工作台首页', delta: '+12.4%', v: { '7d': 1860, '30d': 8240, '12m': 96800 } },
@@ -507,10 +518,23 @@ const tipStyle = computed(() => ({
 }))
 
 /* ---- KPI 卡 ---- */
+/** 好坏判断：逆指标（退款率等）下降为好 */
 const deltaGood = (m: Metric) => {
   const down = m.delta.startsWith('-')
   return m.inverse ? down : !down
 }
+/** 涨跌方向：正 TopRight / 负 BottomRight */
+const deltaUp = (m: Metric) => !m.delta.startsWith('-')
+
+/** sparkline 坐标：min-max 归一化到 viewBox 高度（1-23），x 均分 0-100 */
+const sparkPoints = (trend: number[]) => {
+  const min = Math.min(...trend)
+  const span = Math.max(...trend) - min || 1
+  return trend
+    .map((v, i) => `${((i * 100) / (trend.length - 1)).toFixed(1)},${(23 - ((v - min) / span) * 22).toFixed(1)}`)
+    .join(' ')
+}
+const sparkArea = (trend: number[]) => `${sparkPoints(trend)} 100,24 0,24`
 
 /* ---- 渠道环形图 ---- */
 const RING = 2 * Math.PI * 54
@@ -604,8 +628,8 @@ const regionPct = (r: { value: number }) =>
   Math.round((r.value / regionList.value.reduce((s, x) => s + x.value, 0)) * 100)
 
 /* ---- 交互 ---- */
-const onRange = (key: RangeKey) => {
-  range.value = key
+/** 时间范围切换后重置 hover / 下钻状态（range 由 wd-radio-list v-model 更新） */
+const onRange = () => {
   hoverIndex.value = -1
   drillIndex.value = -1
 }
@@ -619,13 +643,11 @@ const onRange = (key: RangeKey) => {
 
 .stats-page {
   --wd-panel-radius: 12px;
-  --wd-panel-border-color: #e6e8ec;
+  --wd-panel-border-color: var(--el-border-color-lighter);
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-height: 100%;
-  padding: 20px 26px 36px;
-  background: #f4f5fc;
 }
 
 .stats-page :deep(.wd-panel) {
@@ -634,7 +656,7 @@ const onRange = (key: RangeKey) => {
 
 .stats-page > * {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
@@ -664,31 +686,6 @@ const onRange = (key: RangeKey) => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.st-range {
-  display: inline-flex;
-  padding: 3px;
-  background: var(--el-fill-color-light);
-  border-radius: 8px;
-}
-
-.st-range__btn {
-  padding: 5px 14px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  font-size: 12px;
-  color: var(--el-text-color-regular);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.st-range__btn.is-active {
-  background: var(--el-bg-color);
-  color: var(--el-color-primary);
-  font-weight: 600;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
 }
 
 .st-top__updated {
@@ -723,19 +720,19 @@ const onRange = (key: RangeKey) => {
 }
 
 .st-kpi.is-active {
-  border-color: #2551bd;
-  box-shadow: 0 4px 14px rgb(37 81 189 / 20%);
+  border-color: var(--el-color-primary);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 10%);
 }
 
 .st-kpi__label {
   font-size: 12px;
-  color: #737a87;
+  color: var(--el-text-color-secondary);
 }
 
 .st-kpi__value {
   font-size: 24px;
   font-weight: 700;
-  color: #2551bd;
+  color: var(--el-color-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -743,25 +740,27 @@ const onRange = (key: RangeKey) => {
   font-style: normal;
   font-size: 12px;
   font-weight: 400;
-  color: #737a87;
+  color: var(--el-text-color-secondary);
   margin-left: 2px;
 }
 
 .st-kpi__delta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
-  color: #737a87;
+  color: var(--el-text-color-secondary);
 }
 
-.st-kpi__delta b {
-  font-weight: 600;
+.st-kpi__delta-icon {
+  margin-right: 2px;
 }
 
-.st-kpi__delta.is-good b {
-  color: #12a35a;
-}
-
-.st-kpi__delta.is-bad b {
-  color: #e74442;
+.st-kpi__spark {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin-top: auto;
 }
 
 /* ---- 主趋势图 ---- */
@@ -790,7 +789,7 @@ const onRange = (key: RangeKey) => {
 }
 
 .st-chart__legend-item i.is-prev {
-  background: #c09048;
+  background: var(--el-color-warning-light-3);
 }
 
 .st-chart__hint {
@@ -1111,7 +1110,7 @@ const onRange = (key: RangeKey) => {
 }
 
 .st-hour__bar {
-  fill: #c7dbf8;
+  fill: var(--el-color-primary-light-8);
   cursor: pointer;
   transition: fill 0.15s;
 }
@@ -1121,7 +1120,7 @@ const onRange = (key: RangeKey) => {
 }
 
 .st-hour__bar.is-hover {
-  fill: #1257c4;
+  fill: var(--el-color-primary-dark-2);
 }
 
 .st-hour__avg-line {
@@ -1167,31 +1166,6 @@ const onRange = (key: RangeKey) => {
 }
 
 /* 访问排行 TOP5 */
-.st-top5__tabs {
-  display: inline-flex;
-  padding: 3px;
-  background: var(--el-fill-color-light);
-  border-radius: 8px;
-}
-
-.st-top5__tab {
-  padding: 3px 12px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  font-size: 12px;
-  color: var(--el-text-color-regular);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.st-top5__tab.is-active {
-  background: var(--el-bg-color);
-  color: var(--el-color-primary);
-  font-weight: 600;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
-}
-
 .st-top5 {
   margin: 0;
   padding: 0;
@@ -1282,11 +1256,11 @@ const onRange = (key: RangeKey) => {
 }
 
 .st-top5__delta.is-good {
-  color: #12a35a;
+  color: var(--el-color-success);
 }
 
 .st-top5__delta.is-bad {
-  color: #e74442;
+  color: var(--el-color-danger);
 }
 
 /* 地域分布 */

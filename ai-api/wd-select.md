@@ -65,7 +65,7 @@ WdSelect 基于 el-select 封装，在保留原生能力的基础上内置了选
 | dataSource | `array` | — | 静态选项数组（与 api 二选一） |
 | textProp | `string` | 'text' | 选项显示文本字段 |
 | valueProp | `string` | 'value' | 选项值字段 |
-| tipsProp | `string` | 'tips' | 选项悬停提示字段：数据项该字段非空时，鼠标悬停该选项显示 tooltip |
+| tipsProp | `string` | 'tips' | 选项悬停提示字段：数据项该字段非空时，选项文本旁显示帮助图标，鼠标悬停图标查看说明 |
 | addData | `array` | — | 选项前插固定项 |
 | appendData | `array` | — | 选项后追加固定项 |
 
@@ -84,7 +84,7 @@ WdSelect 基于 el-select 封装，在保留原生能力的基础上内置了选
 
 | 插槽 | 容器 id | 插槽参数 | 说明 |
 | --- | --- | --- | --- |
-| default | — | { option, text, value } | 选项内容 |
+| default | — | { option, text, value, tips } | 选项内容 |
 
 ### 数据类型
 

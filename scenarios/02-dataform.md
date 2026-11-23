@@ -1,13 +1,14 @@
 # 场景二：数据维护表单页面（DataForm 标准场景）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-18\
-> **当前版本**：V\_1.2\
+> **最后修改时间**：2026-11-19\
+> **当前版本**：V\_1.3\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：新增/编辑表单的结构、分组与提交规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
 >
-> **版本变更**：V_1.1 → V_1.2：下线 WdDatePicker 组件（组件源码、测试、docs 示例与元数据全量移除），单日期字段统一改用原生 `el-date-picker`，仅保留 WdDateRangePicker 用于日期范围场景。
+> **版本变更**：V_1.2 → V_1.3：§2.6 新增「禁止重复添加内置按钮」——DataForm 已内置保存/重置/关闭按钮，底部不要再额外设置这三个行为的按钮，文案与显隐调整走 withActions/actionConfig 配置（主文档 V\_1.33 §2.6 已先改）。\
+> 历史变更：V_1.1 → V_1.2：下线 WdDatePicker 组件（组件源码、测试、docs 示例与元数据全量移除），单日期字段统一改用原生 `el-date-picker`，仅保留 WdDateRangePicker 用于日期范围场景。
 
 
 ### 2.1 场景描述
@@ -199,6 +200,16 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
 | 保存并继续 | ✅（keepFormButton 时） | ❌         |
 
 > 详情查看不使用 DataForm，无底部操作按钮（见场景三）。
+
+> **禁止重复添加内置按钮**：DataForm 组件本身已内置操作按钮（保存 / 重置 / 关闭，`keepFormButton` 时还有「保存并继续」），页面**不需要也不应该**再额外设置这三个行为的按钮——重复添加会出现「双份保存 / 双份重置 / 双份关闭」，行为歧义且样式错乱。需要调整时走组件配置而非自拼按钮：
+>
+> | 想调整什么 | 正确做法 |
+> | --- | --- |
+> | 隐藏整个操作区 | `:with-actions="false"` |
+> | 隐藏「重置」按钮 | `:action-config="{ showReset: false }"` |
+> | 修改按钮文案 | `:action-config="{ submitText: '提交订单', resetText: '清空', continueText: '继续添加' }"` |
+>
+> ❌ 反例：在 DataForm 内或容器 footer 里再手写 `<el-button @click="handleSave">保存</el-button>` / `<el-button @click="handleReset">重置</el-button>` / `<el-button @click="visible = false">关闭</el-button>`——这三个行为 DataForm 已全部内置，自行添加即为不合规。
 
 ### 2.7 代码示例（纯 HTML 引入）
 

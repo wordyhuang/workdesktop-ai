@@ -21,6 +21,12 @@ export const coolSkin: SkinPreset = {
       '--wd-text-color-regular': '#a0a6b5',
       '--wd-text-color-secondary': '#7d8496',
       '--wd-text-color-placeholder': '#5d6475',
+      // on-dark 色板：与全局文字色板同值（整页深色），供换装块在导航区 chrome 统一消费
+      '--wd-text-color-primary-on-dark': '#e8eaf0',
+      '--wd-text-color-regular-on-dark': '#a0a6b5',
+      '--wd-text-color-secondary-on-dark': '#7d8496',
+      '--wd-text-color-placeholder-on-dark': '#5d6475',
+      '--wd-color-link-on-dark': '#a78bff',
       '--wd-border-color': '#2a2e38',
       '--wd-border-color-light': '#22252e',
       '--wd-radius-base': '8px',
@@ -51,6 +57,22 @@ export const coolSkin: SkinPreset = {
   // 皮肤专属 CSS 规则：霓虹渐变主按钮 + ghost 默认按钮 + 霓虹 primary 标签
   // （EP 变量只能纯色填充，渐变/外发光必须 rule 级覆盖；发光紫与面板描边 rgba(124,92,255) 同源）
   cssRules: `
+/* 深色表面换装块（on-dark 文字令牌，见 skin-design-guide 深色必配清单）：顶栏/侧栏/页签条
+   整体把浅色默认文字令牌切换为 on-dark 色板；wd+el 双层重映射（自定义属性在声明元素处
+   对 var() 求值，仅重映射 wd 层不会联动 el 消费方），其余区域沿用全局深色适配值 */
+.wd-station .wd-station__header,
+.wd-station .wd-station__aside,
+.wd-station .wd-station__tabs-bar {
+  --wd-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --wd-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --wd-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --wd-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --el-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --el-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --el-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --el-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --wd-color-link: var(--wd-color-link-on-dark);
+}
 /* 主按钮：紫罗兰渐变 + 紫光外发光（渐变起点跟随 --el-color-primary，用户覆盖主色可联动） */
 .el-button--primary {
   background-image: linear-gradient(135deg, var(--el-color-primary), #a855f7);

@@ -2,11 +2,11 @@
 
 # WdPanel Panel 面板
 
-带标题/描述的内容面板，作为表单分组与详情分区容器；支持常规面板与信息卡片两种模式、折叠、内容超限自动折叠、描述对齐与悬停动效、标题标识条长短形态、标题图标、标题右侧操作区与阴影策略
+带标题/描述的内容面板，作为表单分组与详情分区容器；支持常规面板与信息卡片两种模式、折叠、内容超限自动折叠、描述对齐与悬停动效、标题标识条长短形态、标题图标、标题右侧操作区与阴影策略；开启 fullscreenable 后右上角内置专注（全屏）按钮，面板可从原位放大至全屏
 
 ### 概述
 
-WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情分区的容器。标题左侧带品牌色标识条（高度形态可调：`titleBar` 长条与头部同高 / 短条与标题行同高、顶部对齐标题行，短条下描述换行显示在标题下方），支持点击标题区折叠/展开主体内容、内容超过指定高度时自动折叠（`collapseHeight`）、控制描述在标题右侧空白区居左或居右对齐（`descriptionAlign`）、描述折叠展示时的悬停淡入动效（`descriptionExpandable`）、为标题配置图标（`icon`，设置后左侧标识条自动隐藏、由图标承担视觉锚点）、在标题右侧放置操作区（extra 插槽），并提供 always / hover / never 三种阴影策略以适应不同层级的视觉分区需求；还可通过 `mode` 切换信息卡片形态（`card`：白底大圆角、头部整体带浅色背景、描述显示在标题下方，适合 flex 容器一行并行多卡）。
+WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情分区的容器。标题左侧带品牌色标识条（高度形态可调：`titleBar` 长条与头部同高 / 短条与标题行同高、顶部对齐标题行，短条下描述换行显示在标题下方），支持点击标题区折叠/展开主体内容、内容超过指定高度时自动折叠（`collapseHeight`）、控制描述在标题右侧空白区居左或居右对齐（`descriptionAlign`）、描述折叠展示时的悬停淡入动效（`descriptionExpandable`）、为标题配置图标（`icon`，设置后左侧标识条自动隐藏、由图标承担视觉锚点）、在标题右侧放置操作区（extra 插槽），并提供 always / hover / never 三种阴影策略以适应不同层级的视觉分区需求；还可通过 `mode` 切换信息卡片形态（`card`：白底大圆角、头部整体带浅色背景、描述显示在标题下方，适合 flex 容器一行并行多卡）。开启 `fullscreenable` 后，面板右上角内置专注（全屏）按钮：点击后面板从原位放大至铺满视口（FLIP 缩放 + 遮罩淡入，内容不重挂载、状态不丢失），全屏态按钮变为关闭，点击后收缩回原位并恢复页面滚动。
 
 ### 何时使用
 
@@ -18,6 +18,7 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 - 描述属于补充信息、不希望常驻占位，希望悬停标题时以轻量动效提示出来时（`descriptionExpandable`）。
 - 分区标题需要更强的视觉辨识度，希望用图标替代默认的品牌色标识条时（`icon`）。
 - 信息聚合页需要一行并排展示多块独立信息，希望卡片化外观（头部带浅色背景、描述在标题下方）时（`mode="card"`）。
+- 页面上某一块已渲染的内容（表格、详情分区、看板卡片）需要临时放大专注查看/操作，且放大前后要求内容状态零丢失时（`fullscreenable`）。
 - 不建议：需要弹出式承载内容（应使用 WdDrawer 抽屉/对话框容器）。
 - 不建议：页面最外层整体布局（应使用 WdStation 中后台外框架）。
 
@@ -36,6 +37,9 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 - 阴影选择建议：`hover`（默认）适合常规分区；`always` 适合需要突出的核心分区；`never` 仅保留描边，适合密集排列的次级分区。
 - `border="false"` 去掉外框描边，适合嵌在卡片、抽屉、灰色底区块等已有容器内；此时建议搭配 `shadow="never"` 避免悬停浮起。
 - 标题区支持键盘操作（Enter / Space 切换折叠），并带有 `aria-expanded` 等无障碍属性。
+- `fullscreenable=true` 时头部右上角（extra 区域内、`@click.stop` 拦截，不误触折叠）内置专注（全屏）按钮，`extra` 插槽内容与其共存（插槽在前、按钮在最后）。全屏是「原地 fixed 展开」，不 teleport、不重挂载：`v-model:fullscreen` 状态切换只改布局，插槽内容的组件状态（请求结果、输入值、折叠状态）全程保留；进入全屏后锁定 `body` 滚动（卸载或退出时恢复），面板切换为 flex 纵向布局：主体区自动撑满并可滚动（`.wd-panel__content-inner` overflow auto），footer 常驻底部，圆角与外边距归零。
+- 专注模式的放大/收缩动画为 FLIP 缩放过渡（transform + opacity，约 0.28s），遮罩同步淡入淡出；动画仅作用于视觉，状态切换是同步的（事件立即触发）。层级令牌：全屏层级 `--wd-panel-fullscreen-z-index`（默认 2000）、遮罩色 `--wd-panel-fullscreen-mask-color`（默认 rgba(0,0,0,0.45)），可在皮肤/页面级覆盖；遮罩层级自动取全屏层级 - 1。
+- 专注按钮与折叠箭头共存时：操作区顺序为 extra 插槽 → 全屏按钮 → 折叠箭头。全屏面板内部再弹 el-select 下拉、el-popconfirm 等层级由 Element Plus 统一管理（默认高于 2000），不受本令牌影响。
 
 ### 常见问题
 
@@ -54,6 +58,22 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 **问：想让面板默认收起怎么写？**
 
 设置 `collapsible` 并传 `:opened="false"`（或 `v-model:opened` 绑定初始为 `false` 的变量）即可。
+
+**问：专注（全屏）模式和 Dialog（全屏对话框）有什么区别？**
+
+Dialog 内容经 teleport 挂载到 body，每次打开都是重新挂载，内部组件状态会丢失；Panel 的专注模式是原地 fixed 展开，内容从未离开文档流，状态、数据、滚动位置全程保留。需要「对已渲染元素专注操作」时开 `fullscreenable`，需要按需弹出新内容时用 WdDrawer。
+
+**问：面板上没有全屏（专注）按钮？**
+
+头部渲染条件与普通面板一致：需传 `title` 或使用 `title` 插槽；另请确认已设置 `fullscreenable`（默认 false 不渲染按钮）。
+
+**问：不用 v-model，能用代码控制全屏吗？**
+
+可以。`ref` 上暴露 `toggleFullscreen()` / `enterFullscreen()` / `exitFullscreen()` 三个方法；`fullscreen` prop 也可作为受控入口。
+
+**问：全屏后面板内部内容超出屏幕怎么办？**
+
+全屏态主体区（内容+footer 容器）自动撑满视口，内容超出时主体区出现滚动条（footer 固定在底部），无需额外处理。
 
 ### Element Plus 透传
 
@@ -76,6 +96,8 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 | icon | `string \| Component` | '' | 标题图标：@element-plus/icons-vue 图标名（如 Setting）/ 图标字体 class（如 fa-solid fa-user）/ 组件对象；设置后标题前显示图标，左侧品牌色标识条隐藏 |
 | mode | `'panel' \| 'card'` | 'panel' | 展示模式：panel=常规分区面板；card=信息卡片（白底大圆角、头部整体带浅色背景、description 默认显示在标题下方，descriptionAlign="right" 时与标题同行、垂直居中，配合 flex 容器可一行并行多卡） |
 | collapseHeight | `number` | 0 | 内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时渲染完成后自动折叠；0=不自动折叠（完全撑开） |
+| fullscreenable | `boolean` | false | 是否在右上角显示专注（全屏）按钮：点击后面板从原位放大至全屏（FLIP 过渡 + 遮罩淡入，内容不重挂载、状态不丢失），全屏态按钮变为关闭 |
+| fullscreen | `boolean` | false | 全屏状态（配合 fullscreenable，支持 v-model:fullscreen） |
 
 ### Events
 
@@ -83,12 +105,22 @@ WdPanel 是一个带标题/描述的内容面板，用作表单分组与详情�
 | --- | --- | --- |
 | update:opened | value: boolean | 展开状态变化（v-model:opened） |
 | change | value: boolean | 折叠/展开切换时触发 |
+| update:fullscreen | value: boolean | 全屏状态变化（v-model:fullscreen） |
+| fullscreen-change | value: boolean | 进入/退出全屏时触发 |
 
 ### Slots
 
 | 插槽 | 容器 id | 插槽参数 | 说明 |
 | --- | --- | --- | --- |
 | title | — | — | 自定义标题区 |
-| extra | — | — | 标题右侧操作区 |
+| extra | — | — | 标题右侧操作区（与内置专注按钮共存：插槽在前、按钮在最后） |
 | default | — | — | 主体内容 |
 | footer | — | — | 底部 |
+
+### 暴露方法（通过 ref 调用）
+
+| 方法 | 参数 | 返回值 | 说明 |
+| --- | --- | --- | --- |
+| toggleFullscreen() | — | void | 切换全屏状态 |
+| enterFullscreen() | — | void | 进入全屏 |
+| exitFullscreen() | — | void | 退出全屏 |

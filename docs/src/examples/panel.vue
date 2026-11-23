@@ -263,6 +263,47 @@
         <p>内容不足阈值时不会被折叠。</p>
       </wd-panel>
     </demo-block>
+
+    <demo-block
+      title="专注模式"
+      desc="开启 fullscreenable 后右上角内置专注（全屏）按钮：点击后面板从原位放大至全屏（FLIP 缩放 + 遮罩淡入，内容不重挂载），全屏态按钮变为关闭，点击后收缩回原位并恢复页面滚动；下例同时演示输入/表格状态保留、v-model:fullscreen 受控与 ref 方法调用"
+      :code="code13"
+    >
+      <wd-panel title="专注面板" description="表单状态在进入/退出全屏前后保留" fullscreenable>
+        <el-form label-width="80px">
+          <el-form-item label="关键字">
+            <el-input v-model="focusInput" placeholder="输入文字后点击右上角进入全屏——内容会保留" />
+          </el-form-item>
+          <el-form-item label="备注">
+            <el-input v-model="focusTextarea" type="textarea" :rows="2" placeholder="多行输入同样保留" />
+          </el-form-item>
+        </el-form>
+      </wd-panel>
+
+      <wd-panel
+        ref="focusPanelRef"
+        v-model:fullscreen="focusFullscreen"
+        title="受控专注面板"
+        description="v-model:fullscreen 双向绑定 + ref 方法调用"
+        fullscreenable
+        style="margin-bottom: 0"
+      >
+        <template #extra>
+          <el-button size="small" @click="focusPanelRef?.toggleFullscreen()">代码切换全屏</el-button>
+        </template>
+        <p>
+          当前全屏状态：
+          <el-tag size="small" :type="focusFullscreen ? 'success' : 'info'">
+            {{ focusFullscreen ? '全屏' : '常规' }}
+          </el-tag>
+          （全屏中编辑表格数据，退出后内容原样保留）
+        </p>
+        <el-table :data="focusRows" border size="small" style="margin-top: 8px">
+          <el-table-column prop="name" label="名称" width="120" />
+          <el-table-column prop="value" label="说明" />
+        </el-table>
+      </wd-panel>
+    </demo-block>
   </div>
 </template>
 
@@ -344,6 +385,36 @@ const code7 = `<!-- collapsible 开启且内容实际高度超过 80px 时，渲
   <p>内容不足阈值时不会被折叠。</p>
 </wd-panel>`
 
+const code13 = `<!-- 开启 fullscreenable：右上角内置专注（全屏）按钮；全屏后内容不重挂载，输入状态保留 -->
+<wd-panel title="专注面板" description="表单状态在进入/退出全屏前后保留" fullscreenable>
+  <el-form label-width="80px">
+    <el-form-item label="关键字">
+      <el-input v-model="focusInput" placeholder="输入文字后点击右上角进入全屏——内容会保留" />
+    </el-form-item>
+    <el-form-item label="备注">
+      <el-input v-model="focusTextarea" type="textarea" :rows="2" placeholder="多行输入同样保留" />
+    </el-form-item>
+  </el-form>
+</wd-panel>
+
+<!-- v-model:fullscreen 受控 + ref 方法调用 -->
+<wd-panel
+  ref="focusPanelRef"
+  v-model:fullscreen="focusFullscreen"
+  title="受控专注面板"
+  description="v-model:fullscreen 双向绑定 + ref 方法调用"
+  fullscreenable
+>
+  <template #extra>
+    <el-button size="small" @click="focusPanelRef?.toggleFullscreen()">代码切换全屏</el-button>
+  </template>
+  <p>当前全屏状态：<el-tag size="small">{{ focusFullscreen ? '全屏' : '常规' }}</el-tag></p>
+  <el-table :data="focusRows" border size="small">
+    <el-table-column prop="name" label="名称" width="120" />
+    <el-table-column prop="value" label="说明" />
+  </el-table>
+</wd-panel>`
+
 const code8 = `<!-- 默认 left：描述紧跟标题 -->
 <wd-panel title="居左（默认）" description="紧跟标题显示">
   <p>主体内容</p>
@@ -414,6 +485,16 @@ const code11 = `<!-- 默认 long：竖条与头部同高 -->
 const form = reactive({ name: '', dept: '', email: '' })
 
 const opened = ref(true)
+
+// 专注模式 demo：输入状态保留演示 + 受控全屏 + ref 方法
+const focusInput = ref('')
+const focusTextarea = ref('')
+const focusFullscreen = ref(false)
+const focusPanelRef = ref()
+const focusRows = [
+  { name: '数据状态', value: '全屏展开不重挂载，表格数据全程保留' },
+  { name: '滚动位置', value: '退出全屏后回到原位，滚动位置不变' }
+]
 
 function onChange(v: boolean) {
   ElMessage.info(v ? '面板已展开' : '面板已收起')

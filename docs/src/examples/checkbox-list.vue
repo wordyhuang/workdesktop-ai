@@ -5,7 +5,7 @@
       <ul>
         <li><code>text</code>：选项中显示的文本（复选框标签）</li>
         <li><code>value</code>：选项选中时传递的值</li>
-        <li><code>tips</code>：对选项的说明解释（非空时显示悬停提示）</li>
+        <li><code>tips</code>：对选项的说明解释（非空时选项文本右侧显示悬停提示图标）</li>
       </ul>
       字段名可用 <code>text-prop</code> / <code>value-prop</code> / <code>tips-prop</code> 自定义（默认 <code>text</code> / <code>value</code> / <code>tips</code>）。
     </unpack-note>
@@ -36,7 +36,7 @@
 
     <demo-block
       title="选项悬停提示（tipsProp）"
-      desc="数据项中 tips 字段非空时，鼠标悬停该选项弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 tips）"
+      desc="数据项中 tips 字段非空时，选项文本右侧出现问号图标，鼠标悬停图标弹出 tooltip；可用 tips-prop 自定义解包字段名（默认 tips）"
       :code="code3"
       layout="row"
     >
@@ -52,6 +52,7 @@
         tips-prop="remark"
         button-style
       />
+      <div class="current">当前选中：{{ value3 }} / {{ value4 }}</div>
     </demo-block>
   </div>
 </template>

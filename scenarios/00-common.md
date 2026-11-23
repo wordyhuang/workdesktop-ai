@@ -1,8 +1,8 @@
 # 通用页面规范
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-10\
-> **当前版本**：V\_1.7\
+> **最后修改时间**：2026-11-23\
+> **当前版本**：V\_1.9\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：跨场景通用编码约定（布局/交互/反馈/按钮选型）\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.24）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
@@ -11,7 +11,7 @@
 
 ### 0.1 页面介绍与注意事项
 
-对于表单填写页面、DataGrid 列表页面等功能页面，**应当在页面顶部使用 Tips 组件标记当前页面的介绍以及使用注意事项**，帮助用户快速理解页面用途和操作要点。
+对于表单填写、DataGrid 列表、详情、树形选择、批量操作、弹窗选择、导入导出、状态 Tab、工作台 / 仪表盘聚合、设置中心、统计分析等**所有功能页面**，**应当在页面顶部使用 Tips 组件标记当前页面的介绍以及使用注意事项**，帮助用户快速理解页面用途和操作要点。
 
 | 规范要点 | 说明                                |
 | ---- | --------------------------------- |
@@ -111,7 +111,7 @@ const result = await RequestAPI.request({
 
 - **页面整体框架**：用 `wd-station` 作为整页外框架（承菜单、头部、内容滚动、footer）。内页**直接**是若干个 `wd-panel`，二者之间**不再包裹任何其他容器**（不套 `div.page-content`、不套背景 div —— WdStation 内容区已自带 padding 与背景）。
 - **容器划分**：按功能逻辑划分容器，**不同 UI 逻辑的内容用各自独立的** **`wd-panel`** **包裹**（例如搜索表单一个 panel、表格一个 panel、统计区一个 panel）；功能逻辑相同的块放同一容器。
-- **标题规则**：只有**一个** wd-panel 时，或页面\*\*只有「搜索 + 表格」\*\*的常见情形，panel **不使用 title**（`show-header=false`）；当存在多个不同逻辑的 panel 时才用 title 区分语义。
+- **标题规则**：只有**一个** wd-panel 时，或页面\*\*只有「搜索 + 表格」\*\*的常见情形，panel **不使用 title**（不传 `title` 且不用 `title` 插槽即不渲染标题头）；当存在多个不同逻辑的 panel 时才用 title 区分语义。
 - **表格固定高度**：当内页**只有一个表格**，且**页面布局固定以此表格结尾**（结尾指表格之后不再有随内容滚动的静态内容块，弹出层等动态元素不计入），则开启 DataGrid 的 `height="fix"` 让表格铺满剩余高度、行区内滚动。
 
 | 规范要点    | 说明                                                                                                                                 |
@@ -120,10 +120,11 @@ const result = await RequestAPI.request({
 | 一级容器    | 内页功能块一律用 `wd-panel`，作为一级容器；**外层不再有其他包裹容器**                                                                                         |
 | 容器划分    | 功能逻辑相同的块放一个容器；不同 UI 逻辑内容（搜索/表格/统计）分别用独立 `wd-panel`                                                                                 |
 | 容器间距    | 相邻 wd-panel 之间用 margin 分隔（建议 `16px` 左右）                                                                                            |
-| 面板标题    | **仅一个 panel、或仅「搜索+表格」情形：不使用 title（`show-header=false`）**；多逻辑时才用 title                                                              |
+| 面板内元素分隔 | wd-panel 内多个排列元素之间，优先用**轻量视觉分隔**——浅色单线/浅色虚线、反差背景的 margin 间隙、flex 间距、不同颜色区分；**尽量避免全边框包裹式分隔**（详见下方「面板内元素分隔」） |
+| 面板标题    | **仅一个 panel、或仅「搜索+表格」情形：不使用 title（不传 `title` 即无标题头）**；多逻辑时才用 title                                                              |
 | 容器组件    | 优先使用 wd-panel 无标题模式；确有必要才用带标题模式                                                                                                    |
 | 嵌套限制    | **Panel 尽量只作一级容器，不建议 Panel 嵌套 Panel**；除非确实需要较大间距否则不嵌套                                                                              |
-| 搜索面板容器  | 多条件搜索（≥3 个）时，`wd-search-panel` **单独占用一个** **`wd-panel`**（`show-header=false`），不再嵌套在其他外层容器内；搜索面板与表格面板相邻排列，结构清晰。仅 1–2 个条件才走「简要搜索免容器」 |
+| 搜索面板容器  | 多条件搜索（≥3 个）时，`wd-search-panel` **单独占用一个** **`wd-panel`**（不传 `title`），不再嵌套在其他外层容器内；搜索面板与表格面板相邻排列，结构清晰。仅 1–2 个条件才走「简要搜索免容器」 |
 | 简要搜索免容器 | 搜索条件仅 1–2 个时，搜索与表格合并在一个容器——直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽，不再单独包 wd-panel                                                       |
 | 按钮归属    | 操作表格数据的按钮（新增/导出/批量删除等）放进**对应 DataGrid 的** **`#toolbar`** **插槽**；页面只有一个 DataGrid 时，所有操作按钮统一放进该表的 `#toolbar`。详见下方「操作按钮归属原则」          |
 | 表格固定高度  | 内页仅一个表格且**布局固定以该表格结尾**（不含弹出层等动态元素）时，开 DataGrid `height="fix"` 铺满剩余高、行区滚动                                                           |
@@ -137,7 +138,7 @@ const result = await RequestAPI.request({
   <!-- 内页直接是 wd-panel，外层不再有 div.page-content 等包裹 -->
 
   <!-- 仅「搜索+表格」常见情形：单个 panel，不使用 title -->
-  <wd-panel :show-header="false">
+  <wd-panel>
     <wd-datagrid
       api="/api/users"
       :active="true"
@@ -163,7 +164,7 @@ const result = await RequestAPI.request({
   </wd-panel>
 
   <!-- 一级容器二：多条件搜索单独一个 panel（>=3 个搜索条件时） -->
-  <wd-panel :show-header="false" style="margin-top: 16px;">
+  <wd-panel style="margin-top: 16px;">
     <wd-search-panel :head-refresh-datagrid="gridRef">
       <!-- 常用/重要条件：默认插槽，一行外露 -->
       <wd-search-item label="名称"><el-input v-model="q.name" /></wd-search-item>
@@ -185,7 +186,7 @@ const result = await RequestAPI.request({
   </wd-panel>
 
   <!-- 一级容器三：表格（与搜索面板相邻，表格垫底开 height="fix"） -->
-  <wd-panel :show-header="false" style="margin-top: 16px;">
+  <wd-panel style="margin-top: 16px;">
     <wd-datagrid
       ref="gridRef"
       api="/api/users"
@@ -198,6 +199,44 @@ const result = await RequestAPI.request({
 ```
 
 > `wd-station` 之外不再包背景/间距容器；`height="fix"` 会贴合最近一个「有确定高度 / 可滚动的祖先容器」，配合 WdStation 内容区（flex:1 定高区）即可实现表格占满余高、不弹出纵向滚动条。
+
+**面板内元素分隔（避免全边框「盒中盒」）**：
+
+wd-panel 内有多个排列元素（统计卡之间、表单分区之间、信息条目之间）需要视觉分隔时，按优先级选用轻量手段，**避免给每个元素再包一层全边框**——全边框包裹会在 panel 内形成「盒中盒」的嵌套观感，视觉层级重、界面碎，与「Panel 只作一级容器」的轻量分层原则冲突。
+
+| 分隔方式 | 适用情形 | 实现要点 |
+| --- | --- | --- |
+| 浅色单线 | 上下分区之间的经典分隔 | `border-top: 1px solid var(--wd-border-color-light)`（#e5e8ef，细线弱存在感） |
+| 浅色虚线 | 弱关联 / 预览性质的分区 | `border-top: 1px dashed var(--wd-border-color-light)`，比实线更轻 |
+| 反差背景 margin | 交错节奏分区 | 相邻元素用反差背景（白 / 浅灰交替）+ margin 间隙，靠底色差而非线分隔 |
+| flex 间距 | 同组并列元素 | `display: flex; gap: 16px`，同组元素本就一体，不加任何线 |
+| 颜色区分 | 并列卡片 / 类别块 | 不同浅底色或语义色头部辨识，不依赖边框 |
+
+```html
+<!-- ✅ 推荐：浅色单线分隔 -->
+<div class="section">第一区内容</div>
+<div class="section" style="border-top: 1px solid var(--wd-border-color-light); padding-top: 16px;">
+  第二区内容
+</div>
+
+<!-- ✅ 推荐：同组元素 flex 间距，无线无框 -->
+<div style="display: flex; gap: 16px;">
+  <el-statistic title="订单数" :value="128" />
+  <el-statistic title="本月金额" :value="56000" />
+</div>
+
+<!-- ❌ 避免：每个元素都全边框包裹，panel 内形成盒中盒 -->
+<div style="border: 1px solid #dcdfe6; border-radius: 6px; padding: 12px;">块一</div>
+<div style="border: 1px solid #dcdfe6; border-radius: 6px; padding: 12px;">块二</div>
+```
+
+**布局容器豁免（纯布局用途，不产生视觉包裹）**：
+
+- **页面根容器**：仅承担限宽居中（`max-width` + `margin: 0 auto`）、纵向节奏（flex column + gap）职责的容器**允许存在**；但**不得自带背景色、边框、额外内边距**（WdStation 内容区已自带 padding 与背景，装饰性视觉一律由 wd-panel 或通栏元素承担）。
+- **栅格行列容器**：grid / flex 实现的主列 + 侧列、一行多卡等行列布局容器（如工作台的 `.wb-row`）允许存在，`minmax(0, 1fr)` 防撑破。
+- **通栏元素不用 wd-panel**：顶条、欢迎横幅等横向贯通的页面元素，直接用 `header` / `section` 纯元素实现（可带渐变、浅底等视觉），不包 wd-panel——只有业务区块（统计卡、任务卡、图表、列表等）才用 wd-panel。
+- **双栏布局（左导航 + 右分区）**：主体用 grid 容器承载（如 `grid-template-columns: 236px 1fr`），分区内容仍是独立的 wd-panel；分区滚动区允许 `overflow-y: auto` 容器。
+- **文档站演示页边界**：页面嵌入文档站布局（DocLayout）时由外层布局承担 `wd-station` 角色，页面内部仍按上述规则执行。
 
 #### 操作按钮归属原则
 
@@ -218,7 +257,7 @@ const result = await RequestAPI.request({
 
 ```html
 <!-- 页面只有一个 DataGrid：所有操作按钮都放进它的 #toolbar -->
-<wd-panel :show-header="false">
+<wd-panel>
   <wd-datagrid
     ref="gridRef"
     api="/api/users"
@@ -246,7 +285,7 @@ const result = await RequestAPI.request({
 
 ```html
 <!-- 页面有多个 DataGrid：按钮放进「被操作那张表」的 #toolbar，各表互不干扰 -->
-<wd-panel :show-header="false">
+<wd-panel>
   <!-- 用户表：操作按钮只作用于用户表 -->
   <wd-datagrid filter="user-table" api="/api/users" :active="true" with-selection>
     <template #toolbar="{ selection }">
@@ -260,7 +299,7 @@ const result = await RequestAPI.request({
   </wd-datagrid>
 </wd-panel>
 
-<wd-panel :show-header="false" style="margin-top: 16px;">
+<wd-panel style="margin-top: 16px;">
   <!-- 角色表：操作按钮只作用于角色表 -->
   <wd-datagrid filter="role-table" api="/api/roles" :active="true" with-selection>
     <template #toolbar="{ selection }">
@@ -299,7 +338,7 @@ const result = await RequestAPI.request({
 | 常用条件外露    | 常用/重要的搜索条件放 `wd-search-panel` **默认插槽**（一行外露，≤ 3–4 个）                                                                                                                                                               |
 | 低频条件折叠    | 不常用/次要的搜索条件放 `wd-search-panel` 的 **`#more`** **插槽**，默认收起，点「展开」滑出；超过一行的条件自动进入折叠态                                                                                                                                    |
 | 声明式联动刷新   | `wd-search-panel` 通过 `:head-refresh-datagrid="gridRef"` 声明式联动——点「搜索」自动带参刷新目标 DataGrid（重置到第一页）、点「重置」自动清空条件并重查；**不需要手写** **`@search`** **事件 /** **`@reset`** **事件 /** **`searchParams`** **双向绑定**                    |
-| 已选条件回显 | 搜索生效后，表格上方用 `wd-tag` 回显当前生效的搜索条件（复合值按「字段名: 值」展示，如「状态: 启用」「创建时间: 01-01 ~ 01-31」），单个 tag 可删除并即时重查；「重置」仍是清空全部条件的主入口 |
+| 已选条件回显    | 搜索生效后，表格上方用 `wd-tag` 回显当前生效的搜索条件（复合值按「字段名: 值」展示，如「状态: 启用」「创建时间: 01-01 \~ 01-31」），单个 tag 可删除并即时重查；「重置」仍是清空全部条件的主入口                                                                                                  |
 | 简要搜索免容器   | 仅 1–2 个搜索条件时，可不包 wd-panel，直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽（搜索与表格一体，少一层容器，见下方示例）                                                                                                                                  |
 | 统计口径解释    | 页面/指标/合计行中出现的统计数据，**紧接标签文字后用** **`wd-tips type="word"`** **加问号图标**，悬停说明计算口径与包含范围（例：数量合计 = 已审核行数量总和，不含草稿；金额合计 = 含税金额）                                                                                               |
 | 关键字段/操作解释 | 含义不直观的字段 label 旁用 `wd-form-item :tip="说明文字"`（表单内）或 `wd-tips type="word"`（详情页原生 item label）；操作区域的标题/状态标签旁用 `wd-tips type="word"` 说明含义（按钮本体 tooltip 用 TipsButton）                                                    |
@@ -320,7 +359,7 @@ const result = await RequestAPI.request({
 
 ```html
 <!-- 容器一：多条件搜索面板，单独一个 wd-panel，不嵌套在外层容器内 -->
-<wd-panel :show-header="false" style="margin-bottom: 16px;">
+<wd-panel style="margin-bottom: 16px;">
   <!-- 常用/重要条件放默认插槽；不常用/次要条件放 #more 插槽；
        通过 head-refresh-datagrid 声明式联动下方 DataGrid，自动带参刷新 -->
   <wd-search-panel :head-refresh-datagrid="gridRef">
@@ -354,7 +393,7 @@ const result = await RequestAPI.request({
 </wd-panel>
 
 <!-- 容器二：数据表格 -->
-<wd-panel :show-header="false">
+<wd-panel>
   <wd-datagrid
     ref="gridRef"
     api="/api/users"
@@ -549,7 +588,7 @@ async function handleSubmit() {
 
 - 有格式要求的字段：placeholder 给出示例（如 `示例：zhangsan@example.com`）
 - 可枚举的值用 Select/RadioList，不让用户手输；选项 > 20 个时 Select 开启搜索（`filterable`）
-- **选项少时优先按钮列表**：单选/多选选项数量少（一般 ≤ 4\~6 个）、选项文案短时，用按钮形态的 `wd-radio-list` / `wd-checkbox-list`（开 `:button-style`）替代 select——选项直接铺开、一眼看清、点一次即可选中，比下拉「点击展开 → 再点选项」少一次交互；选项多、文案长、或选项数不稳定会增长时，仍用 select（过滤项搜索/换行不占版面）
+- **选项少时优先按钮列表**：单选/多选选项数量少（一般 ≤ 4~6 个）、选项文案短时，用按钮形态的 `wd-radio-list` / `wd-checkbox-list`（开 `:button-style`）替代 select——选项直接铺开、一眼看清、点一次即可选中，比下拉「点击展开 → 再点选项」少一次交互；选项多、文案长、或选项数不稳定会增长时，仍用 select（过滤项搜索/换行不占版面）
 - 数字、金额、百分比用 InputNumber，金额自动千分位格式化
 
 ### 0.7 弹窗与抽屉选型规范
@@ -1132,3 +1171,4 @@ WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips
 
 ***
 
+> **版本变更记录**：V\_1.7 → V\_1.8（2026-11-19）——§0.1 顶部 Tips 适用范围由「表单/列表等功能页面」明确为「所有功能页面」（含工作台 / 仪表盘、设置中心、统计分析）；§0.3 新增「布局容器豁免」——页面根容器与栅格行列容器为纯布局用途允许存在（不得带背景/边框/额外内边距）、通栏元素（顶条/欢迎横幅）不用 wd-panel、双栏布局容器规范、文档站演示页边界说明；§0.3 全部骨架示例与表格清理无效的 `:show-header="false"` 写法（wd-panel 无该 prop，不传 title 即无标题头）。

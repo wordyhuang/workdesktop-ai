@@ -56,10 +56,11 @@
     <demo-block title="跨 iframe 联动（表单提交 → 关闭抽屉 + 刷新表格）"
       desc="url 模式下自动建立 postMessage 桥接：iframe 内表单上报 wd-container:submit-success 后抽屉自动关闭并刷新同组表格；修改内容触发 wd-container:dirty 自动注册未保存确认；footer 按钮通过 sendToIframe 驱动子页提交；reload-on-open 让每次打开都重新加载 iframe（本例已开启，可观察到每次打开子页重新就绪并回填）"
       :code="code4">
-      <el-button type="primary" @click="linkageVisible = true">打开联动抽屉</el-button>
-      <div style="height: 12px" />
       <wd-data-grid api="/user/list" :active="true" filter="iframe-demo" :with-pager="false" :with-index="true"
         style="height: 220px">
+        <template #toolbar>
+          <el-button type="primary" @click="linkageVisible = true">打开联动抽屉</el-button>
+        </template>
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="name" label="姓名" min-width="120" />
         <el-table-column prop="role" label="角色" width="100" />
@@ -118,37 +119,36 @@ const code3 = `<!-- iframe 抽屉 -->
   size="700px"
 />`
 
-const code4 = `<template>
-  <el-button type="primary" @click="linkageVisible = true">打开联动抽屉</el-button>
+const code4 = `<wd-data-grid api="/user/list" :active="true" filter="iframe-demo"
+  :with-pager="false" :with-index="true" style="height: 220px">
+  <!-- toolbar 插槽：打开联动抽屉按钮与表格一体，iframe 提交成功后自动刷新本表 -->
+  <template #toolbar>
+    <el-button type="primary" @click="linkageVisible = true">打开联动抽屉</el-button>
+  </template>
+  <el-table-column prop="id" label="ID" width="70" />
+  <el-table-column prop="name" label="姓名" min-width="120" />
+  <el-table-column prop="role" label="角色" width="100" />
+</wd-data-grid>
 
-  <!-- 同 filter 分组表格：iframe 提交成功后自动刷新（head-refresh-datagrid） -->
-  <wd-data-grid api="/user/list" :active="true" filter="iframe-demo" :with-pager="false" :with-index="true"
-    style="height: 220px">
-    <el-table-column prop="id" label="ID" width="70" />
-    <el-table-column prop="name" label="姓名" min-width="120" />
-    <el-table-column prop="role" label="角色" width="100" />
-  </wd-data-grid>
-
-  <wd-drawer
-    ref="linkageDrawer"
-    v-model="linkageVisible"
-    title="编辑用户（iframe 表单）"
-    :url="linkageChildSrc"
-    origin="*"
-    reload-on-open
-    :data="{ id: 1001, name: '张三' }"
-    filter="iframe-demo"
-    head-refresh-datagrid
-    @iframe-ready="onIframeReady"
-    @iframe-dirty="onIframeDirty"
-    @iframe-submit-success="onIframeSubmitSuccess"
-  >
-    <template #footer="{ close }">
-      <el-button @click="close">取消</el-button>
-      <el-button type="primary" @click="submitFromFooter">保存（驱动子页提交）</el-button>
-    </template>
-  </wd-drawer>
-</template>
+<wd-drawer
+  ref="linkageDrawer"
+  v-model="linkageVisible"
+  title="编辑用户（iframe 表单）"
+  :url="linkageChildSrc"
+  origin="*"
+  reload-on-open
+  :data="{ id: 1001, name: '张三' }"
+  filter="iframe-demo"
+  head-refresh-datagrid
+  @iframe-ready="onIframeReady"
+  @iframe-dirty="onIframeDirty"
+  @iframe-submit-success="onIframeSubmitSuccess"
+>
+  <template #footer="{ close }">
+    <el-button @click="close">取消</el-button>
+    <el-button type="primary" @click="submitFromFooter">保存（驱动子页提交）</el-button>
+  </template>
+</wd-drawer>
 
 <script>
 // url 模式自动建立 postMessage 桥接；iframe 子页面协议（wd-container:*）：

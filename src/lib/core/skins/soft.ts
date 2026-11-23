@@ -38,13 +38,10 @@ export const softSkin: SkinPreset = {
       '--wd-panel-shadow-sm': '0 20px 27px 0 rgba(0, 0, 0, 0.05)',
       '--wd-panel-title-bar-width': '0',
       '--wd-datagrid-radius': '12px',
-      '--wd-datagrid-border-color': '#e9edf3',
-      '--wd-editable-grid-border-color': '#e9edf3',
       // 导航区：Soft UI 官方 sidenav 纯白侧栏（选中态为品紫渐变胶囊，见 cssRules）
       '--wd-station-aside-bg': '#ffffff',
-      // Station tabs 滑块样式（tabsStyle=slider）：品红激活色 + 浅品红激活底，与 Soft 品红主色一体
-      '--wd-station-tabs-active-color': '#cb0c9f',
-      '--wd-station-tabs-active-bg': '#fbeaf9'
+      // Station tabs 滑块样式（tabsStyle=slider）：品红激活色（激活态无浅底，仅文字色 + 滑块横线），与 Soft 品红主色一体
+      '--wd-station-tabs-active-color': '#cb0c9f'
     }
   },
   cssRules: `

@@ -3,18 +3,28 @@
   <span>企业级 Vue 3 组件库 · 基于 ElementPlus · HTML 模板友好 / AI 编码友好</span>
 </p>
 
-> 文档版本：V\_1.5 ｜ 创建时间：2026-09-16 22:03:47 ｜ 最后修改时间：2026-10-14
-> 适用对象：使用本库的开发者（人类阅读；AI 助手每次开发前请先阅读 [ai-router.md](./ai-router.md)）
+> 文档版本：V\_1.7 ｜ 创建时间：2026-09-16 22:03:47 ｜ 最后修改时间：2026-11-16
+> 适用对象：使用本库的开发者（人类阅读；AI 助手可直接执行文首提示词，自动安装随包 Skill 并启用）
 > 核心目标：帮助开发者快速了解、安装并上手 WorkDesktop AI
-> 文档简述：项目门面说明，覆盖特性、安装、三种引入方式、全局配置、组件总览、请求核心、Hooks 与本地开发指引。当前库版本：v1.2.6
+> 文档简述：项目门面说明，覆盖特性、安装、三种引入方式、全局配置、组件总览、请求核心、Hooks、AI Skill 与本地开发指引。当前库版本：v1.2.15
 
 ***
 
 ## 本项目的初衷是想让AI在做前端设计的时候拥有更加可控，更加稳定的输出结果。
 
-如果你是使用AI来构建前端，请在构建时加上此提示词：
+如果你是使用 AI 来构建前端，把下面这段提示词整段交给 AI 即可。它会自行定位组件包、把随包的 Skill 装进当前所用工具并回报安装路径；工具不支持 Skill 时自动降级为直接读随包文档，不依赖具体是哪一种 Agent。
 
-> 使用 workdesktop-ai 组件库进行构建。开工前先读随包的 workdesktop-ai/ai-router.md 按场景定位 scenarios/ 与 ai-api/。
+```text
+使用 workdesktop-ai 组件库开发页面，并先尝试启用它自带的 AI Skill；如果你的工具不支持 Skill，就降级为直接读文档。
+
+1. 定位包根：在当前项目找到 node_modules/workdesktop-ai。若不存在，先执行 npm install workdesktop-ai element-plus @element-plus/icons-vue。
+2. 安装 Skill：把 <包根>/skills/workdesktop-page 整个目录复制到你所在 AI 工具的 skills 目录。优先用项目级目录（如当前项目内 .claude/skills/），工具只支持用户级时再用用户级（如 ~/.claude/skills/）；其他工具用其文档约定的目录。目录不确定时先查一次约定，仍不确定就问我，不要猜一个路径复制后当作已完成。两种目录都无法写入时，直接进入第 4 步。
+3. 确认并回报：复制后确认 <skills目录>/workdesktop-page/SKILL.md 存在，告诉我实际安装路径；若需要重启工具才生效，也请说明。
+4. 降级方案：安装不了或工具不支持 Skill 时，跳过第 2、3 步，直接读 <包根>/ai-router.md，按其中的「场景判定速查表」定位 <包根>/scenarios/ 与 <包根>/ai-api/。
+5. 开发约束（两种方式都适用）：先读 scenarios/00-common.md；组件的 props / emits / slots / 方法只查 ai-api/ 对应文件，不要翻源码猜参数。
+```
+
+> 只需要提示词、不想装 Skill 时，保留上面第 1、4、5 条即可，其余删掉。
 
 <br />
 
@@ -212,7 +222,7 @@ app.use(WorkDesktop, {
 | 输入选择（6 个）   | `WdSelect` / `WdAutoComplete` / `WdCheckboxList` / `WdRadioList` / `WdSwitch`（切换即请求，失败自动回滚）/ `WdDateRangePicker`（日期范围选择）                                                                    |
 | 上传          | `WdUpload`（文件）、`WdImageUpload`（图片，强制 image/\*）                                                                                                                                         |
 | 布局          | `WdStation`（管理台整页布局：菜单分组 / 标签页 / 工具栏 / 页脚）                                                                                                                                          |
-| 样式          | `WdPanel`（面板）                                                                                                                                                                    |
+| 样式          | `WdPanel`（面板：含 fullscreenable 专注模式——原地全屏展开专注操作，状态不重挂载）                                                                                                                  |
 | 页面元素（5 个）   | `WdPath`（导航路径/面包屑：手动路径 / 自动联动 Station 菜单链 + 页面标题链 / 滚动跟随可视区第一个标题）、`WdAnchor`（悬浮快速导航锚点）、`WdTips`（提示图标/提示框）、`WdTag`（彩色标签：12 种预设色 + auto 自动配色）、`WdCardRail`（卡片滑轨：横向分页轨道，单项内容由默认作用域插槽定制） |
 | 核心          | `WdRequester`（命令式请求触发器，v-model 开关语义）                                                                                                                                            |
 
@@ -252,6 +262,28 @@ await grid.search({ name: '张' })
 ```
 
 ## AI 编码助手
+
+### 方式一：一条提示词自动安装（推荐）
+
+把**文首那段提示词**整段交给 AI。它不限定 Agent 类型，按以下逻辑自行处理：定位 `node_modules/workdesktop-ai` → 识别当前工具的 skills 目录 → 复制 `skills/workdesktop-page` → 确认 `SKILL.md` 存在并回报路径；目录无法确定时会询问你，工具不支持 Skill 时降级为直接读 `ai-router.md`。
+
+### 方式二：手动安装 Skill
+
+包内附带 [skills/workdesktop-page/SKILL.md](./skills/workdesktop-page/SKILL.md)，安装后 AI 在涉及本库的页面开发任务中会自动加载，无需每次手动提示。该 skill 只承载触发、结构红线、阅读路由与交付自检，规范正文仍在随包的 `ai-router.md` / `scenarios/` / `ai-api/` 中，因此与组件库版本始终一致。
+
+```powershell
+# Windows PowerShell：复制到 AI 工具的 skills 目录（以用户级 ~/.claude/skills 为例）
+Copy-Item -Recurse node_modules/workdesktop-ai/skills/workdesktop-page "$env:USERPROFILE\.claude\skills\"
+```
+
+```bash
+# macOS / Linux
+cp -r node_modules/workdesktop-ai/skills/workdesktop-page ~/.claude/skills/
+```
+
+放到项目级 skills 目录（如仓库内 `.claude/skills/`）则仅对该项目生效；Trae、Cursor 等其他工具以其文档中的 skills 目录为准。
+
+### 方式三：不安装，仅按文档开发
 
 使用 Copilot / Cursor / Trae 等 AI 助手开发时，让它**每次开发前先阅读** **[ai-router.md](./ai-router.md)**——编码场景指导的路由索引，按任务命中场景（分页列表 / 表单 / 详情 / 树 / 批量 / 弹窗选择器 / 导入导出）定位到 `scenarios/` 目录下对应子文件阅读，避免通读全篇。需要组件的精确 API（props/emits/slots/方法签名/自定义类型）时查 [ai-api/](./ai-api/) 路由——主路由 [README.md](./ai-api/README.md) 按组件名在索引中定位，**只打开对应子文件**（如 [wd-select.md](./ai-api/wd-select.md)），不要通读整个目录。它由文档站元数据 `docs/src/api-meta/` 经 `npm run gen:ai-api` 自动生成（`prepack` 钩子保证发版前自动重生成），覆盖全部 30 个组件与全局配置 / HTTP 请求核心 / 皮肤主题 3 个基础设施 API，无需逐个翻组件源码。
 
@@ -314,6 +346,12 @@ python -m http.server 8000
 
 ## 版本变化
 
+- **V\_1.7**（2026-11-16）：相对 V\_1.6 的变化：
+  1. 新增随包 AI Skill [skills/workdesktop-page/SKILL.md](./skills/workdesktop-page/SKILL.md)：承载触发描述、结构红线、阅读路由与交付自检，规范正文仍指向 `ai-router.md` / `scenarios/` / `ai-api/`，避免内容漂移；
+  2. `package.json` 的 `files` 新增 `skills` 目录，随 npm 包分发；
+  3. 「AI 编码助手」章节拆为「一条提示词自动安装」「手动安装」「仅按文档开发」三种方式：文首提示词不限定 Agent 类型，由 AI 自行定位包根并安装到当前工具的 skills 目录，工具不支持时降级读文档；
+  4. [ai-router.md](./ai-router.md) 升至 V\_1.17，顶部新增「零、优先启用随包 Skill」同步承载同一段自举提示词，并补充 `wd-datagrid.md` / `wd-dataform.md` 文件名例外；
+  5. 头部库版本号对齐当前 package.json v1.2.15。
 - **V\_1.6**（2026-10-14）：相对 V\_1.5 的变化：
   1. ai-api 从单文件改为**路由目录** **[ai-api/](./ai-api/)**：主路由 [README.md](./ai-api/README.md)（阅读约定 + Element Plus 透传规则 + 按 8 分组列出的组件索引）+ 30 个组件与 3 个基础设施页各一个子文件（如 `wd-select.md` / `use-config.md`），AI 按组件名定位只读一个子文件，不再通读 227.5kB 的单文件；
   2. `package.json` 的 `files` 由 `ai-api.md` 改为 `ai-api`（目录随包发布），`prepack` 钩子逻辑不变；

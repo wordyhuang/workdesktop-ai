@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { SKIN_PRESETS, getSkinPreset, listSkins } from '../skins'
 import { applyTheme, resolveTheme } from '../theme'
 import { setGlobalConfig, resetConfig } from '../config'
@@ -199,9 +201,183 @@ describe('skins 样式维度：边框 / 圆角 / 间距随皮肤差异化', () =
   })
 })
 
+describe('skins 文本可读性：四级文字对底色的对比度门槛', () => {
+  // WCAG 相对亮度与对比度
+  function luminance(hex: string): number {
+    const h = hex.replace('#', '')
+    const lin = (v: string) => {
+      const c = parseInt(v, 16) / 255
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    }
+    return 0.2126 * lin(h.slice(0, 2)) + 0.7152 * lin(h.slice(2, 4)) + 0.0722 * lin(h.slice(4, 6))
+  }
+  function contrast(fg: string, bg: string): number {
+    const [l1, l2] = [luminance(fg), luminance(bg)].sort((a, b) => b - a)
+    return (l1 + 0.05) / (l2 + 0.05)
+  }
+  // 取皮肤注入的全局令牌值：跳过 var() 引用（换装块在 Station chrome 作用域把文字令牌
+  // 重映射为 on-dark 色板，属局部声明；本用例检查的是页面/卡片消费的全局实色）
+  const cssVar = (css: string, name: string) => {
+    for (const m of css.matchAll(new RegExp(`${name}\\s*:\\s*([^;]+)`, 'g'))) {
+      const v = m[1].trim()
+      if (!v.startsWith('var(')) return v
+    }
+    return undefined
+  }
+
+  // 皮肤未覆盖的文本令牌回落 tokens.css 出厂值（theme.css 惰性引用，不出现在注入文本中）
+  const FACTORY_TEXT: Record<string, string> = {
+    '--wd-text-color-primary': '#24272c',
+    '--wd-text-color-regular': '#555b63',
+    '--wd-text-color-secondary': '#7d8187',
+    '--wd-text-color-placeholder': '#a8abb2',
+  }
+  // 正文 4.5（WCAG AA）；次要 3.0（大文字/辅助信息）；占位符为刻意弱化的提示文字（EP/antd 出厂同样低于正文门槛），只设防倒退下限
+  const GATES: Record<string, number> = {
+    '--wd-text-color-primary': 4.5,
+    '--wd-text-color-regular': 4.5,
+    '--wd-text-color-secondary': 3.0,
+    '--wd-text-color-placeholder': 2.0,
+  }
+
+  it('全皮肤四级文字对页面底/卡片底的对比度达门槛（正文 4.5 / 次要 3.0 / 占位防倒退 2.0）', () => {
+    for (const skin of listSkins()) {
+      applyTheme({ skin: skin.key })
+      const css = themeCss()
+      const pageBg = cssVar(css, '--wd-bg-color-page') || '#f4f6fa'
+      const cardBg = cssVar(css, '--wd-bg-color') || '#ffffff'
+      for (const [name, gate] of Object.entries(GATES)) {
+        const fg = cssVar(css, name) || FACTORY_TEXT[name]
+        expect(contrast(fg, pageBg), `${skin.key} ${name}(${fg}) vs page ${pageBg}`).toBeGreaterThanOrEqual(gate)
+        expect(contrast(fg, cardBg), `${skin.key} ${name}(${fg}) vs card ${cardBg}`).toBeGreaterThanOrEqual(gate)
+      }
+    }
+  })
+
+  it('出厂次要文字落位 tokens.css：未覆盖皮肤（default/flat/business/governance）的回落值达标', () => {
+    const tokens = readFileSync(resolve(__dirname, '../../../styles/tokens.css'), 'utf-8')
+    expect(tokens).toContain('--wd-text-color-secondary: #7d8187')
+  })
+
+  it('出厂 on-dark 色板落位 tokens.css：对商务藏青深色表面（#1e2c4f）的对比度达门槛', () => {
+    const tokens = readFileSync(resolve(__dirname, '../../../styles/tokens.css'), 'utf-8')
+    const navyBg = '#1e2c4f'
+    for (const [name, gate] of [
+      ['--wd-text-color-primary-on-dark', 4.5],
+      ['--wd-text-color-regular-on-dark', 4.5],
+      ['--wd-text-color-secondary-on-dark', 3.0],
+      ['--wd-text-color-placeholder-on-dark', 2.0],
+      ['--wd-color-link-on-dark', 4.5],
+    ] as const) {
+      const fg = cssVar(tokens, name)
+      expect(fg, `${name} 应在 tokens.css 出厂声明`).toBeTruthy()
+      expect(contrast(fg!, navyBg), `${name}(${fg}) vs 藏青 ${navyBg}`).toBeGreaterThanOrEqual(gate)
+    }
+    // 出厂链接色引用主色（浅底正常），深色表面由皮肤换装块重映射为 on-dark 链接色
+    expect(tokens).toContain('--wd-color-link: var(--wd-color-primary)')
+  })
+})
+
+describe('skins 深色表面换装：on-dark 文字令牌（浅色/深色两套默认色）', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  // 换装块：深色表面（Station 导航区 chrome）上重映射 wd+el 两层文字令牌与链接色。
+  // CSS 自定义属性在声明元素处对 var() 求值（css-variables-2），theme.css 的
+  // --el-text-color-*: var(--wd-text-color-*) 已在 :root 求值完毕，子树内仅重映射
+  // wd 层不会联动 el 消费方，故必须双层同时重映射
+  const REMAP_VARS = [
+    '--wd-text-color-primary: var(--wd-text-color-primary-on-dark)',
+    '--wd-text-color-regular: var(--wd-text-color-regular-on-dark)',
+    '--wd-text-color-secondary: var(--wd-text-color-secondary-on-dark)',
+    '--wd-text-color-placeholder: var(--wd-text-color-placeholder-on-dark)',
+    '--el-text-color-primary: var(--wd-text-color-primary-on-dark)',
+    '--el-text-color-regular: var(--wd-text-color-regular-on-dark)',
+    '--el-text-color-secondary: var(--wd-text-color-secondary-on-dark)',
+    '--el-text-color-placeholder: var(--wd-text-color-placeholder-on-dark)',
+    '--wd-color-link: var(--wd-color-link-on-dark)',
+  ]
+
+  it('business 深色表面（顶栏/侧栏/底栏）换装块：wd+el 双层重映射，浅色内容区不联动', () => {
+    applyTheme({ skin: 'business' })
+    const css = themeCss()
+    for (const remap of REMAP_VARS) {
+      expect(css, `business 换装块应含 ${remap}`).toContain(remap)
+    }
+    // 换装作用域限定 Station 导航区 chrome（业务白卡内容区保持浅色默认色）
+    expect(css).toMatch(/\.wd-station \.wd-station__header,\s*\.wd-station \.wd-station__aside,\s*\.wd-station \.wd-station__footer\s*\{/)
+    expect(css).not.toContain('.wd-station__content')
+  })
+
+  it('tech/cyberpunk/cool 深色表面（顶栏/侧栏/页签条）换装块，on-dark 色板按各自色系重写保持身份', () => {
+    const onDarkOverrides: Record<string, Record<string, string>> = {
+      tech: {
+        '--wd-text-color-primary-on-dark': '#dcf4ff',
+        '--wd-color-link-on-dark': '#00e5ff'
+      },
+      cyberpunk: {
+        '--wd-text-color-primary-on-dark': '#f3e8ff',
+        '--wd-color-link-on-dark': '#e879f9'
+      },
+      cool: {
+        '--wd-text-color-primary-on-dark': '#e8eaf0',
+        '--wd-color-link-on-dark': '#a78bff'
+      }
+    }
+    for (const key of ['tech', 'cyberpunk', 'cool'] as const) {
+      applyTheme({ skin: key })
+      const css = themeCss()
+      for (const remap of REMAP_VARS) {
+        expect(css, `${key} 换装块应含 ${remap}`).toContain(remap)
+      }
+      expect(css).toMatch(/\.wd-station \.wd-station__header,\s*\.wd-station \.wd-station__aside,\s*\.wd-station \.wd-station__tabs-bar\s*\{/)
+      for (const [name, value] of Object.entries(onDarkOverrides[key])) {
+        expect(css, `${key} 应重写 ${name} 为 ${value}`).toContain(`${name}: ${value}`)
+      }
+    }
+  })
+
+  it('business 顶栏插槽回归防护：默认按钮 ghost 化（el 文字换装后白底按钮浅字不可读），面包屑链接 hover 转商务金', () => {
+    applyTheme({ skin: 'business' })
+    const css = themeCss()
+    // ghost 按钮：透明底 + 半透明白描边 + on-dark 文字（与 nav-item hover 同源），限定顶栏作用域
+    expect(css).toMatch(/\.wd-station__header \.el-button:not\(\[class\*='el-button--'\]\):not\(\.is-text\):not\(\.is-link\)/)
+    expect(css).toContain('--el-button-bg-color: transparent')
+    // 面包屑链接 hover：div.wd-station 前缀达 (0,6,1) 压过 WdPath scoped 编译产物 (0,5,0)，转商务金
+    expect(css).toContain('div.wd-station .wd-station__header .wd-path .el-breadcrumb__inner.is-link:hover')
+  })
+
+  it('Path.vue 链接段消费 --wd-color-link（换装后自动随深色表面切换），不再硬绑主色', () => {
+    const path = readFileSync(resolve(__dirname, '../../../components/styles/Path.vue'), 'utf-8')
+    expect(path).toContain('color: var(--wd-color-link, #409eff)')
+    expect(path).not.toContain('color: var(--wd-color-primary, #409eff)')
+  })
+})
+
 describe('skins 组件级维度：组件样式随皮肤差异化', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+  })
+
+  it('全皮肤定稿：datagrid 不注入边框与背景（bg / border-color / bg-image 一律不出现）', () => {
+    for (const skin of listSkins()) {
+      applyTheme({ skin: skin.key })
+      const css = themeCss()
+      expect(css, skin.key).not.toContain('--wd-datagrid-bg')
+      expect(css, skin.key).not.toContain('--wd-datagrid-border-color')
+      expect(css, skin.key).not.toContain('--wd-datagrid-bg-image')
+    }
+  })
+
+  it('全皮肤定稿：editablegrid 不注入边框与背景（bg / border-color / bg-image 一律不出现）', () => {
+    for (const skin of listSkins()) {
+      applyTheme({ skin: skin.key })
+      const css = themeCss()
+      expect(css, skin.key).not.toContain('--wd-editable-grid-bg')
+      expect(css, skin.key).not.toContain('--wd-editable-grid-border-color')
+      expect(css, skin.key).not.toContain('--wd-editable-grid-bg-image')
+    }
   })
 
   it('cyberpunk 注入组件级令牌：面板品红霓虹描边 + 紫辉光 + 青品标识条 + 导航区压黑', () => {
@@ -212,14 +388,10 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-panel-title-color: #e879f9')
     expect(css).toContain('--wd-panel-shadow-sm: 0 0 18px rgba(217, 70, 239, 0.16)')
     expect(css).toContain('--wd-panel-title-bar-bg: linear-gradient(180deg, #00e5ff, #d946ef)')
-    expect(css).toContain('--wd-datagrid-bg: #150f2a')
-    expect(css).toContain('--wd-editable-grid-border-color: rgba(217, 70, 239, 0.4)')
     expect(css).toContain('--wd-station-header-bg: #070412')
     expect(css).toContain('--wd-search-bg: #150f2a')
-    // 背景素材（bg-image 伴随令牌）：内容容器青色 HUD 网格，Station 导航区品红扫描线
+    // 背景素材（bg-image 伴随令牌）：面板 / 搜索青色 HUD 网格，Station 导航区品红扫描线（editablegrid 全皮肤定稿无背景）
     expect(css).toContain('--wd-panel-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)')
-    expect(css).toContain('--wd-datagrid-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)')
-    expect(css).toContain('--wd-editable-grid-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)')
     expect(css).toContain('--wd-search-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)')
     expect(css).toContain('--wd-station-aside-bg-image: repeating-linear-gradient(0deg, rgba(217, 70, 239, 0.06) 0 1px, transparent 1px 4px)')
     expect(css).toContain('--wd-station-header-bg-image: repeating-linear-gradient(0deg, rgba(217, 70, 239, 0.06) 0 1px, transparent 1px 4px)')
@@ -247,7 +419,6 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     const css = themeCss()
     expect(css).toContain('--wd-panel-header-bg: #c7000b')
     expect(css).toContain('--wd-panel-title-color: #ffffff')
-    expect(css).toContain('--wd-datagrid-bg: #fffaf0')
     expect(css).toContain('--wd-search-bg: #fffaf0')
   })
 
@@ -258,10 +429,7 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-panel-title-color: #dec07a')
     expect(css).toContain('--wd-panel-header-bg: rgba(201, 162, 75, 0.1)')
     expect(css).toContain('--wd-panel-border-color: rgba(201, 162, 75, 0.42)')
-    expect(css).toContain('--wd-datagrid-bg: #102c23')
-    // 表格边框烫金：容器外框实色金箔 + el-table 内部单元格线同源亮金（弱于外框拉开层次）
-    expect(css).toContain('--wd-datagrid-border-color: #c9a24b')
-    expect(css).toContain('--wd-editable-grid-border-color: #c9a24b')
+    // el-table 内部单元格线烫金（同源亮金；datagrid / editablegrid 容器全皮肤定稿无外框无背景）
     expect(css).toContain('--el-table-border-color: rgba(201, 162, 75, 0.45)')
     expect(css).toContain('--wd-station-aside-bg: #071a15')
     expect(css).toContain('--el-fill-color-blank: #123128')
@@ -497,8 +665,6 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-panel-shadow-sm: 0 1px 2px rgba(29, 33, 41, 0.06)')
     expect(css).toContain('--wd-panel-title-bar-width: 0')
     expect(css).toContain('--wd-datagrid-radius: 4px')
-    expect(css).toContain('--wd-datagrid-border-color: #e5e6eb')
-    expect(css).toContain('--wd-editable-grid-border-color: #e5e6eb')
   })
 
   it('arco cssRules：hover 变浅 + 灰底无边框默认按钮 + 浅蓝标签 + 浅蓝菜单选中 + 表头灰底', () => {
@@ -563,8 +729,6 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-panel-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03)')
     expect(css).toContain('--wd-panel-title-bar-width: 0')
     expect(css).toContain('--wd-datagrid-radius: 8px')
-    expect(css).toContain('--wd-datagrid-border-color: #f0f0f0')
-    expect(css).toContain('--wd-editable-grid-border-color: #f0f0f0')
     // 导航区：Ant Design Pro 招牌暗蓝侧栏
     expect(css).toContain('--wd-station-aside-bg: #001529')
   })
@@ -651,10 +815,10 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-panel-shadow-sm: 0 20px 27px 0 rgba(0, 0, 0, 0.05)')
     expect(css).toContain('--wd-panel-title-bar-width: 0')
     expect(css).toContain('--wd-datagrid-radius: 12px')
-    expect(css).toContain('--wd-datagrid-border-color: #e9edf3')
-    expect(css).toContain('--wd-editable-grid-border-color: #e9edf3')
     // 导航区：Soft UI 官方 sidenav bg-white 纯白侧栏（选中态为品紫渐变胶囊，见 cssRules）
     expect(css).toContain('--wd-station-aside-bg: #ffffff')
+    // tabs 激活底：与宋韵定稿一致，不画浅底色块，激活态仅靠品红文字色 + 底部滑块横线表达
+    expect(css).not.toContain('--wd-station-tabs-active-bg')
   })
 
   it('soft cssRules：主按钮变深+品色柔影 + 白底蓝灰边默认按钮 + 胶囊徽章 + 焦点光晕 + 白侧栏品紫渐变胶囊选中 + 表头浅灰', () => {
@@ -751,13 +915,9 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-panel-margin-bottom: 14px')
     expect(css).toContain('--wd-panel-shadow-sm: 0 1px 2px rgba(49, 74, 71, 0.04)')
     expect(css).toContain('--wd-panel-shadow-md: 0 6px 18px rgba(49, 74, 71, 0.08)')
-    // 内容容器：表格 / 可编辑表格 / 搜索 / 表单操作条统一青灰细边与小圆角
-    expect(css).toContain('--wd-datagrid-bg: #fcfdfc')
-    expect(css).toContain('--wd-datagrid-border-color: #dbe5e1')
+    // 内容容器：搜索 / 表单操作条统一青灰细边与小圆角；datagrid / editablegrid 全皮肤定稿无边框无背景，仅保留小圆角
     expect(css).toContain('--wd-datagrid-radius: 4px')
     expect(css).toContain('--wd-datagrid-padding: 16px')
-    expect(css).toContain('--wd-editable-grid-bg: #fcfdfc')
-    expect(css).toContain('--wd-editable-grid-border-color: #dbe5e1')
     expect(css).toContain('--wd-search-bg: #f4f8f6')
     expect(css).toContain('--wd-search-padding: 16px')
     expect(css).toContain('--wd-form-footer-bg: #f4f8f6')
@@ -768,7 +928,11 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-station-header-bg: #f7faf8')
     expect(css).toContain('--wd-station-tabs-bg: #f1f6f4')
     expect(css).toContain('--wd-station-tabs-active-color: #4a7d78')
-    expect(css).toContain('--wd-station-tabs-active-bg: #dce9e5')
+    // tabs 激活底：按定稿不画任何浅青底色块（cssVars 不声明 active-bg，cssRules 也不注入激活底伪元素），
+    // 激活态仅靠天青文字色 + 底部滑块横线表达
+    expect(css).not.toContain('--wd-station-tabs-active-bg')
+    expect(css).not.toContain('#dce9e5')
+    expect(css).not.toContain('.el-tabs__item.is-active::after')
     expect(css).toContain('--wd-station-menu-group-color: #849b95')
     // 背景素材：面板汝窑冰裂纹开片 + 侧栏淡远山（内联 SVG 零外部资源）
     expect(css).toContain("--wd-panel-bg-image: url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='170'")
@@ -833,7 +997,6 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--wd-panel-title-color: #5ee9ff')
     expect(css).toContain('--wd-panel-shadow-md: 0 0 28px rgba(0, 229, 255, 0.26)')
     expect(css).toContain('--wd-panel-title-bar-bg: linear-gradient(180deg, #00e5ff, #2979ff)')
-    expect(css).toContain('--wd-datagrid-border-color: rgba(0, 229, 255, 0.3)')
     expect(css).toContain('--wd-station-aside-bg: #040b16')
     expect(css).toContain('--wd-station-header-bg: #040b16')
     expect(css).toContain('--wd-station-tabs-bg: #040b16')
@@ -850,14 +1013,12 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
     expect(css).toContain('--el-table-border-color: rgba(0, 229, 255, 0.2)')
   })
 
-  it('tech 背景素材：面板无背景图（装饰收敛到非连续边框），表格 HUD 网格，导航区扫描线', () => {
+  it('tech 背景素材：面板无背景图（装饰收敛到非连续边框），搜索 HUD 网格，导航区扫描线', () => {
     applyTheme({ skin: 'tech' })
     const css = themeCss()
-    // 面板保持纯深空蓝，不挂背景图
+    // 面板保持纯深空蓝不挂背景图；datagrid / editablegrid 全皮肤定稿无背景（不挂 HUD 网格）
     expect(css).not.toContain('--wd-panel-bg-image')
-    // 内容容器青色 HUD 网格，Station 导航区青色扫描线
-    expect(css).toContain('--wd-datagrid-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.045)')
-    expect(css).toContain('--wd-editable-grid-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.045)')
+    // 搜索青色 HUD 网格，Station 导航区青色扫描线
     expect(css).toContain('--wd-search-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.045)')
     expect(css).toContain('--wd-station-aside-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 4px)')
     expect(css).toContain('--wd-station-header-bg-image: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 4px)')
@@ -997,18 +1158,16 @@ describe('config 集成：theme.skin 经全局配置生效', () => {
     expect(css).toContain('.wd-station__menu.el-menu,')
     expect(css).toContain('.wd-station__menu .el-menu-item.is-active {')
     expect(css).toContain('background: #1f2532')
-    // 容器类毛玻璃：面板 / 搜索 / 表格半透白底（透出页面光斑），容器浅暖描边与毛玻璃融合
+    // 容器类毛玻璃：面板 / 搜索半透白底（透出页面光斑），容器浅暖描边与毛玻璃融合（editablegrid 全皮肤定稿无背景无描边，不参与）
     expect(css).toContain('--wd-panel-bg: rgba(255, 255, 255, 0.62)')
     expect(css).toContain('--wd-panel-border-color: rgba(233, 225, 214, 0.9)')
     expect(css).toContain('--wd-search-bg: rgba(255, 255, 255, 0.5)')
-    expect(css).toContain('--wd-datagrid-bg: rgba(255, 255, 255, 0.55)')
-    expect(css).toContain('--wd-editable-grid-bg: rgba(255, 255, 255, 0.55)')
     expect(css).toContain('.wd-panel,')
-    expect(css).toContain('.wd-editable-grid {')
     expect(css).toContain('backdrop-filter: blur(14px) saturate(1.4)')
-    // 浅色边框：搜索 / 表格根类出厂无边框，皮肤补 1px 暖浅描边（Panel 走 --wd-panel-border-color 令牌）
-    expect(css).toContain('.wd-search-panel,')
-    expect(css).toContain('.wd-datagrid,')
+    // 浅色边框：搜索根类出厂无边框，皮肤补 1px 暖浅描边（Panel 走 --wd-panel-border-color 令牌；datagrid / editablegrid 全皮肤定稿无描边，不加入选择器）
+    expect(css).toContain('.wd-search-panel {')
+    expect(css).not.toContain('.wd-datagrid,')
+    expect(css).not.toContain('.wd-editable-grid {')
     expect(css).toContain('border: 1px solid rgba(233, 225, 214, 0.9)')
     // EP 表格默认不透明白底会盖住容器玻璃底，透明化后透出；表头留半透白分层，行 hover 暖色透底
     expect(css).toContain('--el-table-bg-color: transparent')

@@ -1091,6 +1091,15 @@ describe('WdStation 集成', () => {
     expect(logoTitle.attributes('style')).toContain('display: none')
   })
 
+  it('折叠态菜单项形态（collapsedShowTitle）：默认开启竖排 icon+title，false 时保持 EP 原生仅 icon', () => {
+    // 默认 true：aside 常挂 is-collapse-title 配置类，竖排样式由折叠态 CSS（is-collapsed 前缀）控制生效
+    const wrapper = mountStation({ menuGroups: menuGroupsFixture })
+    expect(wrapper.find('.wd-station__aside').classes()).toContain('is-collapse-title')
+    // false：关闭竖排，折叠后仅 icon（EP 原生折叠形态）
+    const w2 = mountStation({ menuGroups: menuGroupsFixture, collapsedShowTitle: false })
+    expect(w2.find('.wd-station__aside').classes()).not.toContain('is-collapse-title')
+  })
+
   it('router 模式按当前路由反查分组并激活', () => {
     const { wrapper } = mountWithRouter({ menuGroups: menuGroupsFixture }, '/sys/role')
     const navItems = wrapper.findAll('.wd-station__nav-item')

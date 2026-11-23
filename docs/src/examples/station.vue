@@ -109,6 +109,37 @@
     </demo-block>
 
     <demo-block
+      title="折叠显示标题（collapsed-show-title）"
+      desc="默认 true：侧栏折叠（64px 窄栏）后菜单项竖排为「icon 上 / title 文字下」，长标题省略号截断；切到 false 回到 EP 原生折叠形态（仅 icon）。有子菜单的项折叠后 hover 弹出子菜单不受影响，折叠 tooltip 照常可用"
+      :code="code11"
+    >
+      <div class="empty-switch">
+        <el-radio-group v-model="collapseTitleDemo" size="small">
+          <el-radio-button value="on">竖排 icon + title（默认）</el-radio-button>
+          <el-radio-button value="off">仅 icon（EP 原生折叠形态）</el-radio-button>
+        </el-radio-group>
+      </div>
+      <div class="station-stage">
+        <wd-station
+          v-model:collapsed="collapsedDemo"
+          title="WorkDesktop"
+          logo="Platform"
+          :menu-groups="menuGroups"
+          :collapsed-show-title="collapseTitleDemo === 'on'"
+          user-name="张管理员"
+          copyright="© 2026 WorkDesktop"
+          router-mode="html"
+          @menu-select="onMenuSelect"
+        >
+          <div class="station-demo-page">
+            <h4>折叠形态演示</h4>
+            <p>{{ collapsedDemo ? '已折叠：' + (collapseTitleDemo === 'on' ? '菜单项竖排 icon 上 / title 文字下' : '仅 icon（EP 原生形态）') : '已展开：点击左下角折叠按钮收起查看' }}</p>
+          </div>
+        </wd-station>
+      </div>
+    </demo-block>
+
+    <demo-block
       title="顶部菜单模式"
       desc="menu-mode=top 时菜单移到顶部横排，折叠按钮变为向上/向下箭头，控制顶部菜单的收起与展开"
       :code="code4"
@@ -527,6 +558,42 @@ const menuGroupsAllEmpty = [
 ]
 <\/script>`
 
+const code11 = `<template>
+  <el-radio-group v-model="titleDemo" size="small">
+    <el-radio-button value="on">竖排 icon + title（默认）</el-radio-button>
+    <el-radio-button value="off">仅 icon（EP 原生折叠形态）</el-radio-button>
+  </el-radio-group>
+
+  <wd-station
+    v-model:collapsed="collapsed"
+    title="WorkDesktop" logo="Platform"
+    :menu-groups="menuGroups"
+    :collapsed-show-title="titleDemo === 'on'"
+    user-name="张管理员" copyright="© 2026 WorkDesktop"
+    router-mode="html"
+    @menu-select="onMenuSelect"
+  >
+    <div>内容区</div>
+  </wd-station>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+// 初始折叠，直接呈现两种折叠形态差异；点击左下角折叠按钮可展开/收起
+const collapsed = ref(true)
+const titleDemo = ref('on')
+
+const menuGroups = [
+  { key: 'workspace', title: '工作区', icon: 'Monitor', menus: [{ title: '工作台', path: '/work/dashboard' }, { title: '消息中心', path: '/work/messages' }] },
+  { key: 'system', title: '系统设置', icon: 'Setting', menus: [{ title: '用户管理', path: '/sys/user' }] }
+]
+
+function onMenuSelect(item) {
+  console.log('menu-select', item)
+}
+<\/script>`
+
 // 左侧菜单演示数据统一抽离到同目录 station-data.json，此处按用途取用（结构说明见组件文档 menuGroups / menus）
 const menuGroups = stationData.menuGroups
 
@@ -553,6 +620,10 @@ const menuGroupsAllEmpty = [
 ]
 
 const emptyDemo = ref<'partial' | 'all'>('partial')
+
+// 折叠显示标题演示：初始折叠直接呈现形态差异
+const collapsedDemo = ref(true)
+const collapseTitleDemo = ref<'on' | 'off'>('on')
 
 const currentMenuText = ref('（点击左侧菜单）')
 const refreshCount = ref(0)

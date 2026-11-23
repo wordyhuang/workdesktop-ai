@@ -1093,9 +1093,9 @@ watch(
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  /* 默认上下 3px 内边距，避免表格边框/卡片贴容器边缘 */
+  /* 默认上下 3px 内边距，避免表格边框/卡片贴容器边缘；容器无背景（全皮肤定稿），透出宿主底色 */
   padding: 3px 0;
-  background: var(--wd-bg-color, #fff);
+  background: transparent;
 }
 .wd-datagrid--auto-height {
   height: 100%;
@@ -1266,11 +1266,7 @@ watch(
   overflow: auto;
 }
 .wd-datagrid__card {
-  /* 组件级令牌回退链：皮肤可单独定制 DataGrid 卡片 */
-  background: var(--wd-datagrid-bg, transparent);
-  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
-  background-image: var(--wd-datagrid-bg-image, none);
-  border: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-datagrid-border-color, var(--wd-border-color-light, #e4e7ed));
+  /* 全皮肤定稿：卡片视图与表格视图一致，不承载背景色与边框，仅保留圆角与内边距 */
   border-radius: var(--wd-datagrid-radius, var(--wd-radius-base, 4px));
   padding: var(--wd-datagrid-padding, var(--wd-spacing-base, 12px));
   margin-bottom: var(--wd-spacing-base, 12px);

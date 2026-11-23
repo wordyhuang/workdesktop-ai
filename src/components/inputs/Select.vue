@@ -113,4 +113,8 @@ function onRemote(query: string) {
   outline: 1px dashed currentColor;
   outline-offset: 2px;
 }
+/* 选中态：icon 跟随文字颜色（选中项为主色文字，灰色 icon 不协调） */
+.el-select-dropdown__item.is-selected .wd-option-tip {
+  color: inherit;
+}
 </style>

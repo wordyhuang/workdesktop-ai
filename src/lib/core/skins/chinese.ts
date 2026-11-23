@@ -35,11 +35,7 @@ export const chineseSkin: SkinPreset = {
       '--wd-panel-border-color': 'rgba(201, 162, 75, 0.42)',
       '--wd-panel-header-bg': 'rgba(201, 162, 75, 0.1)',
       '--wd-panel-title-color': '#dec07a',
-      '--wd-datagrid-bg': '#102c23',
-      // 表格边框烫金：外框实色金箔（同源金不透明，烫印实心感）
-      '--wd-datagrid-border-color': '#c9a24b',
-      '--wd-editable-grid-bg': '#102c23',
-      '--wd-editable-grid-border-color': '#c9a24b',
+      // el-table 内部单元格线烫金（同源亮金）；datagrid / editablegrid 全皮肤定稿无外框无背景
       '--wd-search-bg': '#102c23',
       '--wd-form-footer-bg': 'rgba(201, 162, 75, 0.06)',
       '--wd-station-aside-bg': '#071a15',

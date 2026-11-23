@@ -358,7 +358,13 @@ mock('post', /\/mock\/settings\/login-logs$/, ({ params }) => {
 })
 
 mock('post', /\/mock\/settings\/sessions\/revoke$/, () => ok(null, '已强制下线其他设备'))
-mock('post', /\/mock\/settings\/deactivate$/, () => ok(null, '注销申请已提交'))
+// 注销账号 L2 强确认（§0.9）：PromptButton 无输入校验 prop，指定文本校验由 mock 承担——
+// 输入不符返回业务失败（api-fail），弹窗保留允许修改后重新提交
+mock('post', /\/mock\/settings\/deactivate$/, ({ params }) => {
+  const p = params.param || params || {}
+  if (String(p.confirmText ?? '').trim() !== '注销') return fail('输入不符：请输入「注销」确认后再提交')
+  return ok(null, '注销申请已提交')
+})
 
 // ---------- 任务列表（EditableGrid 接口分页 + 批量保存演示） ----------
 interface TaskItem {

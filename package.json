@@ -1,6 +1,6 @@
 {
   "name": "workdesktop-ai",
-  "version": "1.2.14",
+  "version": "1.2.17",
   "author": {
     "name": "wordyhuang",
     "email": "395051729@qq.com",
@@ -174,7 +174,8 @@
     "LICENSE",
     "ai-router.md",
     "ai-api",
-    "scenarios"
+    "scenarios",
+    "skills"
   ],
   "scripts": {
     "dev": "vite",

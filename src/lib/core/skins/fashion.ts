@@ -45,12 +45,10 @@ export const fashionSkin: SkinPreset = {
       '--wd-datagrid-padding': '15px',
       '--wd-editable-grid-padding': '15px',
       '--wd-form-footer-padding': '15px 0 3px',
-      // 容器类毛玻璃：面板 / 搜索 / 表格半透白底（配 cssRules 的 backdrop-filter 成磨砂，页面光斑隐约透出），浅暖描边与玻璃底融合
+      // 容器类毛玻璃：面板 / 搜索半透白底（配 cssRules 的 backdrop-filter 成磨砂，页面光斑隐约透出），浅暖描边与玻璃底融合
       '--wd-panel-bg': 'rgba(255, 255, 255, 0.62)',
       '--wd-panel-border-color': 'rgba(233, 225, 214, 0.9)',
       '--wd-search-bg': 'rgba(255, 255, 255, 0.5)',
-      '--wd-datagrid-bg': 'rgba(255, 255, 255, 0.55)',
-      '--wd-editable-grid-bg': 'rgba(255, 255, 255, 0.55)',
       // EP 表格默认不透明白底会盖住容器玻璃底，透明化透出；表头留半透白分层，行 hover 暖色透底（默认浅灰不透明会糊块）
       '--el-table-bg-color': 'transparent',
       '--el-table-tr-bg-color': 'transparent',
@@ -79,18 +77,14 @@ export const fashionSkin: SkinPreset = {
   backdrop-filter: blur(16px) saturate(1.5);
   -webkit-backdrop-filter: blur(16px) saturate(1.5);
 }
-/* 容器类毛玻璃：面板 / 搜索 / 表格半透底（见 cssVars）+ 背景模糊提亮，比导航区弱一档保持内容清晰 */
+/* 容器类毛玻璃：面板 / 搜索半透底（见 cssVars）+ 背景模糊提亮，比导航区弱一档保持内容清晰（datagrid / editablegrid 全皮肤定稿无背景，不参与毛玻璃） */
 .wd-panel,
-.wd-search-panel,
-.wd-datagrid,
-.wd-editable-grid {
+.wd-search-panel {
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
 }
-/* 容器浅色边框：搜索 / 表格根类出厂无边框，补 1px 暖浅描边与面板统一（Panel 走 --wd-panel-border-color 令牌） */
-.wd-search-panel,
-.wd-datagrid,
-.wd-editable-grid {
+/* 容器浅色边框：搜索根类出厂无边框，补 1px 暖浅描边与面板统一（Panel 走 --wd-panel-border-color 令牌；datagrid / editablegrid 全皮肤定稿无描边，不加入选择器） */
+.wd-search-panel {
   border: 1px solid rgba(233, 225, 214, 0.9);
 }
 /* 表格单元格横向留白加大（出厂 .cell 12px），杂志风表格更透气 */

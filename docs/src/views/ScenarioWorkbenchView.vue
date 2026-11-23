@@ -1,7 +1,12 @@
 <template>
   <div class="workbench-page">
-    <!-- 页面顶条：标题 / 今日完成度 / 日期时间（wd-panel 无标题形态，纯 body） -->
-    <wd-panel class="wb-topbar">
+    <!-- 页面介绍 tips：页面用途与注意事项（§0.1 所有功能页必加） -->
+    <wd-tips
+      type="box" icon="InfoFilled"
+      tips="工作台聚合审批、流程、协作待办；数据每 5 分钟刷新一次，以各业务模块为准。" />
+
+    <!-- 页面顶条：标题 / 今日完成度 / 日期时间（通栏元素，直接用 header 不包 wd-panel） -->
+    <header class="wb-topbar">
       <div class="wb-topbar__brand">
         <span class="wb-topbar__logo"><el-icon :size="22"><OfficeBuilding /></el-icon></span>
         <div>
@@ -22,10 +27,10 @@
         <ScenarioPromptButton scene="workbench" title="工作台" />
         <div class="wb-topbar__time">{{ todayText }}</div>
       </div>
-    </wd-panel>
+    </header>
 
-    <!-- 欢迎横幅（wd-panel 无标题形态，渐变底） -->
-    <wd-panel class="wb-banner">
+    <!-- 欢迎横幅（通栏元素，渐变底，直接用 section 不包 wd-panel） -->
+    <section class="wb-banner">
       <div class="wb-banner__text">
         <p class="wb-banner__headline">{{ greeting }}，让每一次审批都高效流转</p>
         <p class="wb-banner__flow">
@@ -39,12 +44,12 @@
         <li><el-icon><TrendCharts /></el-icon>数据驱动</li>
         <li><el-icon><Bell /></el-icon>消息提醒</li>
       </ul>
-    </wd-panel>
+    </section>
 
     <!-- 今日核心工作 -->
     <wd-panel title="今日核心工作" icon="AlarmClock" description="建议按顺序优先处理">
       <template #extra>
-        <el-button link type="primary">全部任务</el-button>
+        <el-button link type="primary" @click="ElMessage.info('打开「全部任务」（演示入口）')">全部任务</el-button>
       </template>
       <wd-card-rail
         v-model:page="corePage" :items="coreTasks"
@@ -101,14 +106,14 @@
         <wd-tips
           type="box" icon="WarningFilled"
           color="var(--el-color-danger)" bg="var(--el-color-danger-light-9)"
-          tips="共 3 条异常需要处理，请尽快确认，避免影响流程时效。" />
+          tips="共 2 条异常需要处理，请尽快确认，避免影响流程时效。" />
         <ul class="wb-alert-list">
           <li v-for="a in alerts" :key="a.title" class="wb-alert">
             <div class="wb-alert__body">
               <div class="wb-alert__title">{{ a.title }}</div>
               <div class="wb-alert__meta">{{ a.meta }}</div>
             </div>
-            <el-button link type="primary" size="small">{{ a.action }}</el-button>
+            <el-button link type="primary" size="small" @click="ElMessage.info(`打开「${a.action}」（演示入口）`)">{{ a.action }}</el-button>
           </li>
         </ul>
       </wd-panel>
@@ -171,7 +176,7 @@
       <div class="wb-col">
         <wd-panel title="待办审批" icon="Bell">
           <template #extra>
-            <el-button link type="primary">全部</el-button>
+            <el-button link type="primary" @click="ElMessage.info('打开「全部审批」（演示入口）')">全部</el-button>
           </template>
           <transition-group name="wb-list" tag="ul" class="wb-approve-list">
             <li v-for="item in approvals" :key="item.id" class="wb-approve">
@@ -193,7 +198,7 @@
 
         <wd-panel title="我的流程" icon="Promotion">
           <template #extra>
-            <el-button link type="primary">全部</el-button>
+            <el-button link type="primary" @click="ElMessage.info('打开「全部流程」（演示入口）')">全部</el-button>
           </template>
           <ul class="wb-flow-list">
             <li v-for="flow in flows" :key="flow.id" class="wb-flow">
@@ -214,12 +219,7 @@
     <section class="wb-row wb-row--fill">
       <wd-panel title="今日任务" icon="List">
         <template #extra>
-          <el-radio-group v-model="taskFilter" size="small">
-            <el-radio-button label="全部" />
-            <el-radio-button label="进行中" />
-            <el-radio-button label="待开始" />
-            <el-radio-button label="已完成" />
-          </el-radio-group>
+          <wd-radio-list v-model="taskFilter" size="small" button-style :data-source="taskFilters" />
         </template>
         <ul class="wb-timeline">
           <li v-for="task in pagedTasks" :key="task.time + task.title" class="wb-timeline__item">
@@ -315,7 +315,7 @@ const stats: Stat[] = [
 /** 异常提醒 */
 const alerts = [
   { title: '报销单 BT-1102 已挂起 3 天', meta: '申请人：张伟 · 金额 ¥1,280.00', action: '去处理' },
-  { title: '供应商合同 H-2026-087 即将到期', meta: '到期日：11-08 · 金额 ¥56,000', action: '去续签' }
+  { title: '供应商合同 H-2026-087 即将到期', meta: '到期日：11-08 · 金额 ¥56,000.00', action: '去续签' }
 ]
 
 /** 折线图：坐标换算（静态演示数据） */
@@ -365,7 +365,7 @@ interface Approval { id: number; type: string; title: string; applicant: string;
 const approvals = ref<Approval[]>([
   { id: 1, type: '请假申请', title: '年假 2 天（10-22 至 10-23）', applicant: '张伟', time: '今天 09:32' },
   { id: 2, type: '报销申请', title: '客户拜访差旅报销 ¥1,280.00', applicant: '李娜', time: '今天 10:15' },
-  { id: 3, type: '合同审批', title: '年度框架采购合同 ¥56,000', applicant: '王强', time: '昨天 17:40' },
+  { id: 3, type: '合同审批', title: '年度框架采购合同 ¥56,000.00', applicant: '王强', time: '昨天 17:40' },
   { id: 4, type: '用章申请', title: '投标文件盖章（3 份）', applicant: '赵敏', time: '昨天 15:08' },
   { id: 5, type: '会议室预订', title: '明下午产品评审会（大会议室）', applicant: '陈杰', time: '昨天 11:26' }
 ])
@@ -409,6 +409,13 @@ const tasks: TaskItem[] = [
   { time: '18:30', title: '明日报重点事项清单', state: '待开始' },
   { time: '19:30', title: '值班交接确认', state: '待开始' }
 ]
+/** 状态过滤选项（wd-radio-list dataSource） */
+const taskFilters = [
+  { value: '全部', text: '全部' },
+  { value: '进行中', text: '进行中' },
+  { value: '待开始', text: '待开始' },
+  { value: '已完成', text: '已完成' }
+]
 const taskFilter = ref('全部')
 const filteredTasks = computed(() =>
   taskFilter.value === '全部' ? tasks : tasks.filter((t) => t.state === taskFilter.value)
@@ -446,13 +453,22 @@ function openApp(label: string) {
   gap: 10px;
 }
 
-/* ===== 页面顶条（wd-panel 无标题形态，flex 行布局挂在 body 上） ===== */
-.wb-topbar :deep(.wd-panel__body) {
+/* 紧凑化：抵消 wd-panel 自带外边距，收敛头部/正文留白（§9.3） */
+.workbench-page :deep(.wd-panel) { margin-bottom: 0; }
+.workbench-page :deep(.wd-panel__header) { padding: 8px 14px; }
+.workbench-page :deep(.wd-panel__body) { padding: 10px 14px 12px; }
+
+/* ===== 页面顶条（通栏元素，不用 wd-panel：卡片视觉自行补齐，flex 行布局直接挂在元素上） ===== */
+.wb-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
+  padding: 10px 14px 12px;
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-extra-light);
+  border-radius: 8px;
 }
 .wb-topbar__brand {
   display: flex;
@@ -525,16 +541,16 @@ function openApp(label: string) {
   font-variant-numeric: tabular-nums;
 }
 
-/* ===== 欢迎横幅（wd-panel 无标题形态：渐变底走 --wd-panel-bg-image 令牌——
-   Panel 在 background 简写后有独立的 background-image 声明，渐变属 image 类值须走该令牌；flex 行布局挂在 body 上） ===== */
+/* ===== 欢迎横幅（通栏元素，不用 wd-panel：渐变底卡片视觉自行补齐，flex 行布局直接挂在元素上） ===== */
 .wb-banner {
-  --wd-panel-bg-image: linear-gradient(120deg, var(--el-color-primary-light-8) 0%, var(--el-color-primary-light-9) 70%);
-}
-.wb-banner :deep(.wd-panel__body) {
   display: flex;
   align-items: center;
   gap: 8px 20px;
   flex-wrap: wrap;
+  padding: 10px 14px 12px;
+  background: linear-gradient(120deg, var(--el-color-primary-light-8) 0%, var(--el-color-primary-light-9) 70%);
+  border: 1px solid var(--el-border-color-extra-light);
+  border-radius: 8px;
 }
 .wb-banner__text {
   display: flex;
@@ -682,18 +698,20 @@ function openApp(label: string) {
   min-width: 0;
 }
 
-/* ===== 今日数据总览 ===== */
+/* ===== 今日数据总览：不做整框卡片，列间单实线分割 ===== */
 .wb-stats {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
 }
 .wb-stat {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--el-border-color-extra-light);
-  border-radius: 8px;
-  padding: 8px 10px;
+  padding: 2px 14px;
+  border-left: 1px solid var(--el-border-color-extra-light);
+}
+.wb-stat:first-child {
+  border-left: none;
+  padding-left: 0;
 }
 /* 近 7 日迷你趋势折线：垫在卡片底部，填充同高拉伸后的剩余空间 */
 .wb-stat__spark {
@@ -703,8 +721,8 @@ function openApp(label: string) {
   margin-top: auto;
 }
 .wb-stat__label {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  color: var(--el-text-color-regular);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -712,16 +730,17 @@ function openApp(label: string) {
 .wb-stat__value {
   display: block;
   margin-top: 3px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--el-color-primary);
   line-height: 1.2;
+  letter-spacing: -0.2px;
   font-variant-numeric: tabular-nums;
 }
 .wb-stat__value i {
   font-style: normal;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--el-text-color-secondary);
   margin-left: 2px;
 }
@@ -1010,27 +1029,34 @@ function openApp(label: string) {
   white-space: nowrap;
 }
 
-/* ===== 快捷功能九宫格（侧栏窄列：图标上、文字下） ===== */
+/* ===== 快捷功能九宫格（侧栏窄列：图标上、文字下；不做整框，格间单实线分割） ===== */
 .wb-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  /* 出血到面板 body 边缘，让发丝分割线贯通到底 */
+  margin: 0 -14px -12px;
 }
 .wb-grid__item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  padding: 9px 6px;
-  border: 1px solid var(--el-border-color-extra-light);
-  border-radius: 8px;
-  background: var(--el-bg-color);
+  padding: 13px 6px;
+  border: none; /* button 默认 2px outset 底座先清掉 */
+  border-left: 1px solid var(--el-border-color-extra-light);
+  border-top: 1px solid var(--el-border-color-extra-light);
+  background: transparent;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: background-color 0.2s ease;
+}
+.wb-grid__item:nth-child(-n + 3) {
+  border-top: none;
+}
+.wb-grid__item:nth-child(3n + 1) {
+  border-left: none;
 }
 .wb-grid__item:hover {
-  border-color: var(--el-color-primary-light-5);
-  background: var(--el-color-primary-light-9);
+  background: var(--el-fill-color-extra-light);
 }
 .wb-grid__icon {
   display: inline-flex;
@@ -1057,9 +1083,28 @@ function openApp(label: string) {
   .wb-row { grid-template-columns: 1fr; }
   .wb-stats { grid-template-columns: repeat(3, 1fr); }
   .wb-core { grid-template-columns: 1fr; }
+  /* 3 列两行：行首去左边线，行间加横向分割线 */
+  .wb-stat:nth-child(3n + 1) { border-left: none; padding-left: 0; }
+  .wb-stat:nth-child(n + 4) {
+    border-top: 1px solid var(--el-border-color-extra-light);
+    margin-top: 8px;
+    padding-top: 10px;
+  }
 }
 @media (max-width: 640px) {
   .wb-stats { grid-template-columns: repeat(2, 1fr); }
   .wb-grid { grid-template-columns: repeat(2, 1fr); }
+  /* 2 列多行：先恢复被 3n+1 误删的左边线，再按 2n+1 去行首左边线；行间横向分割线 */
+  .wb-stat:nth-child(3n + 1) { border-left: 1px solid var(--el-border-color-extra-light); padding-left: 14px; }
+  .wb-stat:nth-child(2n + 1) { border-left: none; padding-left: 0; }
+  .wb-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--el-border-color-extra-light);
+    margin-top: 8px;
+    padding-top: 10px;
+  }
+  .wb-grid__item:nth-child(3n + 1) { border-left: 1px solid var(--el-border-color-extra-light); }
+  .wb-grid__item:nth-child(2n + 1) { border-left: none; }
+  .wb-grid__item:nth-child(-n + 2) { border-top: none; }
+  .wb-grid__item:nth-child(n + 3) { border-top: 1px solid var(--el-border-color-extra-light); }
 }
 </style>

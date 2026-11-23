@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
@@ -312,5 +312,132 @@ describe('WdPanel 样式默认值', () => {
   it('margin-bottom 默认 6px（--wd-panel-margin-bottom 未设置时的出厂回退值）', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/components/styles/Panel.vue'), 'utf-8')
     expect(source).toContain('margin-bottom: var(--wd-panel-margin-bottom, 6px)')
+  })
+})
+
+describe('WdPanel fullscreenable 专注模式（原地全屏）', () => {
+  let wrappers: Array<{ unmount: () => void }> = []
+
+  afterEach(() => {
+    wrappers.forEach((w) => w.unmount())
+    wrappers = []
+    document.body.style.overflow = ''
+  })
+
+  function mountFullscreen(props: Record<string, unknown> = {}, slots: Record<string, unknown> = {}) {
+    const wrapper = mount(WdPanel, {
+      props: { title: '专注面板', ...props },
+      slots
+    })
+    wrappers.push(wrapper)
+    return wrapper
+  }
+
+  it('fullscreenable 默认 false：不渲染全屏触发按钮（普通面板行为不变）', () => {
+    const wrapper = mountFullscreen()
+    expect(wrapper.find('.wd-panel__fullscreen-trigger').exists()).toBe(false)
+    expect(wrapper.find('.wd-panel').classes()).not.toContain('is-fullscreen')
+    // 未开启时也不渲染全屏遮罩（teleport 节点）
+    expect(document.querySelector('.wd-panel__fullscreen-mask')).toBeNull()
+  })
+
+  it('fullscreenable=true：右上角渲染全屏触发按钮（aria-label 进入全屏，位于头部操作区）', () => {
+    const wrapper = mountFullscreen({ fullscreenable: true })
+    const trigger = wrapper.find('.wd-panel__fullscreen-trigger')
+    expect(trigger.exists()).toBe(true)
+    expect(trigger.attributes('aria-label')).toBe('进入全屏')
+    expect(trigger.attributes('role')).toBe('button')
+    expect(trigger.element.closest('.wd-panel__header-extra')).toBeTruthy()
+  })
+
+  it('点击全屏按钮：进入全屏（根 is-fullscreen + 事件 + 锁定页面滚动 + 遮罩激活）', async () => {
+    const wrapper = mountFullscreen({ fullscreenable: true })
+    await wrapper.find('.wd-panel__fullscreen-trigger').trigger('click')
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).toContain('is-fullscreen')
+    expect(wrapper.emitted('update:fullscreen')).toEqual([[true]])
+    expect(wrapper.emitted('fullscreen-change')).toEqual([[true]])
+    expect(document.body.style.overflow).toBe('hidden')
+    expect(wrapper.find('.wd-panel__fullscreen-trigger').attributes('aria-label')).toBe('退出全屏')
+    // 遮罩节点 teleport 到 body 且标记激活
+    const mask = document.querySelector('.wd-panel__fullscreen-mask')
+    expect(mask).toBeTruthy()
+    expect(mask?.classList.contains('is-active')).toBe(true)
+  })
+
+  it('全屏态再点击关闭按钮：退出全屏并恢复页面滚动', async () => {
+    const wrapper = mountFullscreen({ fullscreenable: true })
+    await wrapper.find('.wd-panel__fullscreen-trigger').trigger('click')
+    await settle()
+    await wrapper.find('.wd-panel__fullscreen-trigger').trigger('click')
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).not.toContain('is-fullscreen')
+    const emitted = wrapper.emitted('update:fullscreen') as unknown[][] | undefined
+    expect(emitted?.[emitted.length - 1]).toEqual([false])
+    expect(document.body.style.overflow).toBe('')
+    expect(wrapper.find('.wd-panel__fullscreen-trigger').attributes('aria-label')).toBe('进入全屏')
+  })
+
+  it('受控模式：fullscreen prop 切换驱动全屏态与滚动锁定', async () => {
+    const wrapper = mountFullscreen({ fullscreenable: true })
+    expect(wrapper.find('.wd-panel').classes()).not.toContain('is-fullscreen')
+    await wrapper.setProps({ fullscreen: true })
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).toContain('is-fullscreen')
+    expect(document.body.style.overflow).toBe('hidden')
+    await wrapper.setProps({ fullscreen: false })
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).not.toContain('is-fullscreen')
+    expect(document.body.style.overflow).toBe('')
+  })
+
+  it('初始 fullscreen=true：挂载后直接进入全屏', async () => {
+    const wrapper = mountFullscreen({ fullscreenable: true, fullscreen: true })
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).toContain('is-fullscreen')
+    expect(document.body.style.overflow).toBe('hidden')
+    expect(wrapper.emitted('fullscreen-change')).toEqual([[true]])
+  })
+
+  it('暴露方法：toggleFullscreen / enterFullscreen / exitFullscreen', async () => {
+    const wrapper = mountFullscreen({ fullscreenable: true })
+    await (wrapper.vm as unknown as { toggleFullscreen: () => void }).toggleFullscreen()
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).toContain('is-fullscreen')
+    await (wrapper.vm as unknown as { exitFullscreen: () => void }).exitFullscreen()
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).not.toContain('is-fullscreen')
+    await (wrapper.vm as unknown as { enterFullscreen: () => void }).enterFullscreen()
+    await settle()
+    expect(wrapper.find('.wd-panel').classes()).toContain('is-fullscreen')
+    expect(document.body.style.overflow).toBe('hidden')
+  })
+
+  it('extra 插槽内容与全屏按钮共存于头部操作区', () => {
+    const wrapper = mountFullscreen(
+      { fullscreenable: true },
+      { extra: '<button class="slot-extra">自定义操作</button>' }
+    )
+    expect(wrapper.find('.wd-panel__header-extra .slot-extra').exists()).toBe(true)
+    expect(wrapper.find('.wd-panel__header-extra .wd-panel__fullscreen-trigger').exists()).toBe(true)
+  })
+
+  it('卸载清理：全屏态卸载组件后恢复页面滚动、遮罩节点移除', async () => {
+    const wrapper = mountFullscreen({ fullscreenable: true })
+    await wrapper.find('.wd-panel__fullscreen-trigger').trigger('click')
+    await settle()
+    expect(document.body.style.overflow).toBe('hidden')
+    expect(document.querySelector('.wd-panel__fullscreen-mask')).toBeTruthy()
+    wrapper.unmount()
+    await settle()
+    expect(document.body.style.overflow).toBe('')
+    expect(document.querySelector('.wd-panel__fullscreen-mask')).toBeNull()
+    wrappers = []
+  })
+
+  it('样式令牌：全屏层级与遮罩色使用 --wd-panel-fullscreen-* 变量', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/components/styles/Panel.vue'), 'utf-8')
+    expect(source).toContain('--wd-panel-fullscreen-z-index')
+    expect(source).toContain('--wd-panel-fullscreen-mask-color')
   })
 })

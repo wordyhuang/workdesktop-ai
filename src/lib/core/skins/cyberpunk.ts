@@ -21,6 +21,12 @@ export const cyberpunkSkin: SkinPreset = {
       '--wd-text-color-regular': '#c9b8e8',
       '--wd-text-color-secondary': '#9d8cc7',
       '--wd-text-color-placeholder': '#6b5b94',
+      // on-dark 色板：与全局文字色板同值（整页深色），供换装块在导航区 chrome 统一消费
+      '--wd-text-color-primary-on-dark': '#f3e8ff',
+      '--wd-text-color-regular-on-dark': '#c9b8e8',
+      '--wd-text-color-secondary-on-dark': '#9d8cc7',
+      '--wd-text-color-placeholder-on-dark': '#6b5b94',
+      '--wd-color-link-on-dark': '#e879f9',
       '--wd-border-color': '#2d2152',
       '--wd-border-color-light': '#251a46',
       '--wd-border-width': '2px',
@@ -36,19 +42,13 @@ export const cyberpunkSkin: SkinPreset = {
       '--wd-panel-shadow-sm': '0 0 18px rgba(217, 70, 239, 0.16)',
       '--wd-panel-shadow-md': '0 0 28px rgba(217, 70, 239, 0.28)',
       '--wd-panel-title-bar-bg': 'linear-gradient(180deg, #00e5ff, #d946ef)',
-      '--wd-datagrid-bg': '#150f2a',
-      '--wd-datagrid-border-color': 'rgba(217, 70, 239, 0.4)',
-      '--wd-editable-grid-bg': '#150f2a',
-      '--wd-editable-grid-border-color': 'rgba(217, 70, 239, 0.4)',
       '--wd-search-bg': '#150f2a',
       '--wd-form-footer-bg': 'rgba(217, 70, 239, 0.05)',
       '--wd-station-aside-bg': '#070412',
       '--wd-station-header-bg': '#070412',
       '--wd-station-tabs-bg': '#070412',
-      // 背景素材（纯 CSS 生成零外部资源）：内容容器贴青色 HUD 网格（呼应参考图青辅色连接线），导航区贴品红扫描线（CRT 屏幕感）；低透明度不影响可读性
+      // 背景素材（纯 CSS 生成零外部资源）：搜索贴青色 HUD 网格（呼应参考图青辅色连接线），导航区贴品红扫描线（CRT 屏幕感）；低透明度不影响可读性；datagrid / editablegrid 全皮肤定稿无背景
       '--wd-panel-bg-image': 'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)',
-      '--wd-datagrid-bg-image': 'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)',
-      '--wd-editable-grid-bg-image': 'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)',
       '--wd-search-bg-image': 'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 24px)',
       '--wd-station-aside-bg-image': 'repeating-linear-gradient(0deg, rgba(217, 70, 239, 0.06) 0 1px, transparent 1px 4px)',
       '--wd-station-header-bg-image': 'repeating-linear-gradient(0deg, rgba(217, 70, 239, 0.06) 0 1px, transparent 1px 4px)',
@@ -75,6 +75,22 @@ export const cyberpunkSkin: SkinPreset = {
   // 皮肤专属 CSS 规则：品红渐变主按钮 + 紫光外发光 + ghost 默认按钮 + 霓虹 primary 标签
   // （EP 变量只能纯色填充，渐变/外发光必须 rule 级覆盖；发光色与面板描边 rgba(217,70,239) 同源）
   cssRules: `
+/* 深色表面换装块（on-dark 文字令牌，见 skin-design-guide 深色必配清单）：顶栏/侧栏/页签条
+   整体把浅色默认文字令牌切换为 on-dark 色板；wd+el 双层重映射（自定义属性在声明元素处
+   对 var() 求值，仅重映射 wd 层不会联动 el 消费方），其余区域沿用全局深色适配值 */
+.wd-station .wd-station__header,
+.wd-station .wd-station__aside,
+.wd-station .wd-station__tabs-bar {
+  --wd-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --wd-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --wd-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --wd-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --el-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --el-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --el-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --el-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --wd-color-link: var(--wd-color-link-on-dark);
+}
 /* 主按钮：品红→紫罗兰渐变 + 紫光外发光（渐变起点跟随 --el-color-primary，用户覆盖主色可联动） */
 .el-button--primary {
   background-image: linear-gradient(135deg, var(--el-color-primary), #ad6bf5);

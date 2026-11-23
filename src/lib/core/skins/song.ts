@@ -50,25 +50,21 @@ export const songSkin: SkinPreset = {
       '--wd-panel-margin-bottom': '14px',
       '--wd-panel-shadow-sm': '0 1px 2px rgba(49, 74, 71, 0.04)',
       '--wd-panel-shadow-md': '0 6px 18px rgba(49, 74, 71, 0.08)',
-      // 内容容器：表格 / 可编辑表格 / 搜索 / 表单操作条统一青灰细边与小圆角
-      '--wd-datagrid-bg': '#fcfdfc',
-      '--wd-datagrid-border-color': '#dbe5e1',
+      // 内容容器：可编辑表格 / 搜索 / 表单操作条统一青灰细边与小圆角；datagrid 全皮肤定稿无边框无背景，仅保留小圆角
       '--wd-datagrid-radius': '4px',
       '--wd-datagrid-padding': '16px',
-      '--wd-editable-grid-bg': '#fcfdfc',
-      '--wd-editable-grid-border-color': '#dbe5e1',
+      // editablegrid 仅保留卡片小圆角（bg / border-color 全皮肤定稿不再注入）
       '--wd-editable-grid-radius': '4px',
       '--wd-search-bg': '#f4f8f6',
       '--wd-search-padding': '16px',
       '--wd-form-footer-bg': '#f4f8f6',
       '--wd-form-footer-padding': '12px 18px',
       '--wd-form-footer-radius': '4px',
-      // 导航区：青瓷淡底侧栏 + 近白页头 / 页签条 + 天青激活态 + 灰青分组标题
+      // 导航区：青瓷淡底侧栏 + 近白页头 / 页签条 + 天青激活色（激活态无浅底，仅文字色 + 滑块横线）+ 灰青分组标题
       '--wd-station-aside-bg': '#e9f0ed',
       '--wd-station-header-bg': '#f7faf8',
       '--wd-station-tabs-bg': '#f1f6f4',
       '--wd-station-tabs-active-color': '#4a7d78',
-      '--wd-station-tabs-active-bg': '#dce9e5',
       '--wd-station-menu-group-color': '#849b95',
       // 背景素材（内联 SVG data URI 零外部资源）：
       // 面板铺汝窑冰裂纹开片（260x170 平铺）：38 条裂纹大折角随机跨区，

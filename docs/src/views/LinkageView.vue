@@ -28,33 +28,6 @@
       title="数据列表"
       description="SearchPanel 查询 → 刷新同 filter DataGrid；DrawerButton 表单提交 → 关闭抽屉 + 刷新表格（headRefreshDatagrid）"
     >
-      <div class="linkage__toolbar">
-        <wd-drawer-button
-          type="primary"
-          label="新增用户"
-          title="新增用户"
-          filter="link1"
-          head-refresh-datagrid="link1"
-        >
-          <wd-data-form mode="create" submit-api="/user/save" :rules="rules">
-            <template #default="{ model }">
-              <el-form-item label="姓名" prop="name">
-                <el-input v-model="model.name" />
-              </el-form-item>
-              <el-form-item label="部门" prop="dept">
-                <el-select v-model="model.dept" style="width: 100%">
-                  <el-option v-for="d in depts" :key="d" :label="d" :value="d" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="邮箱" prop="email">
-                <el-input v-model="model.email" />
-              </el-form-item>
-            </template>
-          </wd-data-form>
-        </wd-drawer-button>
-        <span class="linkage__hint">提交后表格自动刷新（新增行会出现在列表顶部）</span>
-      </div>
-
       <wd-data-grid
         api="/user/list"
         :active="true"
@@ -62,6 +35,32 @@
         :with-pager="false"
         :tools="{ refresh: true }"
       >
+        <template #toolbar>
+          <wd-drawer-button
+            type="primary"
+            label="新增用户"
+            title="新增用户"
+            filter="link1"
+            head-refresh-datagrid="link1"
+          >
+            <wd-data-form mode="create" submit-api="/user/save" :rules="rules">
+              <template #default="{ model }">
+                <el-form-item label="姓名" prop="name">
+                  <el-input v-model="model.name" />
+                </el-form-item>
+                <el-form-item label="部门" prop="dept">
+                  <el-select v-model="model.dept" style="width: 100%">
+                    <el-option v-for="d in depts" :key="d" :label="d" :value="d" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                  <el-input v-model="model.email" />
+                </el-form-item>
+              </template>
+            </wd-data-form>
+          </wd-drawer-button>
+          <span class="linkage__hint">提交后表格自动刷新（新增行会出现在列表顶部）</span>
+        </template>
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="name" label="姓名" min-width="120" />
         <el-table-column prop="dept" label="部门" width="110" />
@@ -206,12 +205,6 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 14px;
 }
-.linkage__toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
 .linkage__hint {
   font-size: 12px;
   color: var(--wd-text-color-secondary, #909399);
@@ -294,8 +287,8 @@ onUnmounted(() => {
 }
 
 @media (max-width: 960px) {
-  .linkage__toolbar {
-    flex-wrap: wrap;
+  .linkage__hint {
+    display: none;
   }
 }
 </style>

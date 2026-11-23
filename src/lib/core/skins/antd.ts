@@ -36,8 +36,6 @@ export const antdSkin: SkinPreset = {
       '--wd-panel-shadow-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
       '--wd-panel-title-bar-width': '0',
       '--wd-datagrid-radius': '8px',
-      '--wd-datagrid-border-color': '#f0f0f0',
-      '--wd-editable-grid-border-color': '#f0f0f0',
       // 导航区：Ant Design Pro 招牌暗蓝侧栏（#001529），内容区白卡浅灰底衬托
       '--wd-station-aside-bg': '#001529'
     }

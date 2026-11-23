@@ -15,12 +15,22 @@
   --wd-color-warning: #e6a23c;
   --wd-color-danger: #f56c6c;
   --wd-color-info: #909399;
+  /* 链接色：默认随主色（深色表面由皮肤换装块重映射为 on-dark 链接色） */
+  --wd-color-link: var(--wd-color-primary);
 
-  /* 文本（炭黑色阶，与 Logo「Work」字色同族） */
+  /* 文本（炭黑色阶，与 Logo「Work」字色同族；secondary #7d8187 对白底 ≥3.0，未覆盖皮肤回落值全部达标） */
   --wd-text-color-primary: #24272c;
   --wd-text-color-regular: #555b63;
-  --wd-text-color-secondary: #909399;
+  --wd-text-color-secondary: #7d8187;
   --wd-text-color-placeholder: #a8abb2;
+
+  /* on-dark 文字色板：深色表面（Station 导航区 chrome）的文字默认色，出厂按商务藏青 #1e2c4f 调校。
+     浅色/深色两套默认色分离——组件一律引用浅色默认令牌，深色表面由皮肤换装块整体切换（见 skin-design-guide 深色必配清单） */
+  --wd-text-color-primary-on-dark: #f2f5fa;
+  --wd-text-color-regular-on-dark: #d9dfe9;
+  --wd-text-color-secondary-on-dark: #a9b4c8;
+  --wd-text-color-placeholder-on-dark: #6f7a90;
+  --wd-color-link-on-dark: #7fb0ff;
 
   /* 边框 / 背景（冷灰，衬托品牌蓝） */
   --wd-border-color: #d8dde5;

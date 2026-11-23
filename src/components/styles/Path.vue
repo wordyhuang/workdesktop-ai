@@ -370,7 +370,7 @@ defineExpose({ refresh })
   text-overflow: ellipsis;
 }
 .wd-path :deep(.el-breadcrumb__inner.is-link) {
-  color: var(--wd-color-primary, #409eff);
+  color: var(--wd-color-link, #409eff);
   font-weight: 400;
 }
 .wd-path :deep(.el-breadcrumb__inner.is-link:hover) {

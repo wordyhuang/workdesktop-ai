@@ -1,8 +1,8 @@
 # 场景九：工作台页面（仪表盘 / 首屏聚合页）
 
 > **创建时间**：2026-11-04\
-> **最后修改时间**：2026-11-04\
-> **当前版本**：V\_1.0\
+> **最后修改时间**：2026-11-19\
+> **当前版本**：V\_1.1\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：工作台 / 仪表盘类页面的布局骨架、六种卡片区块模式、SVG 图表实现与数据接入口径\
 > **文档简略描述**：本文件是「编码场景指导」的第 9 个子场景（新增场景，非主文档拆分）。参考实现：[ScenarioWorkbenchView.vue](../docs/src/views/ScenarioWorkbenchView.vue)（访问地址 `http://localhost:5003/#/scenario/workbench`，路由名 ScenarioWorkbench）。小节编号（§x.y）自 §9 起；跨场景引用（如"见 §0.8"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。工作台的数据请求规范见 [ai-api/use-request-guide.md](../ai-api/use-request-guide.md)。
@@ -32,6 +32,8 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
+│ 页面介绍 tips（wd-tips box 模式）：页面用途 + 注意事项          │
+├──────────────────────────────────────────────────────────────┤
 │ 顶条（通栏，非卡片）：品牌区(logo+标题+副题)                    │
 │   ｜今日完成度(百分比+任务数+进度条)｜日期时间                  │
 ├──────────────────────────────────────────────────────────────┤
@@ -100,9 +102,16 @@
 
 **④ 列表卡（异常提醒 / 待办审批 / 我的流程）**：条目纵向排布，条目间 `border-bottom: 1px solid var(--el-border-color-extra-light)` 分隔（最后一条去掉）；标题 13px 单行省略、meta 12px；操作按钮靠右。待办类条目操作成功后：ElMessage 反馈（§0.8）→ 从数组移除 → 外层用 `<transition-group>` 做移除动画；列表清空后显示 el-empty（§0.10）。
 
-**⑤ 时间线卡（今日任务）**：extra 插槽放 el-radio-group 做状态过滤（computed 过滤，切换时重置到第一页）；条目 = 时间(定宽) + 状态圆点(8px, 语义色) + 标题 + 状态标签；前端分页 `el-pagination` page-size 5、`layout="prev, pager, next"`、`hide-on-single-page`。
+**⑤ 时间线卡（今日任务）**：extra 插槽放 `wd-radio-list`（开 `:button-style`，§0.6 少选项按钮形态口径）做状态过滤（computed 过滤，切换时重置到第一页）；条目 = 时间(定宽) + 状态圆点(8px, 语义色) + 标题 + 状态标签；前端分页 `el-pagination` page-size 5、`layout="prev, pager, next"`、`hide-on-single-page`。
 
 **⑥ 九宫格（快捷功能）**：`grid: repeat(3, 1fr)`，每项是 `button`（不是 a 链接）= 图标块(34px 圆角) + 文字(12px)；hover 换边框/背景；已上线的项路由跳转，未上线的点击 `ElMessage.info('打开「xx」（演示入口）')`，不留死链接。
+
+**数据分析页（统计中心类）区块模式**——场景判据：以指标浏览、趋势对比、结构占比、下钻明细为主，无主表格；容器与顶部 tips 同样遵守 §0.1 / §0.3：
+
+- **⑦ KPI 指标卡**：每卡 = 指标名(12px) + 大数值(18px, tabular-nums) + 单位 +「较上期」涨跌 wd-tag（icon TopRight/BottomRight，正 success 负 danger；**逆指标**如退款率、取消率的好坏判断需取反）+ 迷你 sparkline（§9.4① 同款画法）。点击卡片联动主趋势图时，激活卡用主色描边高亮；涨跌色统一走 `--el-color-success` / `--el-color-danger`，禁止硬编码十六进制。
+- **⑧ 榜单卡（Top N）**：行 = 序号徽标（前 3 名高亮色）+ 名称（单行省略 + `:title` 悬浮）+ 占比条形（宽度按第一名归一化，色走 `--el-color-primary` 系）+ 百分比右对齐；不做成表格。
+- **⑨ 占比环卡**：原生 SVG circle + stroke-dasharray 分段绘制，-90deg 起始、段间留 2px 缝隙；hover 某段时其他段降透明度、图例联动；中心显示总量（过万显示 x.xw）。下钻明细用 wd-drawer / wd-drawer-button 或 v-show 面板（§0.7），不走整页跳转。
+- 时间范围切换（近 7 天 / 近 30 天 / 近 12 个月）属「少选项」场景，用 `wd-radio-list` 开 `:button-style`（§0.6），**不自绘分段按钮**。
 
 ### 9.5 交互流程（加载与数据接入）
 
@@ -399,11 +408,12 @@ function openApp(label: string) {
 | 项 | 规范 |
 | --- | --- |
 | 适用判定 | 登录后首屏、聚合多业务摘要卡片、以浏览和快速跳转为主（无主表格、无复杂表单）时用本场景；一旦出现"完整记录列表 + 分页"就改用 §1 / §8 的列表场景 |
-| 页面容器 | `max-width: 1280px` 居中，flex column + `gap: 10px` 控制垂直节奏；顶条/横幅为通栏元素，业务区块才用 wd-panel |
+| 页面容器 | `max-width: 1280px` 居中，flex column + `gap: 10px` 控制垂直节奏；顶条/横幅为通栏元素，业务区块才用 wd-panel（布局容器豁免细则见 §0.3） |
+| 页面介绍 | 页面顶部用 `<wd-tips type="box">` 说明页面用途与注意事项（§0.1，所有功能页面统一要求，工作台 / 数据分析页不豁免） |
 | 布局骨架 | 主列 + 340px 侧列（`grid-template-columns: minmax(0, 1fr) 340px`）；`minmax(0,1fr)` 必须带，防止长内容撑破栅格 |
 | 同高拉伸 | 同一行左右面板底边对齐用 `wb-row--fill`（panel 与 body 转 flex column + `flex: 1`）；"内容不足"的侧列面板用 `flex: 1` 吸收剩余高度，不留白 |
 | 紧凑化 | 工作台信息密度高，统一 `:deep(.wd-panel)` 收敛 header/body 内边距并抵消默认外边距，全页保持一种节奏 |
-| 区块模式 | 按六种标准模式套用（统计卡 / 轮播卡 / 图表卡 / 列表卡 / 时间线卡 / 九宫格），不自创新结构；同模式卡片样式必须一致 |
+| 区块模式 | 按六种标准模式套用（统计卡 / 轮播卡 / 图表卡 / 列表卡 / 时间线卡 / 九宫格），不自创新结构；同模式卡片样式必须一致；数据分析页按 ⑦ KPI 指标卡 / ⑧ 榜单卡 / ⑨ 占比环卡 套用（见 §9.4 末） |
 | 图表选型 | 趋势 / 迷你走势用原生 SVG 手绘（polyline + linearGradient + `<title>` 悬浮），坐标换算封装成函数；**不默认引入 ECharts 等图表库**，确需复杂交互图表时先评估包体与按需引入方案 |
 | 数据接入 | 静态演示数据 + interface 类型定义先行，接口就绪后仅替换取数来源（§0.2，详见 use-request-guide.md）；各卡片并行取数、独立渲染、独立空状态 |
 | 状态语义色 | `stateType()` / `flowState()` 之类的语义色映射**集中定义一次**全页复用，禁止在模板里散落三元判断；状态点 / 标签 / 进度条颜色统一走 `--el-color-*` 主题变量 |
@@ -419,10 +429,12 @@ function openApp(label: string) {
 
 | 组件 | 补充项 | 说明 |
 | --- | --- | --- |
-| — | — | 工作台全部由既有能力组合实现（wd-panel + wd-tag + wd-tips + el-progress / el-empty / el-pagination / el-radio-group + 原生 HTML/SVG），不新增组件规格 |
+| — | — | 工作台全部由既有能力组合实现（wd-panel + wd-tag + wd-tips + el-progress / el-empty / el-pagination / wd-radio-list(:button-style) + 原生 HTML/SVG），不新增组件规格 |
 
 > 结论：场景九**不新增组件规格**。图表用原生 SVG；若后续业务确需专业交互图表，再单独评估引入图表库并回流 PRD。
 
 ***
 
 > **版本变更记录**：V\_1.0（2026-11-04）——首版发布。基于参考实现 ScenarioWorkbenchView.vue 提炼布局骨架、六种卡片区块模式、SVG 图表实现与数据接入口径，形成工作台场景指引。
+>
+> V\_1.0 → V\_1.1（2026-11-19）——§9.2 结构图补「页面介绍 tips」行；§9.4⑤ 状态过滤由 el-radio-group 统一为 `wd-radio-list`（:button-style，消除与 SKILL 约束 11 / §0.6 的口径冲突）；§9.4 新增「数据分析页（统计中心类）区块模式」（⑦ KPI 指标卡 / ⑧ 榜单卡 / ⑨ 占比环卡 + 时间范围切换口径）；§9.7 补「页面介绍」规范行（顶部 box tips 所有功能页面不豁免）；§9.8 同步组件口径。

@@ -21,6 +21,12 @@ export const techSkin: SkinPreset = {
       '--wd-text-color-regular': '#9cc3e8',
       '--wd-text-color-secondary': '#6b90bb',
       '--wd-text-color-placeholder': '#45638c',
+      // on-dark 色板：与全局文字色板同值（整页深色），供换装块在导航区 chrome 统一消费
+      '--wd-text-color-primary-on-dark': '#dcf4ff',
+      '--wd-text-color-regular-on-dark': '#9cc3e8',
+      '--wd-text-color-secondary-on-dark': '#6b90bb',
+      '--wd-text-color-placeholder-on-dark': '#45638c',
+      '--wd-color-link-on-dark': '#00e5ff',
       '--wd-border-color': 'rgba(0, 229, 255, 0.28)',
       '--wd-border-color-light': 'rgba(0, 229, 255, 0.16)',
       '--wd-radius-base': '6px',
@@ -35,10 +41,6 @@ export const techSkin: SkinPreset = {
       '--wd-panel-shadow-sm': '0 0 18px rgba(0, 229, 255, 0.14)',
       '--wd-panel-shadow-md': '0 0 28px rgba(0, 229, 255, 0.26)',
       '--wd-panel-title-bar-bg': 'linear-gradient(180deg, #00e5ff, #2979ff)',
-      '--wd-datagrid-bg': '#0a1828',
-      '--wd-datagrid-border-color': 'rgba(0, 229, 255, 0.3)',
-      '--wd-editable-grid-bg': '#0a1828',
-      '--wd-editable-grid-border-color': 'rgba(0, 229, 255, 0.3)',
       '--wd-search-bg': '#0a1828',
       // DataForm 按钮容器：青蓝渐变 HUD 操作条 + 四周内边距 + 圆角（默认令牌仅顶部留白，给底色必须同步 padding/radius 防按钮贴边）
       '--wd-form-footer-bg': 'linear-gradient(90deg, rgba(0, 229, 255, 0.09), rgba(41, 121, 255, 0.05))',
@@ -48,11 +50,7 @@ export const techSkin: SkinPreset = {
       '--wd-station-header-bg': '#040b16',
       '--wd-station-tabs-bg': '#040b16',
       // 背景素材：面板保持纯深空蓝（装饰收敛到非连续边框，视觉不吵）；
-      // 表格 / 搜索贴青色 HUD 网格，导航区贴青色扫描线（CRT 屏幕感），低透明度不影响可读性
-      '--wd-datagrid-bg-image':
-        'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.045) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.045) 0 1px, transparent 1px 24px)',
-      '--wd-editable-grid-bg-image':
-        'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.045) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.045) 0 1px, transparent 1px 24px)',
+      // 搜索贴青色 HUD 网格，导航区贴青色扫描线（CRT 屏幕感），低透明度不影响可读性；datagrid / editablegrid 全皮肤定稿无背景
       '--wd-search-bg-image':
         'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.045) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.045) 0 1px, transparent 1px 24px)',
       '--wd-station-aside-bg-image': 'repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0 1px, transparent 1px 4px)',
@@ -81,6 +79,22 @@ export const techSkin: SkinPreset = {
   // 菜单选中光条 + 面板非连续边框 + 科技动画（面板扫描光 / 标识条呼吸 / 按钮流光 / 聚焦光晕 / 进度条流光 / 加载呼吸）
   // （EP 变量只能纯色填充，渐变/外发光必须 rule 级覆盖；发光色与面板描边 rgba(0,229,255) 同源）
   cssRules: `
+/* 深色表面换装块（on-dark 文字令牌，见 skin-design-guide 深色必配清单）：顶栏/侧栏/页签条
+   整体把浅色默认文字令牌切换为 on-dark 色板；wd+el 双层重映射（自定义属性在声明元素处
+   对 var() 求值，仅重映射 wd 层不会联动 el 消费方），其余区域沿用全局深色适配值 */
+.wd-station .wd-station__header,
+.wd-station .wd-station__aside,
+.wd-station .wd-station__tabs-bar {
+  --wd-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --wd-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --wd-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --wd-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --el-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --el-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --el-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --el-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --wd-color-link: var(--wd-color-link-on-dark);
+}
 /* 表格内线青色：el-table 单元格线统一同源青 0.2（弱于容器外框拉开层次）。
    EP 在 .el-table 元素规则上自定义 --el-table-border-color，cssVars :root 注入会被盖住，
    必须同选择器级覆盖——本规则与 EP .el-table 规则同 specificity (0,1,0)，皮肤样式注入在后胜出 */

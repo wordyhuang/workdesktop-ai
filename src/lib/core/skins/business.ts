@@ -39,6 +39,24 @@ export const businessSkin: SkinPreset = {
 /* ===== 藏青边栏框架配套 =====
    混合模式：边栏深藏青、内容区保持白卡浅灰；菜单变量限定 Station 作用域，不影响内容区。
    EP 默认菜单 hover 底为主色 light-9（浅灰蓝），藏青底上会糊成浅色亮块，改半透明白同源 */
+/* ===== 深色表面换装块（on-dark 文字令牌，见 skin-design-guide 深色必配清单） =====
+   顶栏/侧栏/底栏为深藏青表面，整体把浅色默认文字令牌切换为 on-dark 色板（出厂按藏青调校）；
+   CSS 自定义属性在声明元素处对 var() 求值（css-variables-2），theme.css 的 --el-text-color-*: var(--wd-text-color-*)
+   已在 :root 求值完毕，子树内仅重映射 wd 层不会联动 el 消费方，故 wd+el 双层同时重映射；
+   内容区（白卡浅灰）不在选择器作用域，保持浅色默认色 */
+.wd-station .wd-station__header,
+.wd-station .wd-station__aside,
+.wd-station .wd-station__footer {
+  --wd-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --wd-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --wd-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --wd-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --el-text-color-primary: var(--wd-text-color-primary-on-dark);
+  --el-text-color-regular: var(--wd-text-color-regular-on-dark);
+  --el-text-color-secondary: var(--wd-text-color-secondary-on-dark);
+  --el-text-color-placeholder: var(--wd-text-color-placeholder-on-dark);
+  --wd-color-link: var(--wd-color-link-on-dark);
+}
 .wd-station__menu,
 .wd-station__top-menu .el-menu {
   --el-menu-bg-color: transparent;
@@ -87,6 +105,20 @@ export const businessSkin: SkinPreset = {
   color: var(--wd-color-warning);
   background: transparent;
   box-shadow: inset 0 -2px 0 var(--wd-color-warning);
+}
+/* 顶栏插槽内的默认按钮：el 文字换装后白底按钮浅字不可读（如 docs 壳层画刷换肤按钮），转 ghost 半透明白（与 nav-item hover 同源） */
+.wd-station__header .el-button:not([class*='el-button--']):not(.is-text):not(.is-link) {
+  --el-button-bg-color: transparent;
+  --el-button-border-color: rgba(255, 255, 255, 0.28);
+  --el-button-text-color: #d9dfe9;
+  --el-button-hover-bg-color: rgba(255, 255, 255, 0.08);
+  --el-button-hover-border-color: rgba(255, 255, 255, 0.45);
+  --el-button-hover-text-color: #f2f5fa;
+}
+/* 面包屑链接段：主色（藏青）在藏青顶栏不可读，换装块已切 on-dark 链接色；hover 点缀商务金
+   （div.wd-station 前缀达 (0,6,1)，压过 WdPath scoped 编译产物 (0,5,0)） */
+div.wd-station .wd-station__header .wd-path .el-breadcrumb__inner.is-link:hover {
+  color: var(--wd-color-warning);
 }
 /* 顶部水平菜单：激活下划线同步商务金 */
 .wd-station__top-menu .el-menu--horizontal > .el-menu-item.is-active,

@@ -28,8 +28,6 @@ export const governanceSkin: SkinPreset = {
       '--wd-panel-bg': '#fffaf0',
       '--wd-panel-header-bg': '#c7000b',
       '--wd-panel-title-color': '#ffffff',
-      '--wd-datagrid-bg': '#fffaf0',
-      '--wd-editable-grid-bg': '#fffaf0',
       '--wd-search-bg': '#fffaf0',
       '--wd-form-footer-bg': '#faf2e6'
     }

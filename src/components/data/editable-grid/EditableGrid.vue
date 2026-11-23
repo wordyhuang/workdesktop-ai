@@ -1243,7 +1243,7 @@ watch(
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: var(--wd-bg-color, #fff);
+  /* 容器无背景（全皮肤定稿），透出宿主底色 */
 }
 .wd-editable-grid--auto-height {
   height: 100%;
@@ -1332,11 +1332,8 @@ watch(
   overflow: auto;
 }
 .wd-editable-grid__card {
-  /* 组件级令牌回退链：皮肤可单独定制 EditableGrid 卡片 */
-  background: var(--wd-editable-grid-bg, transparent);
-  /* 背景素材：皮肤可挂纹理/图片（须置于 background 简写之后，否则被简写重置） */
-  background-image: var(--wd-editable-grid-bg-image, none);
-  border: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-editable-grid-border-color, var(--wd-border-color-light, #e4e7ed));
+  /* 卡片为内部元素浅描边（非容器外框）；bg / border-color 令牌全皮肤定稿不再注入，回落出厂浅描边 */
+  border: var(--wd-border-width, 1px) var(--wd-border-style, solid) var(--wd-border-color-light, #e4e7ed);
   border-radius: var(--wd-editable-grid-radius, var(--wd-radius-base, 4px));
   padding: var(--wd-editable-grid-padding, var(--wd-spacing-base, 12px));
   margin-bottom: var(--wd-spacing-base, 12px);

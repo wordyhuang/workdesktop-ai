@@ -1,6 +1,11 @@
 <template>
-  <div class="wd-panel"
-    :class="[`wd-panel--shadow-${shadow}`, { 'wd-panel--no-border': !border, 'wd-panel--card': mode === 'card' }]">
+  <div ref="rootRef" class="wd-panel"
+    :class="[`wd-panel--shadow-${shadow}`, { 'wd-panel--no-border': !border, 'wd-panel--card': mode === 'card', 'is-fullscreen': innerFullscreen }]">
+    <!-- 全屏遮罩：teleport 到 body 的真实节点（根元素自身承担 fixed 全屏，伪元素层级不可控） -->
+    <teleport to="body">
+      <div v-if="fullscreenable" class="wd-panel__fullscreen-mask"
+        :class="{ 'is-active': innerFullscreen }" />
+    </teleport>
     <div v-if="title || $slots.title" class="wd-panel__header"
       :class="{ 'is-collapsible': collapsible, 'is-icon': !!icon, 'is-short-bar': titleBar === 'short' }" role="heading"
       :aria-expanded="collapsible ? openedState : undefined" @click="onHeaderClick"
@@ -17,8 +22,14 @@
             :class="{ 'is-folding': descriptionExpandable, 'is-right': descriptionAlign === 'right' }">{{ description }}</span>
         </slot>
       </div>
-      <div v-if="$slots.extra || collapsible" class="wd-panel__header-extra" @click.stop>
+      <div v-if="$slots.extra || collapsible || fullscreenable" class="wd-panel__header-extra" @click.stop>
         <slot name="extra" />
+        <el-icon v-if="fullscreenable" class="wd-panel__fullscreen-trigger" role="button" tabindex="0"
+          :aria-label="innerFullscreen ? '退出全屏' : '进入全屏'" @click="toggleFullscreen"
+          @keydown.enter.prevent="toggleFullscreen" @keydown.space.prevent="toggleFullscreen">
+          <Close v-if="innerFullscreen" />
+          <FullScreen v-else />
+        </el-icon>
         <el-icon v-if="collapsible" class="wd-panel__collapse-icon" :class="{ 'is-collapsed': !openedState }"
           role="button" :aria-label="openedState ? '收起' : '展开'" tabindex="0" @click="toggle"
           @keydown.enter.prevent="toggle" @keydown.space.prevent="toggle">
@@ -40,8 +51,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, type PropType, type Component } from 'vue'
-import { ArrowDown } from '@element-plus/icons-vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick, type PropType, type Component } from 'vue'
+import { ArrowDown, Close, FullScreen } from '@element-plus/icons-vue'
 import { isIconFontClass, resolveStationIcon } from '../../lib/core/station-icon'
 
 defineOptions({ name: 'WdPanel' })
@@ -82,12 +93,18 @@ const props = defineProps({
     default: 'panel'
   },
   /** 内容高度阈值（px）：collapsible=true 且内容实际高度超过该值时挂载后自动折叠；0=不自动折叠（完全撑开） */
-  collapseHeight: { type: Number, default: 0 }
+  collapseHeight: { type: Number, default: 0 },
+  /** 是否在右上角显示专注（全屏）按钮：点击后面板从原位放大至全屏（FLIP 过渡 + 遮罩淡入），全屏态按钮变为关闭；内容不重挂载、状态不丢失 */
+  fullscreenable: { type: Boolean, default: false },
+  /** 全屏状态（配合 fullscreenable，支持 v-model:fullscreen） */
+  fullscreen: { type: Boolean, default: false }
 })
 
 const emit = defineEmits<{
   (e: 'update:opened', value: boolean): void
   (e: 'change', value: boolean): void
+  (e: 'update:fullscreen', value: boolean): void
+  (e: 'fullscreen-change', value: boolean): void
 }>()
 
 const innerOpened = ref(props.opened)
@@ -113,6 +130,146 @@ function onHeaderClick() {
 }
 
 const contentInnerRef = ref<HTMLElement | null>(null)
+
+// ===== 专注模式（fullscreenable）：原地全屏 FLIP 展开/收缩 =====
+
+const rootRef = ref<HTMLElement | null>(null)
+
+const innerFullscreen = ref(false)
+
+/** 全屏放大过渡时长（ms） */
+const ANIM_MS = 280
+
+let animTimer: ReturnType<typeof setTimeout> | null = null
+let scrollLocked = false
+let prevBodyOverflow = ''
+
+function setFullscreen(value: boolean) {
+  innerFullscreen.value = value
+  emit('update:fullscreen', value)
+  emit('fullscreen-change', value)
+}
+
+function lockBodyScroll() {
+  if (scrollLocked || typeof document === 'undefined') return
+  prevBodyOverflow = document.body.style.overflow
+  document.body.style.overflow = 'hidden'
+  scrollLocked = true
+}
+
+function unlockBodyScroll() {
+  if (!scrollLocked || typeof document === 'undefined') return
+  document.body.style.overflow = prevBodyOverflow
+  prevBodyOverflow = ''
+  scrollLocked = false
+}
+
+function clearAnim() {
+  if (animTimer) {
+    clearTimeout(animTimer)
+    animTimer = null
+  }
+  const el = rootRef.value
+  if (el) {
+    el.style.transition = ''
+    el.style.transform = ''
+    el.style.opacity = ''
+  }
+}
+
+function viewport() {
+  const w = typeof window !== 'undefined' && window.innerWidth ? window.innerWidth : 1024
+  const h = typeof window !== 'undefined' && window.innerHeight ? window.innerHeight : 768
+  return { w, h }
+}
+
+function clampScale(value: number) {
+  return Math.min(Math.max(Number.isFinite(value) ? value : 0.85, 0.2), 5)
+}
+
+/** 从 (tx, ty) scale 缩放态过渡回原位（放大动画） */
+function animateFrom(el: HTMLElement, tx: number, ty: number, scale: number) {
+  el.style.transition = 'none'
+  el.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`
+  el.style.opacity = '0.45'
+  void el.getBoundingClientRect()
+  el.style.transition = `transform ${ANIM_MS}ms ease, opacity ${ANIM_MS}ms ease`
+  el.style.transform = ''
+  el.style.opacity = ''
+  animTimer = setTimeout(() => {
+    animTimer = null
+    el.style.transition = ''
+    el.style.transform = ''
+    el.style.opacity = ''
+  }, ANIM_MS + 50)
+}
+
+/**
+ * 切换全屏状态（FLIP 原位放大/收缩动画，内容不重挂载、状态不丢失）
+ */
+async function applyFullscreen(next: boolean) {
+  if (next === innerFullscreen.value) return
+  const el = rootRef.value
+  if (!el || typeof window === 'undefined') {
+    setFullscreen(next)
+    return
+  }
+  clearAnim()
+
+  if (next) {
+    // 进入：记录原位，铺满视口后从原位缩放态放大到全屏
+    const flowRect = el.getBoundingClientRect()
+    setFullscreen(true)
+    lockBodyScroll()
+    await nextTick()
+    const { w, h } = viewport()
+    const scale = clampScale(Math.min(flowRect.width / w, flowRect.height / h))
+    const tx = flowRect.left + flowRect.width / 2 - w / 2
+    const ty = flowRect.top + flowRect.height / 2 - h / 2
+    animateFrom(el, tx, ty, scale)
+  } else {
+    // 退出：记录全屏态，回到文档流后从全屏态收缩回原位
+    const fullRect = el.getBoundingClientRect()
+    setFullscreen(false)
+    unlockBodyScroll()
+    await nextTick()
+    const flowRect = el.getBoundingClientRect()
+    const scale = clampScale(
+      Math.min(fullRect.width / (flowRect.width || 1), fullRect.height / (flowRect.height || 1))
+    )
+    const tx = fullRect.left + fullRect.width / 2 - flowRect.left - flowRect.width / 2
+    const ty = fullRect.top + fullRect.height / 2 - flowRect.top - flowRect.height / 2
+    animateFrom(el, tx, ty, scale)
+  }
+}
+
+function toggleFullscreen() {
+  void applyFullscreen(!innerFullscreen.value)
+}
+function enterFullscreen() {
+  void applyFullscreen(true)
+}
+function exitFullscreen() {
+  void applyFullscreen(false)
+}
+
+watch(
+  () => props.fullscreen,
+  (value) => {
+    if (value !== innerFullscreen.value) void applyFullscreen(value)
+  }
+)
+
+onMounted(() => {
+  if (props.fullscreen) void applyFullscreen(true)
+})
+
+onBeforeUnmount(() => {
+  clearAnim()
+  unlockBodyScroll()
+})
+
+defineExpose({ toggleFullscreen, enterFullscreen, exitFullscreen, fullscreen: innerFullscreen })
 
 // collapseHeight > 0 且 collapsible 时：挂载渲染完成后测量内容高度，超限则自动折叠一次
 onMounted(async () => {
@@ -323,6 +480,57 @@ onMounted(async () => {
 
 .wd-panel__collapse-icon.is-collapsed {
   transform: rotate(-90deg);
+}
+
+/* 右上角专注（全屏）按钮 */
+.wd-panel__fullscreen-trigger {
+  cursor: pointer;
+  color: var(--wd-text-color-secondary, #909399);
+  transition: color 0.2s ease;
+  outline-offset: 2px;
+}
+
+.wd-panel__fullscreen-trigger:hover,
+.wd-panel__fullscreen-trigger:focus-visible {
+  color: var(--wd-color-primary, #409eff);
+}
+
+/* 全屏遮罩：teleport 到 body 的真实节点，随全屏态淡入淡出；
+   层级 = 面板层级 - 1（--wd-panel-fullscreen-z-index 皮肤可覆盖，两者联动） */
+.wd-panel__fullscreen-mask {
+  position: fixed;
+  inset: 0;
+  background: var(--wd-panel-fullscreen-mask-color, rgba(0, 0, 0, 0.45));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+  z-index: calc(var(--wd-panel-fullscreen-z-index, 2000) - 1);
+}
+
+.wd-panel__fullscreen-mask.is-active {
+  opacity: 1;
+}
+
+/* 全屏态：原地 fixed 铺满视口（内容不重挂载），
+   面板切换为 flex 纵向布局：主体区自动撑满并可滚动（footer 常驻底部），圆角与外边距归零 */
+.wd-panel.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--wd-panel-fullscreen-z-index, 2000);
+  height: 100%;
+  margin-bottom: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.wd-panel.is-fullscreen > .wd-panel__content {
+  flex: 1;
+  min-height: 0;
+}
+
+.wd-panel.is-fullscreen .wd-panel__content-inner {
+  overflow: auto;
 }
 
 /* 折叠动画：grid 1fr -> 0fr，无需测量高度 */

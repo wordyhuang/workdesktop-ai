@@ -1,14 +1,15 @@
 # 场景一：分页数据展示页面（DataGrid 标准场景）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-10\
-> **当前版本**：V\_1.5\
+> **最后修改时间**：2026-11-19\
+> **当前版本**：V\_1.6\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：搜索 + 分页表格的标准结构与交互规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。\
-> **版本变更**：V\_1.3 → V\_1.4：策略七新增「`#card-item` 布局建议（内容 → 拆分 → 布局三步法）」——用户指令：增加一项对于 #card-item 如何布局的建议（大致，可补充）——首先选出所需要展示的内容，然后根据内容选择一种逻辑方式进行拆分，最后将拆分的内容选择一种布局模式（F 扫描模式、Z 扫描模式、古腾堡阅读流、单点焦点布局、单栏布局、双栏布局、三栏布局、层带堆叠布局、栅格布局、卡片布局、瀑布流、表盘磁贴布局、线性流布局、分组列表（含手风琴）、时间线 / 步骤布局、轮播滑动布局、抽屉附着布局、Tabs 切换布局、对称 / 非对称构图、放射发散布局、阶梯错位布局）来进行展示；补充行级卡片适配建议与「一卡一主布局、列表内布局一致」原则（主文档 V\_1.29 §1.9 已先改）。\
+> **版本变更**：V\_1.5 → V\_1.6：表格内按钮 / Tag 尺寸口径由 `size="mini"` 统一修正为 `size="small"`——`wd-tag` 与 Element Plus 2.8 的 size 枚举仅 large/default/small，`mini` 为无效值（§1.7 操作列与全部示例同步）。\
+> 历史变更：V\_1.3 → V\_1.4：策略七新增「`#card-item` 布局建议（内容 → 拆分 → 布局三步法）」——用户指令：增加一项对于 #card-item 如何布局的建议（大致，可补充）——首先选出所需要展示的内容，然后根据内容选择一种逻辑方式进行拆分，最后将拆分的内容选择一种布局模式（F 扫描模式、Z 扫描模式、古腾堡阅读流、单点焦点布局、单栏布局、双栏布局、三栏布局、层带堆叠布局、栅格布局、卡片布局、瀑布流、表盘磁贴布局、线性流布局、分组列表（含手风琴）、时间线 / 步骤布局、轮播滑动布局、抽屉附着布局、Tabs 切换布局、对称 / 非对称构图、放射发散布局、阶梯错位布局）来进行展示；补充行级卡片适配建议与「一卡一主布局、列表内布局一致」原则（主文档 V\_1.29 §1.9 已先改）。\
 > 历史变更：V\_1.2 → V\_1.3：策略七升级为「默认 card 模式（列多 / 长内容时的并列优先策略）」——用户指令：DataGrid 列较多时，并列优先策略是默认使用 card 模式（设置 `#card-item`），将信息以单行的形式展示出来，并将 `defaultMode` 设置成 card；然后其他的措施（策略一\~六）依旧实行，两者并行使用。示例补 `default-mode="card"` 与单行卡片布局；删除已过时的「当前版本限制」段落（`defaultMode` prop 已实现）；§1.6 表 `defaultMode` 行同步「已实现」口径（主文档 V\_1.28 §1.9 已先改）。\
-> 历史变更：V\_1.1 → V\_1.2：策略二新增 Tag 选型建议——表格中分类/类别等需要区别显示的内容，Tag 建议用 `wd-tag` 的 `type="auto"` 模式（按内容自动配色，同一类内容颜色稳定一致，免维护映射表）；示例 Tag 统一 `size="mini"` 对齐表格内元素尺寸规范。\
+> 历史变更：V\_1.1 → V\_1.2：策略二新增 Tag 选型建议——表格中分类/类别等需要区别显示的内容，Tag 建议用 `wd-tag` 的 `type="auto"` 模式（按内容自动配色，同一类内容颜色稳定一致，免维护映射表）；示例 Tag 统一 `size="small"` 对齐表格内元素尺寸规范。\
 > 历史变更：V\_1.0 → V\_1.1：策略七升级为「默认 list 卡片展示（列多 / 长内容时优先考虑）」——新增触发条件（列较多 / 多数列是较长内容时做 `#card-item` 插槽并默认 list 展示）与五类适合 list 形态的情形表（以图为主 / 主从结构 / 浏览型任务 / 窄屏 / 低密度留白页）；口径从「降列兜底」调整为「表格强在跨行对比、list 强在单条完整呈现，触发条件成立时默认 list」；补记当前版本无「初始即卡片」prop 的限制与 `defaultMode` 组件增强需求（§1.6 / 99-spec-requests.md）。
 
 ### 1.1 场景描述
@@ -206,7 +207,7 @@ SearchPanel 触发 DataGrid.refresh() → 重置到第一页，带搜索参数�
 | 仅临时不可用        | 才使用 `disabled`（无权限、后台处理中、数据未就绪），并通过 tips 说明原因                                                 |
 | 操作较多 / 列数较多   | 1–2 个最高频操作外露为按钮，辅助/不常用操作收纳到「更多」下拉；操作列建议 `fixed="right"`，避免横向滚动后找不到操作入口                        |
 | 操作按钮优先 icon 化 | 能不用文字就不显示文字——用 `wd-tips-button` 只设 `icon`、**不设** **`label`** 展示（悬停仍会通过 `tips` 提示操作内容），节省操作列宽度 |
-| 细粒度控制尺寸       | 操作列内按钮、Tag 等控件能小则小，统一用 `size="mini"` 展示，避免挤占行高                                                |
+| 细粒度控制尺寸       | 操作列内按钮、Tag 等控件能小则小，统一用 `size="small"` 展示，避免挤占行高                                                |
 
 **「隐藏」与「禁用」的判定口径**：看该操作在当前行的生命周期内是否还有机会可用——
 
@@ -289,17 +290,17 @@ SearchPanel 触发 DataGrid.refresh() → 重置到第一页，带搜索参数�
 </el-table-column>
 ```
 
-**icon 化 + 小尺寸示范**（操作列宽度紧张时的推荐写法）：高频按钮不显示文字，只放 icon，悬停用 `tips` 说明；行内按钮/Tag 统一 `size="mini"`。
+**icon 化 + 小尺寸示范**（操作列宽度紧张时的推荐写法）：高频按钮不显示文字，只放 icon，悬停用 `tips` 说明；行内按钮/Tag 统一 `size="small"`。
 
 ```html
 <el-table-column label="操作" width="120" fixed="right" align="center">
   <template #default="{ row }">
-    <!-- 只设 icon 不设 label：悬停仍通过 tips 说明操作；统一 size="mini" -->
+    <!-- 只设 icon 不设 label：悬停仍通过 tips 说明操作；统一 size="small" -->
     <wd-tips-button
       v-if="row.status !== 'completed' && row.status !== 'void'"
       icon="Edit"
       tips="编辑"
-      size="mini"
+      size="small"
       link
       @click="openEdit(row)" />
     <el-tooltip :content="row.status === 'approving' ? '审批中，暂不能删除' : '删除'" :disabled="row.status !== 'approving'">
@@ -311,13 +312,13 @@ SearchPanel 触发 DataGrid.refresh() → 重置到第一页，带搜索参数�
           :disabled="row.status === 'approving'"
           icon="Delete"
           type="danger"
-          size="mini"
+          size="small"
           link
           :head-refresh-datagrid="true" />
       </span>
     </el-tooltip>
-    <!-- 状态/分类等 Tag 同样用 size="mini" -->
-    <el-tag v-if="row.status === 'enabled'" type="success" size="mini">启用</el-tag>
+    <!-- 状态/分类等 Tag 同样用 size="small" -->
+    <el-tag v-if="row.status === 'enabled'" type="success" size="small">启用</el-tag>
   </template>
 </el-table-column>
 ```
@@ -363,7 +364,7 @@ ID、单号、编码等唯一标识属于低频精确值，不必全量展示。
   <template #default="{ row }">
     <div class="name-cell">
       <span>{{ row.name }}</span>
-      <wd-tag type="auto" size="mini">{{ row.categoryName }}</wd-tag>
+      <wd-tag type="auto" size="small">{{ row.categoryName }}</wd-tag>
     </div>
   </template>
 </el-table-column>
@@ -372,11 +373,11 @@ ID、单号、编码等唯一标识属于低频精确值，不必全量展示。
 语义固定且明确的少数状态（如 启用/停用）仍可直接用预设 type：
 
 ```html
-<el-tag v-if="row.status === 1" type="success" size="mini">启用</el-tag>
-<el-tag v-else type="info" size="mini">停用</el-tag>
+<el-tag v-if="row.status === 1" type="success" size="small">启用</el-tag>
+<el-tag v-else type="info" size="small">停用</el-tag>
 ```
 
-> `wd-tag` auto 的匹配源为标签内容文本；需要精确控色时用 12 种预设 type 或 `color` 属性。表格内 Tag 统一 `size="mini"`。
+> `wd-tag` auto 的匹配源为标签内容文本；需要精确控色时用 12 种预设 type 或 `color` 属性。表格内 Tag 统一 `size="small"`。
 
 #### 策略三：操作按钮低频项收进「更多」下拉
 

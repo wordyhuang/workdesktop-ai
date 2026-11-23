@@ -79,14 +79,20 @@ describe('选项 tips 悬停提示（默认 tipsProp=tips）', () => {
     wrapper.unmount()
   })
 
-  it('WdCheckboxList：含 tips 的选项包裹 tooltip（默认样式与按钮样式一致）', async () => {
+  it('WdCheckboxList：仅含 tips 的选项文本右侧渲染帮助图标（默认样式与按钮样式一致）', async () => {
     const wrapper = mount(WdCheckboxList, {
       props: { dataSource },
       global: globalOpts
     })
     await nextTick()
-    expect(wrapper.findAll('.opt-tooltip')).toHaveLength(1)
-    expect(wrapper.find('.opt-tooltip').attributes('data-content')).toBe('拥有全部权限，请谨慎分配')
+    const tips = wrapper.findAll('.opt-tooltip')
+    expect(tips).toHaveLength(1)
+    expect(tips[0].attributes('data-content')).toBe('拥有全部权限，请谨慎分配')
+    // tooltip 只包裹帮助图标，选项文本在其外层独立渲染
+    expect(tips[0].find('.wd-option-tip').exists()).toBe(true)
+    expect(tips[0].text()).not.toContain('管理员')
+    expect(wrapper.text()).toContain('管理员')
+    expect(wrapper.findAll('.wd-option-tip')).toHaveLength(1)
     wrapper.unmount()
 
     const btn = mount(WdCheckboxList, {
@@ -95,17 +101,23 @@ describe('选项 tips 悬停提示（默认 tipsProp=tips）', () => {
     })
     await nextTick()
     expect(btn.findAll('.opt-tooltip')).toHaveLength(1)
+    expect(btn.findAll('.wd-option-tip')).toHaveLength(1)
     btn.unmount()
   })
 
-  it('WdRadioList：含 tips 的选项包裹 tooltip（默认样式与按钮样式一致）', async () => {
+  it('WdRadioList：仅含 tips 的选项文本右侧渲染帮助图标（默认样式与按钮样式一致）', async () => {
     const wrapper = mount(WdRadioList, {
       props: { dataSource },
       global: globalOpts
     })
     await nextTick()
-    expect(wrapper.findAll('.opt-tooltip')).toHaveLength(1)
-    expect(wrapper.find('.opt-tooltip').attributes('data-content')).toBe('拥有全部权限，请谨慎分配')
+    const tips = wrapper.findAll('.opt-tooltip')
+    expect(tips).toHaveLength(1)
+    expect(tips[0].attributes('data-content')).toBe('拥有全部权限，请谨慎分配')
+    expect(tips[0].find('.wd-option-tip').exists()).toBe(true)
+    expect(tips[0].text()).not.toContain('管理员')
+    expect(wrapper.text()).toContain('管理员')
+    expect(wrapper.findAll('.wd-option-tip')).toHaveLength(1)
     wrapper.unmount()
 
     const btn = mount(WdRadioList, {
@@ -114,6 +126,7 @@ describe('选项 tips 悬停提示（默认 tipsProp=tips）', () => {
     })
     await nextTick()
     expect(btn.findAll('.opt-tooltip')).toHaveLength(1)
+    expect(btn.findAll('.wd-option-tip')).toHaveLength(1)
     btn.unmount()
   })
 

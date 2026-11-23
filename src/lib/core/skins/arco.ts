@@ -29,9 +29,7 @@ export const arcoSkin: SkinPreset = {
       '--wd-panel-border-color': '#e5e6eb',
       '--wd-panel-shadow-sm': '0 1px 2px rgba(29, 33, 41, 0.06)',
       '--wd-panel-title-bar-width': '0',
-      '--wd-datagrid-radius': '4px',
-      '--wd-datagrid-border-color': '#e5e6eb',
-      '--wd-editable-grid-border-color': '#e5e6eb'
+      '--wd-datagrid-radius': '4px'
     }
   },
   cssRules: `
