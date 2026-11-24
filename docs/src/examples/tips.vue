@@ -24,6 +24,18 @@
       <wd-tips type="box" icon="WarningFilled" bg="#fdf6ec" color="#e6a23c" tips="警告色底" />
     </demo-block>
 
+    <demo-block
+      title="自动语义背景（bg-type）"
+      desc="bg-type=auto 时按 icon 语义自动配浅底与文字色；显式 color 时以其为准。默认 none"
+      :code="code4"
+      layout="row"
+    >
+      <wd-tips type="box" bg-type="auto" tips="信息提示（InfoFilled）" />
+      <wd-tips type="box" bg-type="auto" icon="WarningFilled" tips="警告提示（WarningFilled）" />
+      <wd-tips type="box" bg-type="auto" icon="QuestionFilled" tips="疑问提示（QuestionFilled）" />
+      <wd-tips type="box" bg-type="auto" icon="WarningFilled" color="#7b61ff" tips="自定义 color（底色随之）" />
+    </demo-block>
+
     <demo-block title="表格列提示" desc="常用于表头/字段说明" :code="code2" layout="row">
       <el-table :data="rows" border size="small" style="width: 420px">
         <el-table-column label="字段">
@@ -46,6 +58,10 @@ const code1 = `<wd-tips tips="悬停提示" />
 const code3 = `<wd-tips type="box" bg="primary" tips="主题色浅底" />
 <wd-tips type="box" bg="#FEFEFE" color="#606266" tips="自定义底色" />
 <wd-tips type="box" icon="WarningFilled" bg="#fdf6ec" color="#e6a23c" tips="警告色底" />`
+const code4 = `<wd-tips type="box" bg-type="auto" tips="信息提示" />
+<wd-tips type="box" bg-type="auto" icon="WarningFilled" tips="警告提示" />
+<wd-tips type="box" bg-type="auto" icon="QuestionFilled" tips="疑问提示" />
+<wd-tips type="box" bg-type="auto" icon="WarningFilled" color="#7b61ff" tips="自定义 color" />`
 const code2 = `<el-table-column label="优惠比例">
   <template #header>
     <span>优惠比例</span>

@@ -152,7 +152,7 @@ export const pageElementData: ComponentMeta[] = [
       note: 'word 模式内部 el-tooltip 仅显式绑定 content / effect / placement，box 模式为原生 span；未做 $attrs 透传，el-tooltip 其他属性不可用。',
     },
     title: 'Tips 提示',
-    desc: '文字/响应式提示：word=悬停图标模式，box=行内文字模式，颜色图标可配',
+    desc: '文字/响应式提示：word=悬停图标模式，box=行内文字模式，颜色图标可配；bg-type=auto 按 icon 语义自动配色',
     group: '页面元素',
     intro: {
       overview: 'WdTips 是一个轻量的文字/响应式提示组件，提供两种展示模式：`word` 模式渲染一个可悬停的图标，鼠标移入后通过 tooltip 显示提示内容；`box` 模式则把提示文字（可带图标）直接内联展示在页面中。图标与颜色均可配置，适合在表单、表头、字段旁补充说明性文字。',
@@ -171,21 +171,25 @@ export const pageElementData: ComponentMeta[] = [
         'box 模式文字使用小号字号（`--wd-font-size-sm`，默认 12px），适合作为辅助说明而非正文。',
         '表头中使用时建议加 `margin-left` 小间距（如示例中的 `style="margin-left: 6px"`），避免图标紧贴文字。',
         '`bg` 仅对 box 模式生效：默认 `none` 不带背景；传 `primary` 使用主题色 10% 浅底、文字取主题色；传任意 CSS 颜色值（如 `#FEFEFE`、`rgba(...)`）时以其为底色，文字颜色仍由 `color` 控制。',
-        '带背景时会自动增加内边距与圆角，使其成为一个可点击区域样式的标签块。'
+        '带背景时会自动增加内边距与圆角，使其成为一个可点击区域样式的标签块。',
+        '`bg-type="auto"` 按 icon 语义自动配色：`InfoFilled` → 信息灰（`--wd-color-info`）、`WarningFilled` → 警告橙（`--wd-color-warning`）、`QuestionFilled` → 主题色（`--wd-color-primary`）；文字/图标色与背景浅底同源（12% 混合，与 WdTag light effect 一致），换肤自动跟随。',
+        '`bg-type` 默认 `none`（行为与之前完全一致），且优先级高于 `bg`；auto 下显式传 `color` 时以其为准，浅底按该颜色 12% 混出。'
       ],
       faq: [
         { q: '传了 `icon="SuccessFilled"` 为什么显示的还是 InfoFilled？', a: '组件内置图标映射表只包含 InfoFilled / WarningFilled / QuestionFilled 三个，未命中的名称会回退到 InfoFilled。' },
         { q: '默认插槽在 word 模式下为什么没效果？', a: '插槽只在 box 模式渲染。word 模式的提示文字只能通过 `tips` 属性传入。' },
         { q: 'tooltip 的弹出位置能改成 bottom 吗？', a: '当前版本 word 模式的 placement 固定为 top，未暴露配置。如需自定义弹出位置，可直接使用 el-tooltip 或按钮类组件的 `tips` / `placement` 属性。' },
-        { q: 'tips 内容支持 HTML 吗？', a: '不支持，组件按纯文字渲染。' }
+        { q: 'tips 内容支持 HTML 吗？', a: '不支持，组件按纯文字渲染。' },
+        { q: '`bg-type="auto"` 和 `bg` 同时传会怎样？', a: 'auto 优先：自动按 icon 语义（或显式 color）生成浅底并联动文字色，`bg` 被忽略。只想要自定义底色时用 `bg`，想要语义联动时用 `bg-type="auto"`。' }
       ]
     },
     props: [
       { name: 'tips', type: 'string', default: "''", desc: '提示内容' },
       { name: 'type', type: "'word' | 'box'", default: "'word'", desc: '展示模式' },
       { name: 'icon', type: "'InfoFilled' | 'WarningFilled' | 'QuestionFilled'", default: "'InfoFilled'", desc: '图标名' },
-      { name: 'color', type: 'string', default: "'#909399'", desc: '图标/文字颜色' },
-      { name: 'bg', type: 'string', default: "'none'", desc: "box 模式背景：none=无背景；primary=主题色浅底（文字取主题色）；也可传任意 CSS 颜色值（如 '#FEFEFE'）" }
+      { name: 'color', type: 'string', default: "''", desc: '图标/文字颜色（缺省：bg-type=auto 时按 icon 语义取色，否则信息灰 #909399）' },
+      { name: 'bg', type: 'string', default: "'none'", desc: "box 模式背景：none=无背景；primary=主题色浅底（文字取主题色）；也可传任意 CSS 颜色值（如 '#FEFEFE'）" },
+      { name: 'bgType', type: "'none' | 'auto'", default: "'none'", desc: "背景类型：none=不带背景；auto=按 icon 语义自动配浅底与文字色（InfoFilled→信息灰 / WarningFilled→警告橙 / QuestionFilled→主题色），显式 color 时以其为准；优先级高于 bg" }
     ],
     slots: [{ name: 'default', params: '—', desc: 'box 模式文字（覆盖 tips）' }]
   },

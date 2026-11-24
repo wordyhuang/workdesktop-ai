@@ -45,13 +45,33 @@ export const softSkin: SkinPreset = {
     }
   },
   cssRules: `
-/* 主按钮：Soft UI 官方 hover 变深（#ad0a87 ≈ dark-2 档）+ 招牌品色柔影；色阶由主色推导随用户覆盖联动 */
-.el-button--primary {
+/* 主按钮：Soft UI 官方 hover 变深（#ad0a87 ≈ dark-2 档）+ 招牌品色柔影；色阶由主色推导随用户覆盖联动。
+   柔影只上实底形态（:not 排除 link/text）——透明底按钮挂品红投影会在浅色页面糊出一团粉晕 */
+.el-button--primary:not(.is-link):not(.is-text) {
   --el-button-hover-bg-color: var(--el-color-primary-dark-2);
   --el-button-hover-border-color: var(--el-color-primary-dark-2);
   --el-button-active-bg-color: var(--el-color-primary-dark-2);
   --el-button-active-border-color: var(--el-color-primary-dark-2);
   box-shadow: 0 4px 6px -1px rgba(203, 12, 159, 0.2), 0 2px 4px -1px rgba(203, 12, 159, 0.06);
+}
+/* 朴素主按钮：Soft UI outline 风——白底 + 品红字 + 品红细边（替换 EP 默认浅品底浅品边），
+   hover 品红实底白字（取 dark-2 变深档与实底主按钮 hover 一致） */
+.el-button--primary.is-plain {
+  --el-button-bg-color: #fff;
+  --el-button-border-color: var(--el-color-primary);
+  --el-button-text-color: var(--el-color-primary);
+  --el-button-hover-bg-color: var(--el-color-primary-dark-2);
+  --el-button-hover-border-color: var(--el-color-primary-dark-2);
+  --el-button-hover-text-color: #fff;
+  --el-button-active-bg-color: var(--el-color-primary-dark-2);
+  --el-button-active-border-color: var(--el-color-primary-dark-2);
+}
+/* 链接/文字按钮：透明底无柔影，hover 浅品底晕染提供反馈；
+   :not(.is-disabled) 追平 EP hover 规则特异性（.el-button.is-link:not(.is-disabled):hover (0,4,0) 显式透明底），
+   皮肤规则取 (0,5,0) 胜出 */
+.el-button--primary.is-link:not(.is-disabled):hover,
+.el-button--primary.is-text:not(.is-disabled):hover {
+  background-color: rgba(203, 12, 159, 0.06);
 }
 /* 默认按钮：白底 + 蓝灰描边 + 蓝灰黑字，hover 边框/文字变主色（:not 排除语义色与 text/link 形态） */
 .el-button:not([class*='el-button--']):not(.is-text):not(.is-link) {

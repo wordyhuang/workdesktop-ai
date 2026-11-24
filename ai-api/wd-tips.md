@@ -2,7 +2,7 @@
 
 # WdTips Tips 提示
 
-文字/响应式提示：word=悬停图标模式，box=行内文字模式，颜色图标可配
+文字/响应式提示：word=悬停图标模式，box=行内文字模式，颜色图标可配；bg-type=auto 按 icon 语义自动配色
 
 ### 概述
 
@@ -26,6 +26,8 @@ WdTips 是一个轻量的文字/响应式提示组件，提供两种展示模式
 - 表头中使用时建议加 `margin-left` 小间距（如示例中的 `style="margin-left: 6px"`），避免图标紧贴文字。
 - `bg` 仅对 box 模式生效：默认 `none` 不带背景；传 `primary` 使用主题色 10% 浅底、文字取主题色；传任意 CSS 颜色值（如 `#FEFEFE`、`rgba(...)`）时以其为底色，文字颜色仍由 `color` 控制。
 - 带背景时会自动增加内边距与圆角，使其成为一个可点击区域样式的标签块。
+- `bg-type="auto"` 按 icon 语义自动配色：`InfoFilled` → 信息灰（`--wd-color-info`）、`WarningFilled` → 警告橙（`--wd-color-warning`）、`QuestionFilled` → 主题色（`--wd-color-primary`）；文字/图标色与背景浅底同源（12% 混合，与 WdTag light effect 一致），换肤自动跟随。
+- `bg-type` 默认 `none`（行为与之前完全一致），且优先级高于 `bg`；auto 下显式传 `color` 时以其为准，浅底按该颜色 12% 混出。
 
 ### 常见问题
 
@@ -45,6 +47,10 @@ WdTips 是一个轻量的文字/响应式提示组件，提供两种展示模式
 
 不支持，组件按纯文字渲染。
 
+**问：`bg-type="auto"` 和 `bg` 同时传会怎样？**
+
+auto 优先：自动按 icon 语义（或显式 color）生成浅底并联动文字色，`bg` 被忽略。只想要自定义底色时用 `bg`，想要语义联动时用 `bg-type="auto"`。
+
 ### Element Plus 透传
 
 - 透传目标：`—（不透传）`
@@ -57,8 +63,9 @@ WdTips 是一个轻量的文字/响应式提示组件，提供两种展示模式
 | tips | `string` | '' | 提示内容 |
 | type | `'word' \| 'box'` | 'word' | 展示模式 |
 | icon | `'InfoFilled' \| 'WarningFilled' \| 'QuestionFilled'` | 'InfoFilled' | 图标名 |
-| color | `string` | '#909399' | 图标/文字颜色 |
+| color | `string` | '' | 图标/文字颜色（缺省：bg-type=auto 时按 icon 语义取色，否则信息灰 #909399） |
 | bg | `string` | 'none' | box 模式背景：none=无背景；primary=主题色浅底（文字取主题色）；也可传任意 CSS 颜色值（如 '#FEFEFE'） |
+| bgType | `'none' \| 'auto'` | 'none' | 背景类型：none=不带背景；auto=按 icon 语义自动配浅底与文字色（InfoFilled→信息灰 / WarningFilled→警告橙 / QuestionFilled→主题色），显式 color 时以其为准；优先级高于 bg |
 
 ### Slots
 

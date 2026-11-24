@@ -824,11 +824,25 @@ describe('skins 组件级维度：组件样式随皮肤差异化', () => {
   it('soft cssRules：主按钮变深+品色柔影 + 白底蓝灰边默认按钮 + 胶囊徽章 + 焦点光晕 + 白侧栏品紫渐变胶囊选中 + 表头浅灰', () => {
     applyTheme({ skin: 'soft' })
     const css = themeCss()
-    // 主按钮：Soft UI 官方 hover 变深（#ad0a87 ≈ dark-2 档）+ 招牌品色柔影（色阶随覆盖联动）
-    expect(css).toContain('.el-button--primary {')
+    // 主按钮：Soft UI 官方 hover 变深（#ad0a87 ≈ dark-2 档）+ 招牌品色柔影（色阶随覆盖联动）；
+    // 柔影只上实底形态——link/text 是透明底，挂品红投影会在浅色页面糊出一团粉晕（V_9.97 修复）
+    expect(css).toContain('.el-button--primary:not(.is-link):not(.is-text) {')
+    expect(css).not.toContain('.el-button--primary {')
     expect(css).toContain('--el-button-hover-bg-color: var(--el-color-primary-dark-2)')
     expect(css).toContain('--el-button-active-bg-color: var(--el-color-primary-dark-2)')
     expect(css).toContain('box-shadow: 0 4px 6px -1px rgba(203, 12, 159, 0.2)')
+    // 朴素主按钮：Soft UI outline 风——白底 + 品红字 + 品红细边（替换 EP 默认浅品底浅品边），
+    // hover 品红实底白字（继承 Soft UI hover 变深档）
+    expect(css).toContain('.el-button--primary.is-plain {')
+    expect(css).toContain('--el-button-bg-color: #fff')
+    expect(css).toContain('--el-button-border-color: var(--el-color-primary)')
+    expect(css).toContain('--el-button-text-color: var(--el-color-primary)')
+    expect(css).toContain('--el-button-hover-bg-color: var(--el-color-primary-dark-2)')
+    expect(css).toContain('--el-button-hover-text-color: #fff')
+    // 链接/文字按钮：透明底不挂柔影，hover 浅品底晕染提供反馈
+    // （:not(.is-disabled) 追平 EP hover 规则特异性并胜出，EP 对 link hover 显式透明底）
+    expect(css).toContain('.el-button--primary.is-link:not(.is-disabled):hover')
+    expect(css).toContain('rgba(203, 12, 159, 0.06)')
     // 默认按钮：白底 + 蓝灰描边 + 蓝灰黑字，hover 边框/文字变主色
     expect(css).toContain(".el-button:not([class*='el-button--']):not(.is-text):not(.is-link) {")
     expect(css).toContain('--el-button-bg-color: #fff')
