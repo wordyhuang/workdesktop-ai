@@ -1,11 +1,11 @@
 # 场景九：工作台页面（仪表盘 / 首屏聚合页）
 
 > **创建时间**：2026-11-04\
-> **最后修改时间**：2026-11-19\
-> **当前版本**：V\_1.1\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.5\
 > **适用对象**：AI 编码助手、开发团队\
-> **核心目标**：工作台 / 仪表盘类页面的布局骨架、六种卡片区块模式、SVG 图表实现与数据接入口径\
-> **文档简略描述**：本文件是「编码场景指导」的第 9 个子场景（新增场景，非主文档拆分）。参考实现：[ScenarioWorkbenchView.vue](../docs/src/views/ScenarioWorkbenchView.vue)（访问地址 `http://localhost:5003/#/scenario/workbench`，路由名 ScenarioWorkbench）。小节编号（§x.y）自 §9 起；跨场景引用（如"见 §0.8"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。工作台的数据请求规范见 [ai-api/use-request-guide.md](../ai-api/use-request-guide.md)。
+> **核心目标**：工作台 / 仪表盘类页面的布局骨架、六种卡片区块模式、SVG 图表实现与数据接入口径；数据分析页（统计中心）的完整要点见 §9.9\
+> **文档简略描述**：本文件是「编码场景指导」的第 9 个子场景（新增场景，非主文档拆分）。参考实现：[ScenarioWorkbenchView.vue](../docs/src/views/ScenarioWorkbenchView.vue)（访问地址 `http://localhost:5003/#/scenario/workbench`，路由名 ScenarioWorkbench）与 [ScenarioStatsView.vue](../docs/src/views/ScenarioStatsView.vue)（访问地址 `http://localhost:5003/#/scenario/stats`，统计中心，参考实现见 §9.9）。小节编号（§x.y）自 §9 起；跨场景引用（如"见 §0.8"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。工作台的数据请求规范见 [ai-api/use-request-guide.md](../ai-api/use-request-guide.md)。
 
 ***
 
@@ -24,7 +24,7 @@
 
 **三个核心建议**：
 
-1. **卡片化分区**：每个业务块独立成一张 wd-panel 卡片（title + icon + description + extra 插槽），不要把多块业务挤进一个容器。
+1. **卡片化分区**：每个业务块独立成一张 wd-panel 卡片（title + icon + description + extra 插槽），不要把多块业务挤进一个容器。**工作台是 §0.3「panel 并排 vs tab 切换」选型中「并排浏览」的正当用例**——摘要卡片需要同屏对比，tab 切换会丢上下文；反之，互斥使用、无需同屏对比的逻辑大块（如独立设置区）应优先 tab 组织（§0.3）。
 2. **主列 + 侧列**：左主列放"重"内容（总览 / 图表 / 任务），右侧 340px 窄列放"轻"内容（待办 / 流程 / 快捷入口），同一行左右**拉伸到同高**。
 3. **图表轻量化**：趋势 / 迷你走势用原生 SVG 手绘（polyline / polygon / linearGradient），不引入 ECharts 等图表库；确需复杂交互图表时先评估包体再引入。
 
@@ -184,8 +184,8 @@
               <span class="wb-stat__cmp">较昨日</span>
               <wd-tag
                 v-if="s.delta !== undefined"
-                :type="s.delta >= 0 ? 'success' : 'danger'"
-                :icon="s.delta >= 0 ? TopRight : BottomRight"
+                :type="deltaMeta(s.delta).type"
+                :icon="deltaMeta(s.delta).icon"
                 size="small" round effect="light">{{ Math.abs(s.delta) }}%</wd-tag>
             </div>
             <!-- 迷你趋势 sparkline：viewBox 0 0 100 24，min-max 归一化 -->
@@ -285,6 +285,11 @@ function stateType(state: string): 'primary' | 'warning' | 'success' | 'danger' 
   if (state === '进行中') return 'warning'
   if (state === '待开始') return 'info'
   return 'primary'
+}
+
+/* 统计卡涨跌标签 → 语义色与图标（正 success/TopRight、负 danger/BottomRight），同样集中映射 */
+function deltaMeta(delta: number): { type: 'success' | 'danger'; icon: Component } {
+  return delta >= 0 ? { type: 'success', icon: TopRight } : { type: 'danger', icon: BottomRight }
 }
 
 /* 统计卡：开发期静态演示数据 + interface；接口就绪后仅替换取数来源 */
@@ -433,8 +438,37 @@ function openApp(label: string) {
 
 > 结论：场景九**不新增组件规格**。图表用原生 SVG；若后续业务确需专业交互图表，再单独评估引入图表库并回流 PRD。
 
-***
+### 9.9 数据分析页（统计中心）完整要点
 
-> **版本变更记录**：V\_1.0（2026-11-04）——首版发布。基于参考实现 ScenarioWorkbenchView.vue 提炼布局骨架、六种卡片区块模式、SVG 图表实现与数据接入口径，形成工作台场景指引。
->
-> V\_1.0 → V\_1.1（2026-11-19）——§9.2 结构图补「页面介绍 tips」行；§9.4⑤ 状态过滤由 el-radio-group 统一为 `wd-radio-list`（:button-style，消除与 SKILL 约束 11 / §0.6 的口径冲突）；§9.4 新增「数据分析页（统计中心类）区块模式」（⑦ KPI 指标卡 / ⑧ 榜单卡 / ⑨ 占比环卡 + 时间范围切换口径）；§9.7 补「页面介绍」规范行（顶部 box tips 所有功能页面不豁免）；§9.8 同步组件口径。
+以指标浏览、趋势对比、结构占比、下钻明细为主的**数据分析页**（参考实现 [ScenarioStatsView.vue](../docs/src/views/ScenarioStatsView.vue)，访问地址 `http://localhost:5003/#/scenario/stats`）是工作台场景的变体：容器结构、顶部 tips、图表轻量化、状态语义色、tabular-nums 等约定全部复用 §9.1–§9.7，区块结构套 §9.4 ⑦ KPI 指标卡 / ⑧ 榜单卡 / ⑨ 占比环卡。本节补充统计页特有的**页面结构与联动交互**约定。
+
+**页面结构**（自上而下）：
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ 页面介绍 tips（wd-tips box）：用途 + 数据口径注意事项         │
+├──────────────────────────────────────────────────────────┤
+│ 顶条（通栏）：标题+副标题 ｜ 时间范围切换(radio button-style) │
+│             ｜ 更新于 今日 09:00                          │
+├──────────────────────────────────────────────────────────┤
+│ KPI 行（独立 panel）：6 张指标卡（§9.4⑦），点击卡片联动主图   │
+├───────────────────────────────┬──────────────────────────┤
+│ XX趋势（图表卡）：点击数据点下钻  │ 渠道占比（§9.4⑨ 环卡）     │
+│ 数据速览（§9.4⑧ 榜单卡 Top 5）  │                          │
+├───────────────────────────────┴──────────────────────────┤
+│ 下钻明细面板：点击趋势图数据点后出现（v-show + 淡入过渡）      │
+└──────────────────────────────────────────────────────────┘
+```
+
+**联动交互要点**：
+
+| 交互 | 规范 |
+| --- | --- |
+| KPI 点击联动 | 点击指标卡切换 `activeKey`，主趋势图随选中指标重绘（面板标题随指标名变化，description 显示当前时间范围）；激活卡用主色描边高亮，视觉上明确"当前在看哪个指标" |
+| 悬浮查看 | 鼠标在趋势图内移动时按 x 坐标换算**最近数据点**：显示竖向虚线参考线 + 数据点放大 + 上方悬浮 tooltip（日期 + 本期值 + 上期值）；tooltip 按视口百分比定位，靠近边缘防溢出；索引用 `Math.min/max` 收敛到有效区间 |
+| 点击下钻 | 点击趋势图数据点出现明细面板（`v-show` + 淡入过渡），标题「指标 · 日期 明细」、description「点击数据点生成 · 共 N 条」、extra「收起明细」链接按钮；明细行 = 时间 + 事件 + 渠道 tag + 数值加粗右对齐；**不走整页跳转**（就近解决，§0.7 同源口径） |
+| 时间范围切换 | 少选项（近 7 天 / 近 30 天 / 近 12 个月三档）用 `wd-radio-list` 开 `:button-style`（§0.6），不自绘分段按钮；**切换时重置悬浮参考线与下钻状态**，避免旧上下文残留 |
+| 逆指标 | 退款率、取消率等"下降为好"的指标，涨跌 wd-tag 的好坏判断**需取反**（值降显示 success）；涨跌色统一走 `--el-color-success` / `--el-color-danger` |
+| 数值格式化 | 大于等于 100 取整千分位、小数保留两位；金额 ¥ + 千分位；占比过万显示 x.xw；全部 tabular-nums |
+
+**图表实现口径**：与 §9.4③ 同源——固定 viewBox + 四边留白 + 坐标换算函数封装（chartX/chartY/linePoints/chartDots）；本期主色粗线 + 白描边数据点，上期用 `--el-color-warning-light-3` 细线或灰色虚线；环比线（sparkline、对比线）一律不引图表库。

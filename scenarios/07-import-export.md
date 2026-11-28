@@ -1,8 +1,8 @@
 # 场景七：数据导入导出
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-14\
-> **当前版本**：V\_1.0\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.1\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：数据导入导出的流程与交互规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
@@ -88,121 +88,117 @@ DataGrid 工具栏
 ### 7.5 导入面板代码示例
 
 ```html
-<!-- DataGrid 工具栏中的导入按钮 -->
+<!-- DataGrid 工具栏中的导入按钮：导入面板放 DrawerButton 的 default 插槽（数据导出按钮示例见 7.6） -->
 <wd-datagrid ref="datagridRef" api="/api/users" :active="true">
   <template #toolbar>
-    <wd-drawer-button label="数据导入" title="数据导入" size="480px" @confirm="handleImport" />
-    <wd-dialog-button label="数据导出" title="数据导出" @confirm="handleExport" />
+    <wd-drawer-button label="数据导入" title="数据导入" drawer-size="480px" :head-refresh-datagrid="true">
+      <div style="padding: 20px;">
+
+        <!-- Step 1: 下载模板 -->
+        <wd-panel title="① 下载导入模板">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--el-fill-color-light); border-radius: 4px;">
+            <div>
+              <span>📄 用户数据导入模板.xlsx</span>
+              <span style="color: var(--el-text-color-secondary); font-size: 12px; margin-left: 8px;">含字段说明和格式示例</span>
+            </div>
+            <wd-api-button api="/api/users/template" link type="primary">下载模板</wd-api-button>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px;">
+            <span style="color: var(--el-color-warning); font-weight: 600;">必填字段：</span>
+            <el-tag v-for="field in requiredFields" :key="field" size="small" type="warning" style="margin: 0 2px;">
+              {{ field }}
+            </el-tag>
+          </div>
+        </wd-panel>
+
+        <!-- Step 2: 上传文件（change 载荷为文件列表，如 handleFileChange(files) 中取 files[0] 获取所选文件） -->
+        <wd-panel title="② 上传数据文件">
+          <wd-upload
+            accept=".xlsx,.xls,.csv"
+            :max-size="10"
+            :auto-upload="false"
+            :limit="1"
+            @change="handleFileChange">
+          </wd-upload>
+        </wd-panel>
+
+        <!-- Step 3: 导入参数设置 -->
+        <wd-panel title="③ 导入设置">
+          <el-form label-width="120px">
+            <el-form-item label="重复数据处理">
+              <el-radio-group v-model="importConfig.duplicateStrategy">
+                <el-radio label="overwrite">覆盖</el-radio>
+                <el-radio label="skip">跳过</el-radio>
+                <el-radio label="append">追加</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="导入数量限制">
+              <el-input-number v-model="importConfig.limit" :min="1" :max="10000" />
+              <span style="margin-left: 8px; color: var(--el-text-color-secondary); font-size: 12px;">条/次</span>
+            </el-form-item>
+            <el-form-item label="校验模式">
+              <el-checkbox v-model="importConfig.continueOnError">遇错跳过，继续导入</el-checkbox>
+              <span style="color: var(--el-text-color-secondary); font-size: 12px;">（关闭则遇错终止）</span>
+            </el-form-item>
+            <el-form-item label="导入后操作">
+              <el-checkbox v-model="importConfig.refreshAfterImport">导入完成后刷新列表</el-checkbox>
+            </el-form-item>
+          </el-form>
+        </wd-panel>
+
+        <!-- Step 4: 校验结果（上传+校验后显示） -->
+        <wd-panel v-if="importResult" title="④ 校验结果">
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="flex: 1; text-align: center; padding: 10px; background: var(--el-color-success-light-9); border-radius: 4px;">
+              <div style="font-size: 20px; font-weight: 600; color: var(--el-color-success);">{{ importResult.total }}</div>
+              <div style="font-size: 12px; color: var(--el-text-color-secondary);">总行数</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 10px; background: var(--el-color-success-light-9); border-radius: 4px;">
+              <div style="font-size: 20px; font-weight: 600; color: var(--el-color-success);">{{ importResult.valid }}</div>
+              <div style="font-size: 12px; color: var(--el-text-color-secondary);">有效行数</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 10px; background: var(--el-color-danger-light-9); border-radius: 4px;">
+              <div style="font-size: 20px; font-weight: 600; color: var(--el-color-danger);">{{ importResult.errors.length }}</div>
+              <div style="font-size: 12px; color: var(--el-text-color-secondary);">错误行数</div>
+            </div>
+          </div>
+          <div v-if="importResult.errors.length" style="padding: 8px; background: var(--el-color-danger-light-9); border-radius: 4px; font-size: 12px; color: var(--el-color-danger);">
+            <div style="font-weight: 600; margin-bottom: 4px;">⚠️ 以下行校验失败：</div>
+            <div v-for="error in importResult.errors" :key="error.row" style="margin-left: 8px; line-height: 1.8;">
+              第 {{ error.row }} 行：{{ error.message }}
+            </div>
+          </div>
+        </wd-panel>
+
+      </div>
+
+      <template #footer="{ close }">
+        <el-button @click="close()">取消</el-button>
+        <wd-confirm-button
+          api="/api/users/import"
+          :api-param="importConfig"
+          type="primary"
+          :head-refresh-datagrid="true">
+          开始导入
+        </wd-confirm-button>
+      </template>
+    </wd-drawer-button>
   </template>
 </wd-datagrid>
-
-<!-- 导入面板内容（放在 Drawer 的 default 插槽中） -->
-<wd-drawer-button label="数据导入" title="数据导入" size="480px" :head-refresh-datagrid="true">
-  <div style="padding: 20px;">
-
-    <!-- Step 1: 下载模板 -->
-    <wd-panel title="① 下载导入模板">
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--el-fill-color-light); border-radius: 4px;">
-        <div>
-          <span>📄 用户数据导入模板.xlsx</span>
-          <span style="color: var(--el-text-color-secondary); font-size: 12px; margin-left: 8px;">含字段说明和格式示例</span>
-        </div>
-        <wd-api-button api="/api/users/template" link type="primary">下载模板</wd-api-button>
-      </div>
-      <div style="margin-top: 8px; font-size: 12px;">
-        <span style="color: var(--el-color-warning); font-weight: 600;">必填字段：</span>
-        <el-tag v-for="field in requiredFields" :key="field" size="small" type="warning" style="margin: 0 2px;">
-          {{ field }}
-        </el-tag>
-      </div>
-    </wd-panel>
-
-    <!-- Step 2: 上传文件 -->
-    <wd-panel title="② 上传数据文件">
-      <wd-upload
-        accept=".xlsx,.xls,.csv"
-        :max-size="10"
-        :auto-upload="false"
-        :limit="1"
-        :on-change="handleFileChange">
-      </wd-upload>
-    </wd-panel>
-
-    <!-- Step 3: 导入参数设置 -->
-    <wd-panel title="③ 导入设置">
-      <el-form label-width="120px">
-        <el-form-item label="重复数据处理">
-          <el-radio-group v-model="importConfig.duplicateStrategy">
-            <el-radio value="overwrite">覆盖</el-radio>
-            <el-radio value="skip">跳过</el-radio>
-            <el-radio value="append">追加</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="导入数量限制">
-          <el-input-number v-model="importConfig.limit" :min="1" :max="10000" />
-          <span style="margin-left: 8px; color: var(--el-text-color-secondary); font-size: 12px;">条/次</span>
-        </el-form-item>
-        <el-form-item label="校验模式">
-          <el-checkbox v-model="importConfig.continueOnError">遇错跳过，继续导入</el-checkbox>
-          <span style="color: var(--el-text-color-secondary); font-size: 12px;">（关闭则遇错终止）</span>
-        </el-form-item>
-        <el-form-item label="导入后操作">
-          <el-checkbox v-model="importConfig.refreshAfterImport">导入完成后刷新列表</el-checkbox>
-        </el-form-item>
-      </el-form>
-    </wd-panel>
-
-    <!-- Step 4: 校验结果（上传+校验后显示） -->
-    <wd-panel v-if="importResult" title="④ 校验结果">
-      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <div style="flex: 1; text-align: center; padding: 10px; background: var(--el-color-success-light-9); border-radius: 4px;">
-          <div style="font-size: 20px; font-weight: 600; color: var(--el-color-success);">{{ importResult.total }}</div>
-          <div style="font-size: 12px; color: var(--el-text-color-secondary);">总行数</div>
-        </div>
-        <div style="flex: 1; text-align: center; padding: 10px; background: var(--el-color-success-light-9); border-radius: 4px;">
-          <div style="font-size: 20px; font-weight: 600; color: var(--el-color-success);">{{ importResult.valid }}</div>
-          <div style="font-size: 12px; color: var(--el-text-color-secondary);">有效行数</div>
-        </div>
-        <div style="flex: 1; text-align: center; padding: 10px; background: var(--el-color-danger-light-9); border-radius: 4px;">
-          <div style="font-size: 20px; font-weight: 600; color: var(--el-color-danger);">{{ importResult.errors.length }}</div>
-          <div style="font-size: 12px; color: var(--el-text-color-secondary);">错误行数</div>
-        </div>
-      </div>
-      <div v-if="importResult.errors.length" style="padding: 8px; background: var(--el-color-danger-light-9); border-radius: 4px; font-size: 12px; color: var(--el-color-danger);">
-        <div style="font-weight: 600; margin-bottom: 4px;">⚠️ 以下行校验失败：</div>
-        <div v-for="error in importResult.errors" :key="error.row" style="margin-left: 8px; line-height: 1.8;">
-          第 {{ error.row }} 行：{{ error.message }}
-        </div>
-      </div>
-    </wd-panel>
-
-  </div>
-
-  <template #footer>
-    <el-button @click="visible = false">取消</el-button>
-    <wd-confirm-button
-      api="/api/users/import"
-      :api-param="importConfig"
-      type="primary"
-      :head-refresh-datagrid="true">
-      开始导入
-    </wd-confirm-button>
-  </template>
-</wd-drawer-button>
 ```
 
 ### 7.6 导出面板代码示例
 
 ```html
-<wd-dialog-button label="数据导出" title="数据导出" @confirm="handleExport">
+<wd-dialog-button label="数据导出" title="数据导出">
   <div style="padding: 20px;">
     <wd-panel title="导出范围">
       <el-form label-width="100px">
         <el-form-item label="导出范围">
           <el-radio-group v-model="exportConfig.range">
-            <el-radio value="all">全部数据（当前筛选条件）</el-radio>
-            <el-radio value="page">当前页数据</el-radio>
-            <el-radio value="selected" :disabled="!selectedRows.length">选中数据（{{ selectedRows.length }} 条）</el-radio>
+            <el-radio label="all">全部数据（当前筛选条件）</el-radio>
+            <el-radio label="page">当前页数据</el-radio>
+            <el-radio label="selected" :disabled="!selectedRows.length">选中数据（{{ selectedRows.length }} 条）</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -210,7 +206,7 @@ DataGrid 工具栏
 
     <wd-panel title="导出字段">
       <el-checkbox-group v-model="exportConfig.fields">
-        <el-checkbox v-for="col in columns" :key="col.prop" :value="col.prop">
+        <el-checkbox v-for="col in columns" :key="col.prop" :label="col.prop">
           {{ col.label }}
         </el-checkbox>
       </el-checkbox-group>
@@ -220,21 +216,21 @@ DataGrid 工具栏
       <el-form label-width="100px">
         <el-form-item label="文件格式">
           <el-radio-group v-model="exportConfig.format">
-            <el-radio value="xlsx">Excel (.xlsx)</el-radio>
-            <el-radio value="csv">CSV (.csv)</el-radio>
+            <el-radio label="xlsx">Excel (.xlsx)</el-radio>
+            <el-radio label="csv">CSV (.csv)</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
     </wd-panel>
   </div>
 
-  <template #footer>
-    <el-button @click="visible = false">取消</el-button>
+  <template #footer="{ close }">
+    <el-button @click="close()">取消</el-button>
     <wd-api-button
       api="/api/users/export"
       :api-param="exportConfig"
       type="primary"
-      @success="handleDownload">
+      @api-success="handleDownload">
       开始导出
     </wd-api-button>
   </template>

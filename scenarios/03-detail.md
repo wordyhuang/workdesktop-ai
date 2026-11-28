@@ -1,8 +1,8 @@
 # 场景三：详情查看页面
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-10\
-> **当前版本**：V\_1.1\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.2\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：只读详情页的展示规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
@@ -140,10 +140,16 @@
 <wd-panel title="明细">
   <wd-datagrid
     :data-source="detailRows"
-    :columns="detailColumns"
     :with-pager="false"
-    :tools="{ refresh: false, size: false, modeSwitch: false, columnSetting: false }"
-  />
+    :tools="{ refresh: false, size: false, modeSwitch: false, columnSetting: false }">
+    <!-- 明细列：写在 default 插槽内（DataGrid 无 columns prop，业务列用 el-table-column 声明） -->
+    <el-table-column prop="goodsName" label="商品名称" min-width="160" />
+    <el-table-column prop="spec" label="规格" width="120" />
+    <el-table-column prop="quantity" label="数量" width="90" align="right" />
+    <el-table-column prop="unitPrice" label="单价" width="110" align="right" :formatter="formatMoney" />
+    <el-table-column prop="amount" label="小计" width="120" align="right" :formatter="formatMoney" />
+    <el-table-column prop="remark" label="备注" min-width="120" show-overflow-tooltip />
+  </wd-datagrid>
   <!-- 合计行：金额类明细在表格下方汇总展示；标签后加 Tips 说明计算口径 -->
   <div v-if="detailRows.length" class="detail-summary">
     <span>共 {{ detailRows.length }} 项</span>
@@ -165,17 +171,16 @@
 </wd-panel>
 
 <script setup>
-// 明细列：金额右对齐 + 千分位格式化
-const detailColumns = [
-  { prop: 'goodsName', label: '商品名称', minWidth: 160 },
-  { prop: 'spec',      label: '规格',     width: 120 },
-  { prop: 'quantity',  label: '数量',     width: 90,  align: 'right' },
-  { prop: 'unitPrice', label: '单价',     width: 110, align: 'right',
-    formatter: (r) => `¥ ${Number(r.unitPrice).toFixed(2)}` },
-  { prop: 'amount',    label: '小计',     width: 120, align: 'right',
-    formatter: (r) => `¥ ${Number(r.amount).toFixed(2)}` },
-  { prop: 'remark',    label: '备注',     minWidth: 120, showOverflowTooltip: true },
+import { computed } from 'vue'
+
+// 明细数据：来自详情接口返回或父级传入（此处为示例数据）
+const detailRows = [
+  { goodsName: '机械键盘', spec: '87键', quantity: 2, unitPrice: 100, amount: 200, remark: '' },
+  { goodsName: '无线鼠标', spec: '静音款', quantity: 1, unitPrice: 50, amount: 50, remark: '' },
 ]
+
+// 金额列：右对齐 + 千分位格式化；el-table-column formatter 签名为 (row, column, cellValue, index)
+const formatMoney = (row, column, cellValue) => `¥ ${Number(cellValue).toFixed(2)}`
 
 // 合计：数量/金额求总
 const totalQuantity = computed(() => detailRows.reduce((s, r) => s + Number(r.quantity || 0), 0))

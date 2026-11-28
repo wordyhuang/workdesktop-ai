@@ -1,14 +1,11 @@
 # 场景二：数据维护表单页面（DataForm 标准场景）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-19\
-> **当前版本**：V\_1.3\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.5\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：新增/编辑表单的结构、分组与提交规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
->
-> **版本变更**：V_1.2 → V_1.3：§2.6 新增「禁止重复添加内置按钮」——DataForm 已内置保存/重置/关闭按钮，底部不要再额外设置这三个行为的按钮，文案与显隐调整走 withActions/actionConfig 配置（主文档 V\_1.33 §2.6 已先改）。\
-> 历史变更：V_1.1 → V_1.2：下线 WdDatePicker 组件（组件源码、测试、docs 示例与元数据全量移除），单日期字段统一改用原生 `el-date-picker`，仅保留 WdDateRangePicker 用于日期范围场景。
 
 
 ### 2.1 场景描述
@@ -65,54 +62,56 @@ DataGrid 页面
 
 ```html
 <wd-data-form mode="edit" api="/api/detail" :active="true" submit-api="/api/save">
-  <!-- 第一组：基本信息 -->
-  <wd-panel title="基本信息">
-    <wd-form-item label="名称" prop="name">
-      <el-input v-model="form.name" />
-    </wd-form-item>
-    <wd-form-item label="编码" prop="code">
-      <el-input v-model="form.code" />
-    </wd-form-item>
-    <wd-form-item label="分类" prop="categoryId">
-      <wd-select v-model="form.categoryId" api="/api/categories" />
-    </wd-form-item>
-    <!-- 关键字段：wd-form-item 内置 :tip prop 自动在 label 右侧挂问号图标 + tooltip -->
-    <wd-form-item
-      label="信用额度"
-      prop="creditLimit"
-      tip="系统按客户等级自动核定；A级=10万，B级=5万，C级=1万，可手动上调（需上级审批）">
-      <el-input-number v-model="form.creditLimit" :min="0" :step="10000" />
-    </wd-form-item>
-  </wd-panel>
+  <template #default="{ model }">
+    <!-- 第一组：基本信息 -->
+    <wd-panel title="基本信息">
+      <wd-form-item label="名称" prop="name">
+        <el-input v-model="model.name" />
+      </wd-form-item>
+      <wd-form-item label="编码" prop="code">
+        <el-input v-model="model.code" />
+      </wd-form-item>
+      <wd-form-item label="分类" prop="categoryId">
+        <wd-select v-model="model.categoryId" api="/api/categories" />
+      </wd-form-item>
+      <!-- 关键字段：wd-form-item 内置 :tip prop 自动在 label 右侧挂问号图标 + tooltip -->
+      <wd-form-item
+        label="信用额度"
+        prop="creditLimit"
+        tip="系统按客户等级自动核定；A级=10万，B级=5万，C级=1万，可手动上调（需上级审批）">
+        <el-input-number v-model="model.creditLimit" :min="0" :step="10000" />
+      </wd-form-item>
+    </wd-panel>
 
-  <!-- 第二组：扩展信息 -->
-  <wd-panel title="扩展信息">
-    <!-- 选项少：用按钮形态列表替代 select，开 buttonStyle -->
-    <wd-form-item label="优先级" prop="priority">
-      <wd-radio-list v-model="form.priority" :button-style="true" :data-source="[
-        { value: 'low', text: '低' },
-        { value: 'normal', text: '中' },
-        { value: 'high', text: '高' }
-      ]" />
-    </wd-form-item>
-    <wd-form-item label="标签" prop="tags">
-      <wd-checkbox-list v-model="form.tags" :button-style="true" :data-source="[
-        { value: 'frontend', text: '前端' },
-        { value: 'backend', text: '后端' },
-        { value: 'testing', text: '测试' },
-        { value: 'ops', text: '运维' }
-      ]" />
-    </wd-form-item>
-    <wd-form-item label="状态" prop="status">
-      <wd-switch v-model="form.status" />
-    </wd-form-item>
-    <wd-form-item label="活动周期" prop="activityRange">
-      <wd-date-range-picker v-model="form.activityRange" type="datetime" with-shortcut />
-    </wd-form-item>
-    <wd-form-item label="描述" prop="remark">
-      <el-input type="textarea" v-model="form.remark" />
-    </wd-form-item>
-  </wd-panel>
+    <!-- 第二组：扩展信息 -->
+    <wd-panel title="扩展信息">
+      <!-- 选项少：用按钮形态列表替代 select，开 buttonStyle -->
+      <wd-form-item label="优先级" prop="priority">
+        <wd-radio-list v-model="model.priority" :button-style="true" :data-source="[
+          { value: 'low', text: '低' },
+          { value: 'normal', text: '中' },
+          { value: 'high', text: '高' }
+        ]" />
+      </wd-form-item>
+      <wd-form-item label="标签" prop="tags">
+        <wd-checkbox-list v-model="model.tags" :button-style="true" :data-source="[
+          { value: 'frontend', text: '前端' },
+          { value: 'backend', text: '后端' },
+          { value: 'testing', text: '测试' },
+          { value: 'ops', text: '运维' }
+        ]" />
+      </wd-form-item>
+      <wd-form-item label="状态" prop="status">
+        <wd-switch v-model="model.status" />
+      </wd-form-item>
+      <wd-form-item label="活动周期" prop="activityRange">
+        <wd-date-range-picker v-model="model.activityRange" type="datetime" with-shortcut />
+      </wd-form-item>
+      <wd-form-item label="描述" prop="remark">
+        <el-input type="textarea" v-model="model.remark" />
+      </wd-form-item>
+    </wd-panel>
+  </template>
 </wd-data-form>
 ```
 
@@ -123,25 +122,29 @@ DataGrid 页面
 DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `el-date-picker`（daterange 模式），封装了按 type 自动匹配的 `value-format` 默认值与快捷选项，避免每页手写。单日期字段直接使用原生 `el-date-picker` 即可，无需二次封装：
 
 ```html
-<!-- 单日期：直接用原生 el-date-picker -->
-<wd-form-item label="生效日期" prop="effectiveDate">
-  <el-date-picker v-model="form.effectiveDate" type="date" value-format="YYYY-MM-DD" />
-</wd-form-item>
+<wd-data-form>
+  <template #default="{ model }">
+    <!-- 单日期：直接用原生 el-date-picker -->
+    <wd-form-item label="生效日期" prop="effectiveDate">
+      <el-date-picker v-model="model.effectiveDate" type="date" value-format="YYYY-MM-DD" />
+    </wd-form-item>
 
-<!-- 日期范围：默认起止占位「开始日期 / 结束日期」，YYYY-MM-DD 格式 -->
-<wd-form-item label="活动周期" prop="activityRange">
-  <wd-date-range-picker v-model="form.activityRange" with-shortcut />
-</wd-form-item>
+    <!-- 日期范围：默认起止占位「开始日期 / 结束日期」，YYYY-MM-DD 格式 -->
+    <wd-form-item label="活动周期" prop="activityRange">
+      <wd-date-range-picker v-model="model.activityRange" with-shortcut />
+    </wd-form-item>
 
-<!-- 日期时间范围：绑定值 YYYY-MM-DD HH:mm:ss 数组 -->
-<wd-form-item label="直播时段" prop="liveRange">
-  <wd-date-range-picker
-    v-model="form.liveRange"
-    type="datetime"
-    start-placeholder="开始时间"
-    end-placeholder="结束时间"
-    with-shortcut />
-</wd-form-item>
+    <!-- 日期时间范围：绑定值 YYYY-MM-DD HH:mm:ss 数组 -->
+    <wd-form-item label="直播时段" prop="liveRange">
+      <wd-date-range-picker
+        v-model="model.liveRange"
+        type="datetime"
+        start-placeholder="开始时间"
+        end-placeholder="结束时间"
+        with-shortcut />
+    </wd-form-item>
+  </template>
+</wd-data-form>
 ```
 
 | 组件                 | type 默认 | value-format 默认值              | 快捷选项内置                            |
@@ -220,7 +223,7 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
 
 ```html
 <!-- 新增（容器内会自动显示关闭 / 保存并继续） -->
-<wd-drawer-button label="新增数据" title="新增数据" size="50%" type="primary">
+<wd-drawer-button label="新增数据" title="新增数据" drawer-size="50%" type="primary">
   <wd-data-form
     mode="create"
     submit-api="/api/users/save"
@@ -229,21 +232,23 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
     :head-refresh-datagrid="true"
     :keep-form-button="true"
     :confirm-leave="true">
-    <wd-form-item label="名称" prop="name" required>
-      <el-input v-model="model.name" placeholder="请输入名称" />
-    </wd-form-item>
-    <wd-form-item label="编码" prop="code" required>
-      <el-input v-model="model.code" placeholder="请输入编码" />
-    </wd-form-item>
-    <wd-form-item label="分类" prop="categoryId">
-      <wd-select api="/api/categories/list" text-prop="name" value-prop="id" />
-    </wd-form-item>
-    <wd-form-item label="状态" prop="status">
-      <wd-switch :active-value="1" :inactive-value="0" />
-    </wd-form-item>
-    <wd-form-item label="描述" prop="description">
-      <el-input type="textarea" v-model="model.description" />
-    </wd-form-item>
+    <template #default="{ model }">
+      <wd-form-item label="名称" prop="name" required>
+        <el-input v-model="model.name" placeholder="请输入名称" />
+      </wd-form-item>
+      <wd-form-item label="编码" prop="code" required>
+        <el-input v-model="model.code" placeholder="请输入编码" />
+      </wd-form-item>
+      <wd-form-item label="分类" prop="categoryId">
+        <wd-select v-model="model.categoryId" api="/api/categories/list" text-prop="name" value-prop="id" />
+      </wd-form-item>
+      <wd-form-item label="状态" prop="status">
+        <wd-switch v-model="model.status" :active-value="1" :inactive-value="0" />
+      </wd-form-item>
+      <wd-form-item label="描述" prop="description">
+        <el-input type="textarea" v-model="model.description" />
+      </wd-form-item>
+    </template>
   </wd-data-form>
 </wd-drawer-button>
 ```
@@ -257,7 +262,7 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
       label="编辑"
       type="primary" 
       title="编辑数据" 
-      size="50%" 
+      drawer-size="50%" 
       :data="row"
     >
       <wd-data-form
@@ -303,21 +308,23 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
   :head-close-drawer="true"
   :head-refresh-datagrid="true"
 >
-  <wd-form-item label="名称" prop="name" required>
-    <el-input v-model="model.name" placeholder="请输入名称" />
-  </wd-form-item>
-  <wd-form-item label="编码" prop="code" required>
-    <el-input v-model="model.code" placeholder="请输入编码" />
-  </wd-form-item>
-  <wd-form-item label="分类" prop="categoryId">
-    <wd-select api="/api/categories/list" text-prop="name" value-prop="id" />
-  </wd-form-item>
-  <wd-form-item label="状态" prop="status">
-    <wd-switch :active-value="1" :inactive-value="0" />
-  </wd-form-item>
-  <wd-form-item label="描述" prop="description">
-    <el-input type="textarea" v-model="model.description" />
-  </wd-form-item>
+  <template #default="{ model }">
+    <wd-form-item label="名称" prop="name" required>
+      <el-input v-model="model.name" placeholder="请输入名称" />
+    </wd-form-item>
+    <wd-form-item label="编码" prop="code" required>
+      <el-input v-model="model.code" placeholder="请输入编码" />
+    </wd-form-item>
+    <wd-form-item label="分类" prop="categoryId">
+      <wd-select v-model="model.categoryId" api="/api/categories/list" text-prop="name" value-prop="id" />
+    </wd-form-item>
+    <wd-form-item label="状态" prop="status">
+      <wd-switch v-model="model.status" :active-value="1" :inactive-value="0" />
+    </wd-form-item>
+    <wd-form-item label="描述" prop="description">
+      <el-input type="textarea" v-model="model.description" />
+    </wd-form-item>
+  </template>
 </wd-data-form>
 ```
 
@@ -326,12 +333,13 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
 `WdSearchItem` 是搜索面板（`WdSearchPanel`）中专属的表单项包装，和 `WdFormItem` 功能类似，但针对搜索场景优化了标签宽度和行内对齐：
 
 ```html
-<wd-search-panel :head-refresh-datagrid="main">
+<!-- 定向刷新：head-refresh-datagrid 传字符串 = 目标 DataGrid 的 filter 分组名，需与对应 wd-datagrid 的 filter 一致（此处为 main 组） -->
+<wd-search-panel head-refresh-datagrid="main">
   <wd-search-item label="名称" prop="name">
     <el-input v-model="model.name" placeholder="请输入名称" />
   </wd-search-item>
   <wd-search-item label="分类" prop="categoryId">
-    <wd-select api="/api/categories/list" text-prop="name" value-prop="id" />
+    <wd-select v-model="model.categoryId" api="/api/categories/list" text-prop="name" value-prop="id" />
   </wd-search-item>
   <wd-search-item label="状态" prop="status">
     <el-select v-model="model.status" placeholder="请选择状态">
@@ -357,13 +365,17 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
 > **关键字段帮助说明（tip prop）**：`WdFormItem` 内置帮助说明能力，`tip` 字符串自动渲染为 label 右侧的问号图标 + el-tooltip。适用于含义不直观的字段（如"信用额度""核定数量""抵扣比例"），说明取值规则、来源、上限等。`tipPlacement` 支持 `top/left/right/bottom` 八方向，默认 `top`。
 >
 > ```html
-> <!-- tip 用法：label 右侧自动挂问号图标，hover 显示说明 -->
-> <wd-form-item
->   label="信用额度"
->   prop="creditLimit"
->   tip="系统按客户等级自动核定；A级=10万，B级=5万，C级=1万，可手动上调（需上级审批）">
->   <el-input-number v-model="form.creditLimit" :min="0" :step="10000" />
-> </wd-form-item>
+> <!-- tip 用法：label 右侧自动挂问号图标，hover 显示说明（片段位于 wd-data-form 的 default 插槽内） -->
+> <wd-data-form>
+>   <template #default="{ model }">
+>     <wd-form-item
+>       label="信用额度"
+>       prop="creditLimit"
+>       tip="系统按客户等级自动核定；A级=10万，B级=5万，C级=1万，可手动上调（需上级审批）">
+>       <el-input-number v-model="model.creditLimit" :min="0" :step="10000" />
+>     </wd-form-item>
+>   </template>
+> </wd-data-form>
 > ```
 
 **使用建议：**
@@ -395,6 +407,6 @@ DataForm 内的日期范围字段**统一用 WdDateRangePicker** 替代原生 `e
 | 用户手动关闭窗口，表单未修改            | 直接关闭，不提示               |
 | 程序触发关闭（保存成功自动关闭）          | 不提示，直接关闭               |
 
-联动机制通过 `headCloseDrawer` / `headCloseDialog` 声明式属性实现，DataForm 保存成功后会自动查找目标容器并关闭。
+联动机制通过 `headCloseDrawer` 声明式属性实现（默认 true），DataForm 保存成功后会自动查找所在容器（Drawer / Dialog）并关闭。
 
 ***

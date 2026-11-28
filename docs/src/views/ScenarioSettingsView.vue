@@ -68,7 +68,7 @@
             </div>
           </div>
 
-          <wd-panel title="个人信息" description="展示在协作场景中的身份信息">
+          <wd-panel title="个人信息" title-bar="short" description-align="right" description="展示在协作场景中的身份信息">
             <div class="settings-profile">
               <div class="settings-avatar">林</div>
               <div class="settings-profile__meta">
@@ -92,7 +92,7 @@
             </div>
           </wd-panel>
 
-          <wd-panel title="通用偏好" description="这些设置仅影响你自己的使用体验">
+          <wd-panel title="通用偏好" title-bar="short" description-align="right" description="这些设置仅影响你自己的使用体验">
             <div class="settings-row">
               <div class="settings-row__main">
                 <b>每周工作报告邮件</b>
@@ -122,7 +122,7 @@
             </div>
           </div>
 
-          <wd-panel title="登录设备" description="发现陌生设备请立即下线">
+          <wd-panel title="登录设备" title-bar="short" description-align="right" description="发现陌生设备请立即下线">
             <div v-for="device in DEVICES" :key="device.id" class="settings-device">
               <span class="settings-device__icon">
                 <el-icon :size="17"><component :is="device.icon" /></el-icon>
@@ -147,7 +147,7 @@
             </template>
           </wd-panel>
 
-          <wd-panel title="登录日志" description="最近 5 次登录记录">
+          <wd-panel title="登录日志" title-bar="short" description-align="right" description="最近 5 次登录记录">
             <wd-data-grid
               api="/settings/login-logs"
               :active="true"
@@ -182,7 +182,7 @@
             </div>
           </div>
 
-          <wd-panel title="通知渠道" description="关闭后将不再接收对应渠道的消息">
+          <wd-panel title="通知渠道" title-bar="short" description-align="right" description="关闭后将不再接收对应渠道的消息">
             <div class="settings-row">
               <div class="settings-row__main">
                 <b>邮件通知</b>
@@ -246,7 +246,7 @@
             </div>
           </div>
 
-          <wd-panel title="主题与语言" description="主题跟随系统时会自动切换明暗">
+          <wd-panel title="主题与语言" title-bar="short" description-align="right" description="主题跟随系统时会自动切换明暗">
             <div class="settings-block settings-block--first">
               <div class="settings-block__head">
                 <b>主题模式</b>
@@ -279,7 +279,7 @@
             </div>
           </div>
 
-          <wd-panel title="变更记录" description="每次保存配置后自动写入">
+          <wd-panel title="变更记录" title-bar="short" description-align="right" description="每次保存配置后自动写入">
             <wd-tips
               type="box"
               bg="primary"
@@ -303,7 +303,7 @@
             </wd-data-grid>
           </wd-panel>
 
-          <wd-panel title="危险操作" description="请谨慎操作，相关行为不可撤销">
+          <wd-panel title="危险操作" title-bar="short" description-align="right" description="请谨慎操作，相关行为不可撤销">
             <wd-tips
               type="box"
               icon="WarningFilled"

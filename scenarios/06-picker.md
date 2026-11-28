@@ -1,8 +1,8 @@
 # 场景六：弹窗选择器
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-10\
-> **当前版本**：V\_1.2\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.3\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：表单内选择关联数据的弹窗规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.17）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
@@ -43,27 +43,38 @@
 ### 6.3 代码示例
 
 ```html
-<wd-data-form api="/api/detail" :active="true" submit-api="/api/save">
+<wd-data-form api="/api/detail" mode="edit" :active="true" submit-api="/api/save">
   <wd-form-item label="关联用户" prop="userId">
     <div style="display:flex;gap:8px;align-items:center">
-      <el-input v-model="form.userName" readonly placeholder="请选择用户" />
-      <wd-dialog-button label="选择" title="选择用户" link @confirm="handleUserSelect" />
+      <el-input v-model="model.userName" readonly placeholder="请选择用户" />
+      <!-- 弹层内容由 DialogButton 的 default 插槽承载，DataGrid 与 DataForm 平级、不嵌在 DataForm 内 -->
+      <wd-dialog-button label="选择" title="选择用户" link>
+        <div style="padding: 16px;">
+          <wd-search-panel :head-refresh-datagrid="selectGridRef">
+            <wd-search-item label="姓名"><el-input v-model="q.name" /></wd-search-item>
+          </wd-search-panel>
+          <wd-datagrid
+            ref="selectGridRef"
+            api="/api/users"
+            :active="true"
+            :with-selection="true"
+            :with-pager="true"
+            :auto-height="true"
+            @selection-change="handleSelectChange"
+            style="margin-top: 12px;">
+            <el-table-column prop="name" label="姓名" />
+            <el-table-column prop="dept" label="部门" />
+            <el-table-column prop="position" label="职位" />
+          </wd-datagrid>
+        </div>
+        <!-- 确认/取消放 footer 插槽：确认时回填选中行，close() 关闭弹层 -->
+        <template #footer="{ close }">
+          <el-button @click="close()">取消</el-button>
+          <el-button type="primary" @click="handleUserSelect(close)">确认</el-button>
+        </template>
+      </wd-dialog-button>
     </div>
   </wd-form-item>
-
-  <!-- Dialog 内嵌选择表格 -->
-  <wd-datagrid
-    slot="dialog-content"
-    api="/api/users"
-    :active="true"
-    :with-selection="true"
-    :with-pager="true"
-    :auto-height="true"
-    @selection-change="handleSelectChange">
-    <el-table-column prop="name" label="姓名" />
-    <el-table-column prop="dept" label="部门" />
-    <el-table-column prop="position" label="职位" />
-  </wd-datagrid>
 </wd-data-form>
 ```
 
@@ -71,7 +82,7 @@
 
 | 项     | 规范                                     |
 | ----- | -------------------------------------- |
-| 单选/多选 | 选择器支持单选（`single-select`）和多选模式          |
+| 单选/多选 | 选择器支持单选和多选模式 |
 | 搜索    | 弹窗内 DataGrid 带搜索面板                     |
 | 分页    | 数据量大时带分页                               |
 | 确认回填  | 点击"确认"后将选中数据回填到表单                      |

@@ -752,9 +752,19 @@ function onLogout() {
 // 与 activeGroup 同一模式：props 优先，未受控时走内部状态
 const innerCollapsed = ref(false)
 const collapsedState = computed(() => props.collapsed || innerCollapsed.value)
+// 受控/半受控下外部把 collapsed 设回 false 时同步清除内部粘滞（|| 合并下 innerCollapsed=true 会卡死展开）
+watch(
+  () => props.collapsed,
+  (v) => {
+    innerCollapsed.value = v
+  }
+)
 function toggleCollapsed() {
-  innerCollapsed.value = !collapsedState.value
-  emit('update:collapsed', collapsedState.value)
+  // 必须先算出翻转值再 emit；若从 computed 重读，受控收起态下 props.collapsed 尚未更新（同 tick 旧值），
+  // emit 出去的还是 true，v-model 永远卡在收起态
+  const next = !collapsedState.value
+  innerCollapsed.value = next
+  emit('update:collapsed', next)
 }
 
 /* ---------- 内容刷新（强制重挂载） ---------- */

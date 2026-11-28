@@ -1038,6 +1038,29 @@ describe('WdStation 集成', () => {
     expect(wrapper.find('.el-tab-pane-stub').attributes('data-name')).toBe('k1')
   })
 
+  it('v-model:collapsed 受控收起态点击展开：emit 翻转后的值（非受控时 computed 旧值会卡死）', async () => {
+    const wrapper = mountStation({ menuGroups: menuGroupsFixture, collapsed: true, routerMode: 'html' })
+    expect(wrapper.find('.wd-station__aside').classes()).toContain('is-collapsed')
+    // 收起态点击 → 必须.emit false（翻转后值）；旧实现 emit 与 props.collapsed 旧值相同的 true，v-model 永远卡 true
+    await wrapper.find('.wd-station__collapse').trigger('click')
+    expect(wrapper.emitted('update:collapsed')![0]).toEqual([false])
+    // 父级按 v-model 把 collapsed 更新为 false → 展开
+    await wrapper.setProps({ collapsed: false })
+    expect(wrapper.find('.wd-station__aside').classes()).not.toContain('is-collapsed')
+  })
+
+  it('受控/半受控：点击收起后外部把 collapsed 设回 false，内部粘滞被清除可展开', async () => {
+    const wrapper = mountStation({ menuGroups: menuGroupsFixture, routerMode: 'html' })
+    await wrapper.find('.wd-station__collapse').trigger('click')
+    // v-model 跟随：父级把 collapsed 更新为 true
+    await wrapper.setProps({ collapsed: true })
+    expect(wrapper.find('.wd-station').classes()).toContain('is-collapsed')
+    // 外部直接设回 false（如顶栏代码驱动）→ 必须能展开；旧实现 innerCollapsed=true 与 || 合并粘滞卡死
+    await wrapper.setProps({ collapsed: false })
+    await nextTick()
+    expect(wrapper.find('.wd-station__aside').classes()).not.toContain('is-collapsed')
+  })
+
   it('折叠按钮：side 用 Fold/Expand，top 用 ArrowUp，none / collapsible=false 时隐藏', async () => {
     const wrapper = mountStation({ menuGroups: menuGroupsFixture })
     // side 展开 → Fold

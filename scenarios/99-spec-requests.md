@@ -1,13 +1,11 @@
 # 组件规格补充需求汇总
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-06\
-> **当前版本**：V\_1.3\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.5\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：场景落地中对组件规格的补充诉求（回流 PRD）\
-> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。\
-> **版本变更**：V_1.2 → V_1.3：DataGrid 补充区块 `defaultMode` prop 状态由【增强需求，未实现】更新为【已实现】——组件已实现该 prop（`default-mode="card"` 且提供 `#card-item` 插槽时首屏即渲染卡片视图，未提供插槽则回退表格），同步场景主文档 V_1.28 §1.9 策略七「默认 card 模式（列多 / 长内容时的并列优先策略）」口径。\
-> 历史变更：V_1.1 → V_1.2：DataGrid 补充区块新增 `defaultMode?: 'table' | 'card'` 初始视图形态 prop（【增强需求，未实现】，支撑场景 §1.9 策略七「列多 / 长内容时默认 list 卡片展示」）。
+> **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
 
 
 以下补充需求需同步更新到 PRD 对应组件规格中：
@@ -15,11 +13,10 @@
 ### DataGrid 补充
 
 ```ts
+// 注：左区操作按钮区是插槽而非 prop——`<template #toolbar="{ selection, list }">`
+// 渲染在内置「新增/导出」按钮左侧；轻量批量场景优先用下方 batchBar 插槽。
 interface DataGridProps {
   // 原有属性...
-  
-  /** 左侧操作按钮区，通过插槽自定义内容 */
-  toolbar?: boolean | Slot
   
   /** 右侧功能按钮配置，每项可独立开关 */
   tools?: {
@@ -88,7 +85,7 @@ interface DataFormProps {
     submitText?: string      // 默认 "保存"
     continueText?: string    // 默认 "保存并继续"
     showReset?: boolean      // 默认 true
-    showContinue?: boolean   // 默认 true，仅 create 模式生效
+    showContinue?: boolean   // 默认 true，仅 create 模式且 keepFormButton 开启时生效
   }
 }
 ```
@@ -131,6 +128,19 @@ interface WdDateRangePickerProps {
 
   /** 是否禁用 */
   disabled?: boolean
+}
+```
+
+### PromptButton 补充
+
+```ts
+interface PromptButtonProps {
+  // 原有属性...
+
+  /** 输入内容校验（默认输入框模式生效）：传入指定文本后，输入值与该文本完全一致才允许确认，
+   *  否则拦截提交并提示；用于注销账号等高危操作的强确认（场景十 §10.7）。
+   *  现状：组件基于 ElMessageBox.prompt 未暴露校验配置，仅作强确认交互 */
+  promptConfirmText?: string
 }
 ```
 

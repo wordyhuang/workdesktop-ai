@@ -6,6 +6,8 @@ export { default as WdGuide } from './guide/Guide.vue'
 
 // 数据组件
 export { default as WdDataGrid } from './data/datagrid/DataGrid.vue'
+/** 标签别名：模板中 <wd-datagrid> 与 <wd-data-grid> 等价（install 按 name 注册） */
+export { default as WdDatagrid } from './data/datagrid/DataGrid.vue'
 export { default as WdEditableGrid } from './data/editable-grid/EditableGrid.vue'
 export { default as WdViewer } from './data/viewer/Viewer.vue'
 

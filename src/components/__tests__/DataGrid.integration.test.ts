@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { defineComponent, h, provide, inject, watch } from 'vue'
+import { defineComponent, h, provide, inject, watch, resolveComponent } from 'vue'
 import DataGrid from '../data/datagrid/DataGrid.vue'
+import WorkDesktop from '../../lib/install'
+import * as components from '../index'
 import { Menu, Grid } from '@element-plus/icons-vue'
 import { resetConfig, setGlobalConfig } from '../../lib/core/config'
 import { refreshDataGrid } from '../../lib/core/linkage'
@@ -1075,6 +1077,24 @@ describe('DataGrid height 高度模式（height:fix / 固定高度）', () => {
 
     expect(wrapper.find('.wd-datagrid').attributes('style')).toBeUndefined()
     expect(wrapper.find('.el-table-stub').attributes('height')).toBeUndefined()
+    wrapper.unmount()
+  })
+})
+
+describe('wd-datagrid 标签别名（install 注册 WdDatagrid）', () => {
+  it('components 导出 WdDatagrid 且与 WdDataGrid 指向同一组件', () => {
+    expect((components as any).WdDatagrid).toBe(components.WdDataGrid)
+  })
+
+  it('app.use(WorkDesktop) 后 <wd-datagrid> 可解析渲染为 DataGrid', () => {
+    const Host = defineComponent({
+      setup() {
+        const comp = resolveComponent('wd-datagrid') as any
+        return () => h(comp, { api: '/api/x', active: false, tools: { refresh: false } })
+      }
+    })
+    const wrapper = mount(Host, { global: { plugins: [WorkDesktop as any] } })
+    expect(wrapper.find('.wd-datagrid').exists()).toBe(true)
     wrapper.unmount()
   })
 })

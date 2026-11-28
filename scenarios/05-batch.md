@@ -1,13 +1,11 @@
 # 场景五：批量操作场景
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-10-18\
-> **当前版本**：V\_1.1\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.3\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：表格多选与批量操作规范\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.20）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
->
-> **版本变更**：V_1.0 → V_1.1：新增 §5.5「#batch-bar 悬浮批量操作条」示例（对应 DataGrid batchBar prop + 插槽落地）。
 
 
 ### 5.1 场景描述
@@ -46,18 +44,18 @@
     <wd-confirm-button
       v-if="selectedRows.length"
       api="/api/users/batch-delete"
-      :api-param="{ ids: selectedIds }"
+      :api-param="{ ids: selectedRows.map(r => r.id) }"
       type="danger"
       :head-refresh-datagrid="true"
-      @success="clearSelection">
+      @api-success="clearSelection">
       批量删除
     </wd-confirm-button>
     <wd-api-button
       v-if="selectedRows.length"
       api="/api/users/batch-enable"
-      :api-param="{ ids: selectedIds }"
+      :api-param="{ ids: selectedRows.map(r => r.id) }"
       :head-refresh-datagrid="true"
-      @success="clearSelection">
+      @api-success="clearSelection">
       批量启用
     </wd-api-button>
   </template>
@@ -76,7 +74,19 @@
 | 抹除操作   | 批量删除**必须**二次确认                                       |
 | 操作后清空  | 批量操作成功后清空选中行                                         |
 | 全选     | 表头多选框为全选/取消全选                                        |
-| 跨页选中   | 需要跨页保留选中时，DataGrid 用 `reserve-selection` + `row-key` |
+| 跨页选中   | 需要跨页保留选中时，DataGrid 开启 `with-selection-cart`（跨页选中购物车）并配置 `row-key`，购物车去重键 `cart-row-key` 缺省复用 `row-key`；勾选行跨页累计，翻页/搜索/刷新不清空，翻回所在页自动回勾 |
+
+```html
+<!-- 跨页保留选中：开启购物车，勾选行跨页累计，翻页/搜索/刷新不清空，翻回所在页自动回勾 -->
+<wd-datagrid
+  api="/api/users"
+  :active="true"
+  :with-selection="true"
+  with-selection-cart
+  row-key="id">
+  <el-table-column prop="name" label="名称" />
+</wd-datagrid>
+```
 
 ### 5.5 新方式：#batch-bar 悬浮批量操作条（V_1.1）
 
@@ -88,6 +98,7 @@
   :active="true"
   :with-selection="true"
   batch-bar
+  :dynamic-column="true"
   column-storage-key="user-list">
 
   <!-- 数据列 -->
@@ -105,7 +116,7 @@
       type="danger"
       size="small"
       :head-refresh-datagrid="true"
-      @success="clearSelection">
+      @api-success="clearSelection">
       批量删除
     </wd-confirm-button>
     <wd-api-button
@@ -113,7 +124,7 @@
       :api-param="{ ids: selectedRows.map(r => r.id) }"
       size="small"
       :head-refresh-datagrid="true"
-      @success="clearSelection">
+      @api-success="clearSelection">
       批量启用
     </wd-api-button>
   </template>

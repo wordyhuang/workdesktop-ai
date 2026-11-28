@@ -1,8 +1,8 @@
 # 场景八：状态分类 Tab 页（审核页 / 结果展示页）
 
 > **创建时间**：2026-10-16\
-> **最后修改时间**：2026-10-16\
-> **当前版本**：V\_1.0\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.1\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：按状态/分类拆分为多个 Tab 的列表页规范（Tab 计数 + 按分类定制列与操作按钮）\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.18）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
@@ -56,14 +56,14 @@
      ↓
 5. 更新请求参数：apiParam 携带分类字段 status='pending'
      ↓
-6. 手动触发 DataGrid 刷新（requestApi({ apiParam })，重置到第一页）
+6. 手动触发 DataGrid 刷新（requestApi({ apiParam })，重新请求接口并保持当前页码；需重置到第一页时用 ref.search()）
      ↓
 7. 按当前 Tab 切换表格列配置与操作按钮（v-if 控制）
      ↓
 8. 用户对某行执行操作（通过/驳回）→ 成功后刷新列表 + 刷新 Tab 计数
 ```
 
-> **关键机制**：DataGrid 的 `apiParam` **变化不会自动重载**（仅 `api` / `apiMethod` 变化自动重载），Tab 切换必须**手动调用** `gridRef.requestApi({ apiParam: {...} })` 刷新，并重置到第一页。
+> **关键机制**：DataGrid 的 `apiParam` **变化不会自动重载**（仅 `api` / `apiMethod` 变化自动重载），Tab 切换必须**手动调用** `gridRef.requestApi({ apiParam: {...} })` 刷新（重新请求接口并保持当前页码）；需重置到第一页时改用 `gridRef.search()`。
 
 ### 8.4 代码示例
 
@@ -88,15 +88,16 @@
     api="/api/audits"
     api-method="post"
     :active="true"
+    :with-selection="true"
     :with-index="true">
 
-    <!-- 工具栏：操作按钮按当前 Tab 定制 -->
-    <template #toolbar>
+    <!-- 工具栏：操作按钮按当前 Tab 定制；插槽参数 selection 为当前勾选行（依赖 with-selection） -->
+    <template #toolbar="{ selection }">
       <!-- 未审核 Tab：批量通过 -->
       <wd-api-button
         v-if="activeTab === 'pending'"
         api="/api/audits/batch-approve"
-        :api-param="{ ids: selectedIds }"
+        :api-param="{ ids: selection.map((row) => row.id), status: 'pending' }"
         :head-refresh-datagrid="true"
         type="primary">批量通过</wd-api-button>
       <!-- 全部 / 已驳回 Tab：导出 -->
@@ -139,7 +140,7 @@
             :head-refresh-datagrid="true">撤回</wd-confirm-button>
         </template>
         <!-- 查看：所有 Tab 通用 -->
-        <wd-drawer-button label="查看" title="详情" size="50%" :data="row" link />
+        <wd-drawer-button label="查看" title="详情" drawer-size="50%" :data="row" link />
       </template>
     </el-table-column>
   </wd-datagrid>
@@ -163,6 +164,7 @@ const queryParams = computed(() => {
 })
 
 // Tab 切换：更新参数并手动刷新 DataGrid（apiParam 变化不会自动重载）
+// requestApi 重新请求接口并保持当前页码；需回到第一页时改用 gridRef.value?.search()
 function handleTabChange() {
   gridRef.value?.requestApi({ apiParam: queryParams.value })
 }
@@ -185,7 +187,7 @@ onMounted(async () => {
 | Tab 数量 | 建议 3–7 个（含"全部"）；超过 7 个时 el-tabs 需开启滚动模式或改搜索下拉 |
 | 分类命名 | Tab 文案用状态的标准名词（已审核/未审核/执行中/成功/失败），不加"列表""数据"等冗余词 |
 | Tab 总量 | **每个分类 Tab 标签后紧跟该分类数据总量**（如 `已审核（12）`）；「全部」这类**常量分类可不显示总量**；总量来自专用计数接口，与列表口径一致 |
-| 切换刷新 | Tab 切换 = 改请求参数 + **手动** `requestApi({ apiParam })`（`apiParam` 变化不会自动重载），并重置到第一页 |
+| 切换刷新 | Tab 切换 = 改请求参数 + **手动** `requestApi({ apiParam })`（`apiParam` 变化不会自动重载），重新请求接口并保持当前页码；需重置到第一页时用 ref.search() |
 | 计数联动 | 行操作（通过/驳回/撤回）成功后：刷新列表 + **刷新 Tab 计数**（重新请求 counts） |
 | 按分类定制列 | 不同 Tab 可展示不同列——待处理看"提交人/提交时间"，已处理看"审核人/审核时间/驳回原因"；用 `v-if="activeTab === 'xxx'"` 控制列渲染 |
 | 按分类定制操作 | 不同 Tab 提供不同操作按钮——未审核有"通过/驳回"，已审核只有"撤回/查看"；通用操作（查看）所有 Tab 都显示 |
@@ -198,7 +200,7 @@ onMounted(async () => {
 
 | 组件 | 补充项 | 说明 |
 | --- | --- | --- |
-| DataGrid | `requestApi({ apiParam })` | **已支持**（对外暴露方法，L930）。Tab 切换时手动调用，携带分类字段刷新并重置第一页 |
+| DataGrid | `requestApi({ apiParam })` | **已支持**（ref 暴露方法，见 [ai-api/wd-datagrid.md](../ai-api/wd-datagrid.md)「暴露方法」表）。Tab 切换时手动调用，携带分类字段重新请求接口并保持当前页码；需重置到第一页时用 ref.search() |
 | DataGrid | `apiParam` 变化自动重载 | **无此行为**（仅 api/apiMethod 变化自动重载）——本场景**不需要新增**，Tab 切换走手动 `requestApi` 即可，保持显式可控 |
 
 > 结论：场景八**不新增组件规格**，全部用既有能力（el-tabs + DataGrid `requestApi({ apiParam })` + 操作按钮组件）组合实现。

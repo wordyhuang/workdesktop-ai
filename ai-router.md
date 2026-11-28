@@ -1,8 +1,8 @@
-﻿﻿﻿﻿﻿﻿# WorkDesktop AI 编码路由（AI 阅读入口）
+﻿﻿﻿﻿﻿﻿﻿﻿# WorkDesktop AI 编码路由（AI 阅读入口）
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-16\
-> **当前版本**：V\_1.17\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.19\
 > **适用对象**：AI 编码助手（每次开发前必读的第一入口）\
 > **核心目标**：让 AI 按任务命中场景，只读对应子路由文件，避免通读全篇\
 > **文档简略描述**：本文件是编码场景指导的路由索引，供 AI 在每次开发前先阅读。第零节给出「一条提示词自动安装随包 Skill」的自举方式（不限定 Agent 类型），第一至三节为阅读规则、场景判定与编号引用。内容按场景严格拆分为 `scenarios/` 目录下的子文件，小节编号（§x.y）与主文档 `document/scenarios_v1.0.md` 一致。组件精确 API（props/emits/slots/方法签名）统一查 [ai-api/](./ai-api/) 路由（主路由 [ai-api/README.md](./ai-api/README.md) 按组件名索引定位，只打开对应子文件，如 [wd-select.md](./ai-api/wd-select.md)），由 `docs/src/api-meta/` 自动生成、随包发布，不要翻组件源码。HTTP 请求的完整执行流程 / 配置全景 / 代码示例 / 排错表见手写版 [ai-api/use-request-guide.md](./ai-api/use-request-guide.md)。
@@ -50,15 +50,13 @@
 | 数据导入 / 导出（模板下载、上传校验、结果反馈） | [scenarios/07-import-export.md](./scenarios/07-import-export.md) | §7.1–§7.9 |
 | 审核页 / 结果展示页等按状态分类的列表页：拆 Tab + Tab 后带数据总量 + 按分类定制列与操作按钮 | [scenarios/08-status-tabs.md](./scenarios/08-status-tabs.md) | §8.1–§8.6 |
 | 登录后首屏工作台 / 仪表盘聚合页（指标统计卡、待办审批、趋势图表、快捷入口、同高卡片布局） | [scenarios/09-workbench.md](./scenarios/09-workbench.md) | §9.1–§9.8 |
+| 数据分析页 / 统计中心（KPI 指标卡联动趋势图、悬浮查看、点击下钻明细、渠道占比环、时间范围切换） | [scenarios/09-workbench.md](./scenarios/09-workbench.md) | §9.4 ⑦⑧⑨ + §9.9 |
+| 设置中心 / 个人配置页（分类导航 + 单页长滚动、统一保存留痕、偏好控件选型、危险操作确认分级） | [scenarios/10-settings.md](./scenarios/10-settings.md) | §10.1–§10.9 |
 | 核对场景落地中对组件规格的新增/修改诉求（回流 PRD） | [scenarios/99-spec-requests.md](./scenarios/99-spec-requests.md) | 组件规格补充需求汇总 |
 
 > **判定技巧**：拿不准命中哪个场景时，打开候选子文件读第一节「场景描述」一句话判断，再深入。
 
 ## 三、跨文件编号引用说明
 
-子文件之间通过 §x.y 编号互相引用（如"见 §1.7 操作列规范"）。编号前缀对应文件：§0.x → 00-common；§1.x → 01-datagrid；§2.x → 02-dataform；§3.x → 03-detail；§4.x → 04-tree；§5.x → 05-batch；§6.x → 06-picker；§7.x → 07-import-export；§8.x → 08-status-tabs；§9.x → 09-workbench。
-
-***
-
-**版本变化**：V\_1.16 → V\_1.17（2026-11-16）：新增「零、优先启用随包 Skill」——提供不限定 Agent 类型的自举安装提示词（定位包根 → 复制到工具 skills 目录 → 确认并回报路径 → 工具不支持时降级读文档），并说明 Skill 与本文档的分工（Skill 管触发与自检，规范正文仍在本文件与 `scenarios/`、`ai-api/`）；阅读规则第 5 条补充 `wd-datagrid.md` / `wd-dataform.md` 两个无连字符文件名的例外。
+子文件之间通过 §x.y 编号互相引用（如"见 §1.7 操作列规范"）。编号前缀对应文件：§0.x → 00-common；§1.x → 01-datagrid；§2.x → 02-dataform；§3.x → 03-detail；§4.x → 04-tree；§5.x → 05-batch；§6.x → 06-picker；§7.x → 07-import-export；§8.x → 08-status-tabs；§9.x → 09-workbench；§10.x → 10-settings。
 

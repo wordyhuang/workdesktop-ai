@@ -233,6 +233,22 @@ describe('WdPanel titleBar 标识条形态', () => {
     expect(wrapper.find('.wd-panel').classes('wd-panel--card')).toBe(true)
     wrapper.unmount()
   })
+
+  it("titleBar='short' + descriptionAlign='right'：header-main 标记 is-desc-inline（描述保持与标题同行贴右，覆盖默认换行到标题下方）", async () => {
+    const wrapper = mountPanel({ titleBar: 'short', descriptionAlign: 'right', description: '同行贴右' })
+    await nextTick()
+    expect(wrapper.find('.wd-panel__header').classes('is-short-bar')).toBe(true)
+    expect(wrapper.find('.wd-panel__header-main').classes('is-desc-inline')).toBe(true)
+    expect(wrapper.find('.wd-panel__description').classes('is-right')).toBe(true)
+    wrapper.unmount()
+  })
+
+  it("titleBar='short' 默认 descriptionAlign='left'：header-main 无 is-desc-inline（描述仍换行到标题下方）", async () => {
+    const wrapper = mountPanel({ titleBar: 'short', description: '换行到下方' })
+    await nextTick()
+    expect(wrapper.find('.wd-panel__header-main').classes('is-desc-inline')).toBe(false)
+    wrapper.unmount()
+  })
 })
 
 describe('WdPanel mode 卡片模式', () => {

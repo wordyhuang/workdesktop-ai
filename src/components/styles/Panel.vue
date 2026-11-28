@@ -11,7 +11,7 @@
       :aria-expanded="collapsible ? openedState : undefined" @click="onHeaderClick"
       @keydown.enter.prevent="onHeaderClick" @keydown.space.prevent="onHeaderClick">
       <div class="wd-panel__header-main"
-        :class="{ 'is-desc-inline': mode === 'card' && descriptionAlign === 'right' }">
+        :class="{ 'is-desc-inline': descriptionAlign === 'right' && (mode === 'card' || titleBar === 'short') }">
         <el-icon v-if="isIconFontClass(icon)" class="wd-panel__title-icon"><i :class="icon" /></el-icon>
         <el-icon v-else-if="resolveStationIcon(icon)" class="wd-panel__title-icon">
           <component :is="resolveStationIcon(icon)" />
@@ -366,6 +366,12 @@ onMounted(async () => {
 
 .wd-panel__header.is-short-bar .wd-panel__description {
   width: 100%;
+}
+
+/* short 模式 descriptionAlign='right'：描述不换行，与标题同行贴头部右端
+  （覆盖上方「描述独占整行」的换行表现；left 时仍保持描述在标题下方） */
+.wd-panel__header.is-short-bar .wd-panel__header-main.is-desc-inline .wd-panel__description {
+  width: auto;
 }
 
 .wd-panel__header.is-icon::before {

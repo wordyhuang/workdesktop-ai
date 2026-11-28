@@ -1,13 +1,11 @@
 # 通用页面规范
 
 > **创建时间**：2026-10-14\
-> **最后修改时间**：2026-11-23\
-> **当前版本**：V\_1.9\
+> **最后修改时间**：2026-11-27\
+> **当前版本**：V\_1.12\
 > **适用对象**：AI 编码助手、开发团队\
 > **核心目标**：跨场景通用编码约定（布局/交互/反馈/按钮选型）\
 > **文档简略描述**：本文件是「编码场景指导」的子路由，由 `document/scenarios_v1.0.md`（V\_1.24）拆分而来。小节编号（§x.y）与主文档一致；跨场景引用（如"见 §1.7"）请按编号到对应子文件查阅，编号→文件映射见 [ai-router.md](../ai-router.md)。内容修改请先改主文档，再同步本文件。
->
-> **版本变更**：V\_1.3 → V\_1.4：新增「页面跳转原则」——非必要不做直接跳转，新内容展示优先用 `wd-drawer-button` 抽屉完成；确需独立工作区时用 `wd-station` 联动（`content-mode="tabs"` + `openTab` / `v-model:open-tabs` / `v-model:active-menu`）打开新标签页；非常不建议 `window.open` / `target="_blank"` 新开浏览器窗口或当前页直接跳转。
 
 ### 0.1 页面介绍与注意事项
 
@@ -53,12 +51,12 @@
 </wd-datagrid>
 </wd-panel>
 
-<!-- 关键字段说明：表单内用 WdFormItem 内置 tip prop（label 右侧自动挂问号） -->
+<!-- 关键字段说明：表单内用 WdFormItem 内置 tip prop（label 右侧自动挂问号）；片段置于 wd-data-form 的 <template #default="{ model }"> 插槽内 -->
 <wd-form-item
   label="信用额度"
   prop="creditLimit"
   tip="系统按客户等级自动核定；A级=10万，B级=5万，C级=1万">
-  <el-input-number v-model="form.creditLimit" />
+  <el-input-number v-model="model.creditLimit" />
 </wd-form-item>
 
 <!-- 关键操作说明：表格列头旁嵌 Tips 说明不同状态对操作的影响 -->
@@ -120,6 +118,7 @@ const result = await RequestAPI.request({
 | 一级容器    | 内页功能块一律用 `wd-panel`，作为一级容器；**外层不再有其他包裹容器**                                                                                         |
 | 容器划分    | 功能逻辑相同的块放一个容器；不同 UI 逻辑内容（搜索/表格/统计）分别用独立 `wd-panel`                                                                                 |
 | 容器间距    | 相邻 wd-panel 之间用 margin 分隔（建议 `16px` 左右）                                                                                            |
+| 分区组织选型 | 页面有**多个逻辑大块**且互斥使用、无需同屏对比时，优先用 **tab 切换**组织分区，而非一长串 panel 纵向堆叠（详见下方「页面分区组织：panel 并排 vs tab 切换」） |
 | 面板内元素分隔 | wd-panel 内多个排列元素之间，优先用**轻量视觉分隔**——浅色单线/浅色虚线、反差背景的 margin 间隙、flex 间距、不同颜色区分；**尽量避免全边框包裹式分隔**（详见下方「面板内元素分隔」） |
 | 面板标题    | **仅一个 panel、或仅「搜索+表格」情形：不使用 title（不传 `title` 即无标题头）**；多逻辑时才用 title                                                              |
 | 容器组件    | 优先使用 wd-panel 无标题模式；确有必要才用带标题模式                                                                                                    |
@@ -165,7 +164,7 @@ const result = await RequestAPI.request({
 
   <!-- 一级容器二：多条件搜索单独一个 panel（>=3 个搜索条件时） -->
   <wd-panel style="margin-top: 16px;">
-    <wd-search-panel :head-refresh-datagrid="gridRef">
+    <wd-search-panel :head-refresh-datagrid="true">
       <!-- 常用/重要条件：默认插槽，一行外露 -->
       <wd-search-item label="名称"><el-input v-model="q.name" /></wd-search-item>
       <wd-search-item label="状态">
@@ -228,6 +227,47 @@ wd-panel 内有多个排列元素（统计卡之间、表单分区之间、信�
 <!-- ❌ 避免：每个元素都全边框包裹，panel 内形成盒中盒 -->
 <div style="border: 1px solid #dcdfe6; border-radius: 6px; padding: 12px;">块一</div>
 <div style="border: 1px solid #dcdfe6; border-radius: 6px; padding: 12px;">块二</div>
+```
+
+**页面分区组织：panel 并排 vs tab 切换**：
+
+页面有多个**逻辑大块**（性质不同的独立功能区域，如个人资料 / 安全设置 / 通知偏好，或详情页的多类信息区）时，先判断块的**使用方式**再选分区手段：
+
+| 大块之间的关系 | 分区手段 | 原因 |
+| --- | --- | --- |
+| **互斥使用、内容较重、无需同屏对比** | **Tab 切换（el-tabs）优先** | 一长串 panel 纵向堆叠会让页面很长、找某个大块靠滚动；tab 一次聚焦一块，导航成本 O(1)，比 panel 更好 |
+| 需要同屏并排浏览 / 对比（指标卡、待办、趋势等摘要聚合） | panel 并排（场景九工作台骨架） | 工作台的核心价值就是一屏看全，切 tab 反而丢上下文 |
+| 上下游关系（搜索 → 表格 → 详情） | panel 纵向相邻（§0.3 标准骨架） | 流程顺序驱动，不是并列大块 |
+| 同一数据集按状态分档查看 | Tab（场景八状态 Tab 页） | 语义是**列表级分类**，不是页面级分区；判据见 §8.1 适用判定 |
+
+要点：
+
+- Tab 是**分区手段**，不改变容器层级——每个 el-tab-pane 内部仍按 §0.3 用 wd-panel 组织内容，不因套了 tab 就把整块内容塞进一个大 panel。
+- Tab 数量建议 ≤7，超过先考虑合并或拆页；Tab 标签语义清晰（名词性短语，如「基本资料」「安全设置」），不用「区块一/区块二」。
+- 内容较重的 tab 可**懒渲染**（首次激活再请求数据），避免进页一次拉全部大块；已激活过的 tab 保持已加载状态，切换不重置（§0.8 数据不闪空）。
+- 需要用户逐块填写的表单类大块（如向导式录入）用步骤条（el-steps）而非 tab——tab 允许乱序切换，步骤是有序流程。
+
+```html
+<!-- ✅ 多逻辑大块互斥使用：tab 组织，pane 内仍用 wd-panel -->
+<el-tabs v-model="activeTab">
+  <el-tab-pane label="基本资料" name="profile">
+    <wd-panel title="身份信息">
+      <!-- 表单内容 -->
+    </wd-panel>
+  </el-tab-pane>
+  <el-tab-pane label="安全设置" name="security">
+    <wd-panel title="登录设备">
+      <!-- 设备列表 -->
+    </wd-panel>
+  </el-tab-pane>
+</el-tabs>
+
+<!-- ❌ 避免：互斥使用的多块用一长串 panel 堆叠，页面靠长滚动找块 -->
+<wd-panel title="基本资料">…</wd-panel>
+<wd-panel title="安全设置">…</wd-panel>
+<wd-panel title="通知偏好">…</wd-panel>
+<wd-panel title="消息提醒">…</wd-panel>
+<wd-panel title="外观语言">…</wd-panel>
 ```
 
 **布局容器豁免（纯布局用途，不产生视觉包裹）**：
@@ -314,7 +354,7 @@ wd-panel 内有多个排列元素（统计卡之间、表单分区之间、信�
 </wd-panel>
 ```
 
-> **注意插槽名**：DataGrid 只暴露一个自定义业务插槽 `#toolbar`（带 `selection` / `list` 两个插槽参数），**没有** `#toolbar-left` / `#toolbar-right` 插槽——左右分区由 DataGrid 内部自动处理（左区 = `#toolbar` 业务按钮，右区 = 内置 tools）。写 `#toolbar-left` 是无效的，内容不会渲染。
+> **注意插槽名**：DataGrid 的自定义插槽为 `#toolbar`（工具栏业务按钮，带 `selection` / `list` 两个插槽参数）、`#batch-bar`（批量操作条，需开启 `batch-bar` prop，暴露 `selectedRows` / `clearSelection`）、`#empty`（空态）、`#card-item`（卡片模式单项）、`#cart-content`（购物车面板），业务列写在 default 插槽；**没有** `#toolbar-left` / `#toolbar-right` 插槽，也没有行操作专用插槽——工具栏左右分区由 DataGrid 内部自动处理（左区 = `#toolbar` 业务按钮，右区 = 内置 tools），行操作按钮放 default 插槽的 el-table-column 内，写不存在的插槽名内容不会渲染。
 
 ### 0.4 设计原则
 
@@ -337,7 +377,7 @@ wd-panel 内有多个排列元素（统计卡之间、表单分区之间、信�
 | 搜索面板组件选型  | 多条件搜索（≥3 个）一律用 `wd-search-panel` 包裹，**不要**手写 `<el-form>` + 自拼按钮；它自带「搜索 / 重置 / 展开收起」操作列（`with-actions` 默认 true），不需要额外添加按钮                                                                                           |
 | 常用条件外露    | 常用/重要的搜索条件放 `wd-search-panel` **默认插槽**（一行外露，≤ 3–4 个）                                                                                                                                                               |
 | 低频条件折叠    | 不常用/次要的搜索条件放 `wd-search-panel` 的 **`#more`** **插槽**，默认收起，点「展开」滑出；超过一行的条件自动进入折叠态                                                                                                                                    |
-| 声明式联动刷新   | `wd-search-panel` 通过 `:head-refresh-datagrid="gridRef"` 声明式联动——点「搜索」自动带参刷新目标 DataGrid（重置到第一页）、点「重置」自动清空条件并重查；**不需要手写** **`@search`** **事件 /** **`@reset`** **事件 /** **`searchParams`** **双向绑定**                    |
+| 声明式联动刷新   | `wd-search-panel` 通过 `:head-refresh-datagrid="true"` 声明式联动——点「搜索」自动带参刷新目标 DataGrid（重置到第一页）、点「重置」自动清空条件并重查；**不需要手写** **`@search`** **事件 /** **`@reset`** **事件 /** **`searchParams`** **双向绑定**                    |
 | 已选条件回显    | 搜索生效后，表格上方用 `wd-tag` 回显当前生效的搜索条件（复合值按「字段名: 值」展示，如「状态: 启用」「创建时间: 01-01 \~ 01-31」），单个 tag 可删除并即时重查；「重置」仍是清空全部条件的主入口                                                                                                  |
 | 简要搜索免容器   | 仅 1–2 个搜索条件时，可不包 wd-panel，直接把搜索组件放进 DataGrid 的 `#toolbar` 插槽（搜索与表格一体，少一层容器，见下方示例）                                                                                                                                  |
 | 统计口径解释    | 页面/指标/合计行中出现的统计数据，**紧接标签文字后用** **`wd-tips type="word"`** **加问号图标**，悬停说明计算口径与包含范围（例：数量合计 = 已审核行数量总和，不含草稿；金额合计 = 含税金额）                                                                                               |
@@ -362,7 +402,7 @@ wd-panel 内有多个排列元素（统计卡之间、表单分区之间、信�
 <wd-panel style="margin-bottom: 16px;">
   <!-- 常用/重要条件放默认插槽；不常用/次要条件放 #more 插槽；
        通过 head-refresh-datagrid 声明式联动下方 DataGrid，自动带参刷新 -->
-  <wd-search-panel :head-refresh-datagrid="gridRef">
+  <wd-search-panel :head-refresh-datagrid="true">
     <!-- 常用条件：一行外露 -->
     <wd-search-item label="名称" prop="name">
       <el-input v-model="q.name" placeholder="请输入名称" clearable />
@@ -399,7 +439,8 @@ wd-panel 内有多个排列元素（统计卡之间、表单分区之间、信�
     api="/api/users"
     :active="true"
     :height="'fix'"
-    selectable
+    with-selection
+    :batch-bar="true"
   >
     <!-- 左上角 #toolbar：业务操作按钮（插槽暴露 selection 当前选中行） -->
     <template #toolbar="{ selection }">
@@ -418,31 +459,33 @@ wd-panel 内有多个排列元素（统计卡之间、表单分区之间、信�
       </div>
     </template>
 
-    <!-- 行操作：按状态渲染高频按钮 + 更多收纳低频操作 -->
-    <template #operation="{ row }">
-      <el-button
-        v-if="row.status !== 'completed'"
-        link
-        type="primary"
-        @click="handleEdit(row)">编辑</el-button>
-      <wd-confirm-button
-        text="删除"
-        type="danger"
-        :disabled="row.status === 'approving'"
-        :confirm-text="`确认删除用户「${row.name}」？删除后数据将无法恢复。`"
-        @confirm="() => handleDelete(row)"
-      />
-      <el-dropdown @command="(cmd) => handleMore(cmd, row)">
-        <el-button link type="primary">更多</el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="resetPwd">重置密码</el-dropdown-item>
-            <el-dropdown-item command="disable">禁用</el-dropdown-item>
-            <el-dropdown-item command="logs" divided>查看日志</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-    </template>
+    <!-- 行操作：default 插槽内写 el-table-column（行内按钮放 #default）；按状态渲染高频按钮 + 更多收纳低频操作 -->
+    <el-table-column label="操作">
+      <template #default="{ row }">
+        <el-button
+          v-if="row.status !== 'completed'"
+          link
+          type="primary"
+          @click="handleEdit(row)">编辑</el-button>
+        <wd-confirm-button
+          label="删除"
+          type="danger"
+          :disabled="row.status === 'approving'"
+          :confirm-text="`确认删除用户「${row.name}」？删除后数据将无法恢复。`"
+          @confirm="() => handleDelete(row)"
+        />
+        <el-dropdown @command="(cmd) => handleMore(cmd, row)">
+          <el-button link type="primary">更多</el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="resetPwd">重置密码</el-dropdown-item>
+              <el-dropdown-item command="disable">禁用</el-dropdown-item>
+              <el-dropdown-item command="logs" divided>查看日志</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </template>
+    </el-table-column>
   </wd-datagrid>
 </wd-panel>
 
@@ -464,9 +507,10 @@ const gridRef = ref()
 <wd-datagrid
   ref="gridRef"
   api="/api/users"
-  :search-params="searchParams"
-  :columns="columns"
 >
+  <!-- 业务列：default 插槽内写 el-table-column -->
+  <el-table-column prop="name" label="姓名" />
+
   <!-- #toolbar 左区：简要搜索（1–2 个条件）+ 业务操作按钮 -->
   <template #toolbar>
     <el-select
@@ -489,11 +533,11 @@ const gridRef = ref()
 </wd-datagrid>
 
 <script setup>
-// searchParams 直接参与 DataGrid 请求；查询/重置调用表格实例方法
+// searchParams 为动态搜索条件：查询时通过 ref.search(params) 传入请求（合并参数并重置到第一页）
 const searchParams = ref({ status: '', keyword: '' })
 const gridRef = ref()
 
-function handleSearch() { gridRef.value?.search() }   // 带当前 searchParams 重新查询
+function handleSearch() { gridRef.value?.search({ ...searchParams.value }) }
 function handleReset() { searchParams.value = { status: '', keyword: '' }; gridRef.value?.resetSearch() }
 </script>
 ```
@@ -576,7 +620,7 @@ async function handleSubmit() {
   if (submitting.value) return
   submitting.value = true
   try {
-    await formRef.value.submit()
+    await formRef.value.submitForm()
     ElMessage.success('保存成功')
   } finally {
     submitting.value = false
@@ -647,11 +691,20 @@ async function handleSubmit() {
   <wd-data-form
     ref="formRef"
     mode="edit"
-    api="/api/users/save"
-    :fields="formFields"
-    :initial-data="currentRow"
-    @success="drawerVisible = false"
-  />
+    submit-api="/api/users/save"
+    :data="currentRow"
+    @submit-success="drawerVisible = false"
+  >
+    <!-- 表单字段写在 default 插槽（DataForm 无 :fields 属性），插槽参数 model 是数据模型 -->
+    <template #default="{ model }">
+      <wd-form-item label="用户名" prop="username" required>
+        <el-input v-model="model.username" placeholder="示例：zhangsan" />
+      </wd-form-item>
+      <wd-form-item label="邮箱" prop="email" required>
+        <el-input v-model="model.email" placeholder="示例：zhangsan@example.com" />
+      </wd-form-item>
+    </template>
+  </wd-data-form>
 </wd-drawer>
 ```
 
@@ -714,7 +767,7 @@ Confirm 文案公式：**操作 + 对象 + 后果 + 不可逆提示**。
 ```html
 <!-- L1 轻确认：使用 wd-confirm-button -->
 <wd-confirm-button
-  text="删除"
+  label="删除"
   type="danger"
   :confirm-text="`确认删除用户「${row.name}」？删除后该用户的数据将无法恢复。`"
   @confirm="() => handleDelete(row)"
@@ -769,7 +822,9 @@ async function handleBatchDelete(rows: any[]) {
 | 无权限             | 「暂无访问权限」                        | 「请联系管理员开通{模块名}权限」         | —                          | 「返回上一页」「联系管理员」 |
 
 ```html
-<wd-datagrid ref="gridRef" api="/api/users" :columns="columns">
+<wd-datagrid ref="gridRef" api="/api/users">
+  <!-- 业务列：default 插槽内写 el-table-column -->
+  <el-table-column prop="name" label="姓名" />
   <!-- 空数据：区分初始空与筛选空 -->
   <template #empty>
     <el-empty :description="hasSearchCondition ? '未找到匹配结果' : '暂无用户数据'">
@@ -782,14 +837,7 @@ async function handleBatchDelete(rows: any[]) {
     </el-empty>
   </template>
 
-  <!-- 加载失败 -->
-  <template #error="{ retry }">
-    <el-result icon="error" title="数据加载失败" sub-title="网络或服务器异常，请稍后重试">
-      <template #extra>
-        <el-button type="primary" @click="retry">重新加载</el-button>
-      </template>
-    </el-result>
-  </template>
+  <!-- 加载失败：DataGrid 无 #error 插槽，失败提示由统一请求层兜底（fail/exception 默认弹错误框），不要在表格内自定义错误插槽 -->
 </wd-datagrid>
 ```
 
@@ -953,13 +1001,13 @@ WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips
 
 ##### ApiButton —— 点击直接请求
 
-**高频、低风险**操作首选。点击即发请求（ElMessageBox.prompt 不弹），请求期间按钮自动转圈 loading（`buttonLoading` 可关），成功后自动 `ElMessage.success`（可通过全局配置/`reqOptions.showTips` 关闭），声明式联动刷新目标 DataGrid。
+**高频、低风险**操作首选。点击即发请求（ElMessageBox.prompt 不弹），请求期间按钮自动转圈 loading（`buttonLoading` 可关），成功后自动 `ElMessage.success`（可通过 `:req-options="{ showTips: false }"` 或全局配置关闭），声明式联动刷新目标 DataGrid。
 
 ```html
 <!-- 批量启用：选中行后直接请求 -->
 <wd-api-button
   api="/api/users/batch-enable"
-  :api-param="{ ids: selectedIds }"
+  :api-param="{ ids: selectedRows.map(r => r.id) }"
   :head-refresh-datagrid="true"
 >批量启用</wd-api-button>
 
@@ -968,7 +1016,8 @@ WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips
   <template #default="{ row }">
     <wd-api-button
       v-if="!row.isDefault"
-      type="text"
+      type="primary"
+      link
       api="/api/users/set-default"
       :api-param="{ id: row.id }"
       :head-refresh-datagrid="true"
@@ -992,7 +1041,6 @@ WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips
       param-key="newPassword"
       prompt-title="重置用户密码"
       prompt-placeholder="请输入新密码（6-20 位）"
-      confirm-text="确认重置"
       type="warning"
       link
       :head-refresh-datagrid="false"
@@ -1021,7 +1069,7 @@ WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips
 <wd-confirm-button
   v-if="selectedRows.length"
   api="/api/users/batch-delete"
-  :api-param="{ ids: selectedIds }"
+  :api-param="{ ids: selectedRows.map(r => r.id) }"
   confirm-text="确认删除选中的用户？删除后该用户的数据将无法恢复。"
   type="danger"
   :head-refresh-datagrid="true"
@@ -1145,15 +1193,17 @@ WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips
     :head-close-drawer="true"
     :head-refresh-datagrid="true"
   >
-    <wd-form-item label="标签名称" prop="name" required>
-      <el-input v-model="form.name" placeholder="请输入标签名称" />
-    </wd-form-item>
-    <wd-form-item label="标签颜色" prop="color">
-      <el-color-picker v-model="form.color" />
-    </wd-form-item>
-    <wd-form-item label="标签描述" prop="desc">
-      <el-input type="textarea" v-model="form.desc" />
-    </wd-form-item>
+    <template #default="{ model }">
+      <wd-form-item label="标签名称" prop="name" required>
+        <el-input v-model="model.name" placeholder="请输入标签名称" />
+      </wd-form-item>
+      <wd-form-item label="标签颜色" prop="color">
+        <el-color-picker v-model="model.color" />
+      </wd-form-item>
+      <wd-form-item label="标签描述" prop="desc">
+        <el-input type="textarea" v-model="model.desc" />
+      </wd-form-item>
+    </template>
   </wd-data-form>
 </wd-dialog-button>
 ```
@@ -1168,7 +1218,3 @@ WorkDesktop 提供 9 个按钮组件，全部继承自 TipsButton（自带 `tips
 | "ApiButton 和 ConfirmButton 有什么区别？"                  | ApiButton = 点击即发请求（无前置交互）；ConfirmButton = MessageBox 确认后才发请求（有前置确认）。两者底层都是 `useApiAction`，只是前置环节不同                                |
 | "给按钮加 tooltip 一定要用 el-tooltip 手动包？"                 | 直接用 TipsButton——内置 tooltip，`tips` 属性设文案即可，其他按钮组件（ApiButton/ConfirmButton 等）**全部继承 TipsButton**，也自带 `tips` 属性                      |
 | "ConfirmButton 和 PromptButton 都是 MessageBox，有什么区别？" | ConfirmButton = confirm（二选一：确定或取消）；PromptButton = prompt（先输入一个值再确定）。PromptButton 适合"重置密码需输入新密码"、"重命名需输入新名称"这类场景                   |
-
-***
-
-> **版本变更记录**：V\_1.7 → V\_1.8（2026-11-19）——§0.1 顶部 Tips 适用范围由「表单/列表等功能页面」明确为「所有功能页面」（含工作台 / 仪表盘、设置中心、统计分析）；§0.3 新增「布局容器豁免」——页面根容器与栅格行列容器为纯布局用途允许存在（不得带背景/边框/额外内边距）、通栏元素（顶条/欢迎横幅）不用 wd-panel、双栏布局容器规范、文档站演示页边界说明；§0.3 全部骨架示例与表格清理无效的 `:show-header="false"` 写法（wd-panel 无该 prop，不传 title 即无标题头）。
